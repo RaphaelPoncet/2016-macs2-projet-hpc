@@ -2,3 +2,8 @@
 *~
 .#*
 #*
+
+# no object/build files
+*.o
+*.so
+*.a
