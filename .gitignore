@@ -5,5 +5,5 @@
 
 # no object/build files
 *.o
-*.so
+*.so*
 *.a
