@@ -3,7 +3,11 @@
 .#*
 #*
 
-# no object/build files
+# no object/build/executable files
 *.o
 *.so*
 *.a
+*.dll
+*.lib
+*.exe
+*.out
