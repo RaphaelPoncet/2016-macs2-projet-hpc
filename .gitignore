@@ -11,3 +11,6 @@
 *.lib
 *.exe
 *.out
+
+# no log files
+*.log
