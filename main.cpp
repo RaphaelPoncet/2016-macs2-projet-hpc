@@ -12,10 +12,7 @@
 // See the License for the specific language goveroning permissions and
 // limitations under the License.
 
-#include "plog/Log.h"
-#include "plog/Appenders/ConsoleAppender.h"
-#include "plog/Appenders/RollingFileAppender.h"
-
+#include "common.hpp"
 #include "multidimensional_storage.hpp"
 
 int main(int argc, char** argv) {
@@ -36,8 +33,36 @@ int main(int argc, char** argv) {
 
   }
 
-  LOG_INFO << "Hello from wave propagator!";
+  LOG_INFO << "2D wave propagator in heterogeneous media...";
+
+  // Variables Initialization (hardcoded for now).
+  const int nx = 128;
+  const int ny = 256;
+  const int nb_variables = 4;
+  const int padding = 32;
+
+  MultiDimensionalStorage3D variable_storage = 
+    MultiDimensionalStorage3D(nx, ny, nb_variables, padding);
+
+  variable_storage.Allocate();
+
+  for (int ivar = 0; ivar < nb_variables; ++ivar) {
+    for (int iy = 0; iy < ny; ++iy) {
+      for (int ix = 0; ix < nx; ++ix) {
+
+	const int nx_pad = nx + padding;
+
+	const size_t index = nx_pad * ny * ivar + nx_pad * iy + ix;
+	variable_storage.m_data[index] = 1.0;
+
+      }
+    }
+  }
+
+  variable_storage.Validate();
+
+  // Variables cleanup.
+  variable_storage.DeAllocate();
 
   return 0;
-
 }
