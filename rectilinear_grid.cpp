@@ -35,10 +35,10 @@ static void ValidateInput(int n1, int n2, int n3,
 static void LinearArray(RealT value_min, RealT value_max, int nb_elements, RealT* array) {
 
   assert(value_min <= value_max);
-  assert(0 < nb_elements);
+  assert(1 < nb_elements);
   assert(array != NULL);
 
-  const RealT sampling = (value_max - value_min) / (RealT)nb_elements;
+  const RealT sampling = (value_max - value_min) / (RealT)(nb_elements - 1);
   assert(0 <= sampling);
 
   for (int i = 0; i < nb_elements; ++i)
@@ -87,19 +87,19 @@ void RectilinearGrid3D::WriteHeaderVTKXml(std::ofstream* os_ptr) {
 	  << "byte_order=\"LittleEndian\">\n";
   
   *os_ptr << "<RectilinearGrid WholeExtent=\""
-	  << 0 << " " << m_n_fast << " "
-	  << 0 << " " << m_n_medium << " "
-	  << 0 << " " << m_n_slow
+	  << 0 << " " << m_n_fast - 1 << " "
+	  << 0 << " " << m_n_medium - 1<< " "
+	  << 0 << " " << m_n_slow - 1
 	  << "\">\n";
 
   *os_ptr << "<Piece Extent=\""
-	  << 0 << " " << m_n_fast << " "
-	  << 0 << " " << m_n_medium << " "
-	  << 0 << " " << m_n_slow << "\""
+	  << 0 << " " << m_n_fast - 1 << " "
+	  << 0 << " " << m_n_medium - 1 << " "
+	  << 0 << " " << m_n_slow - 1 << "\""
 	  << " Dimensions=\"" 
-	  << m_n_fast + 1 << " " 
-	  << m_n_medium + 1 << " " 
-	  << m_n_slow + 1 << "\""
+	  << m_n_fast << " " 
+	  << m_n_medium << " " 
+	  << m_n_slow << "\""
 	  << ">\n";
 
 }

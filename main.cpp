@@ -42,9 +42,9 @@ int main(int argc, char** argv) {
   // Variables information (hardcoded for now).
 
   // Variables size.
-  const int nx = 128;
-  const int ny = 128;
-  const int nz = 128;
+  const int nx = 100;
+  const int ny = 100;
+  const int nz = 100;
   const int nb_variables = 4;
   const int padding = 32;
 
