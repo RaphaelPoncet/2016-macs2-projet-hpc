@@ -15,13 +15,13 @@
 #ifndef MULTIDIMENSIONAL_STORAGE_HPP
 #define MULTIDIMENSIONAL_STORAGE_HPP
 
-// Intended to hold a family of variables defined on a 2D cartesian
-// grid (aka an image). Index for family corresponds to the slowest
+// Intended to hold a family of variables defined on a 3D rectilinear
+// grid (aka a volume). Index for family corresponds to the slowest
 // dimension. Fastest dimension can be padded.
-class MultiDimensionalStorage3D {
+class MultiDimensionalStorage4D {
 public:
-  MultiDimensionalStorage3D(int n1, int n2, int n3);
-  MultiDimensionalStorage3D(int n1, int n2, int n3, int padding);
+  MultiDimensionalStorage4D(int n1, int n2, int n3, int n4);
+  MultiDimensionalStorage4D(int n1, int n2, int n3, int n4, int padding);
   void Allocate();
   void DeAllocate();
   void Validate();
@@ -29,9 +29,10 @@ public:
 private:
   int m_n_fast;
   int m_n2;
+  int m_n3;
   int m_n_slow;
   int m_padding;
-
 };
+
 
 #endif // MULTIDIMENSIONAL_STORAGE_HPP
