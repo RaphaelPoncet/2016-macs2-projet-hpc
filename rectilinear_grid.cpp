@@ -55,10 +55,10 @@ RectilinearGrid3D::RectilinearGrid3D(RealT x_fast_min, RealT x_fast_max, int n_f
   m_x_slow_min(x_slow_min), m_x_slow_max(x_slow_max) {
 
   LOG_DEBUG << "Initializing 3D rectilinear grid with (n1, n2, n3) = "
-	    << m_n_fast << ", "
+	    << "(" << m_n_fast << ", "
 	    << m_n_medium << ", "
 	    << m_n_slow << ")"
-	    << "...";
+	    << " nodes...";
 
   ValidateInput(m_n_fast, m_n_medium, m_n_slow, 
 		m_x_fast_min, m_x_fast_max,
