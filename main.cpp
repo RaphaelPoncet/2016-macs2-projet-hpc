@@ -18,6 +18,7 @@
 #include <fstream>
 #include <sstream>
 
+#include "array_vtk_io.hpp"
 #include "multidimensional_storage.hpp"
 #include "rectilinear_grid.hpp"
 #include "variable_definitions.hpp"
@@ -35,7 +36,7 @@ int main(int argc, char** argv) {
 
   } else {
 
-    static plog::ConsoleAppender<plog::TxtFormatter> console_appender;
+    static plog::ColorConsoleAppender<plog::TxtFormatter> console_appender;
     plog::init(plog::verbose, &console_appender);
 
   }
@@ -61,9 +62,9 @@ int main(int argc, char** argv) {
   const RealT x_min = 0.0;
   const RealT x_max = 10000.0;
 
-  const int ny = 1;
+  const int ny = 100;
   const RealT y_min = 0.0;
-  const RealT y_max = 0.0;
+  const RealT y_max = 10000.0;
 
   const int nz = 100;
   const RealT z_min = 0.0;
@@ -80,11 +81,12 @@ int main(int argc, char** argv) {
   
   // Initialize grid from variable informations. 
 
-  // We can choose our variables on grid nodes or grid
-  // cells. Depending on that, grid extent and size will change a little bit.
+  // Depending on variable support (cell or node), grid extent
+  // and size will change a little.
   //
-  // In our solver, all variables have the same support, so it is
-  // merely a choice of convenience.
+  // It is merely a matter of convenience for visualization: by
+  // default, Paraview outputs cell variables with no interpolation,
+  // and node variables with interpolation.
 
   const VariableSupport variable_support = variable::VARIABLE_SUPPORT;
 
@@ -107,17 +109,6 @@ int main(int argc, char** argv) {
   RectilinearGrid3D propagation_grid = RectilinearGrid3D(x_min_grid, x_max_grid, nx_grid, 
 							 y_min_grid, y_max_grid, ny_grid, 
 							 z_min_grid, z_max_grid, nz_grid);
-
-  std::ofstream grid_file;
-  const std::string grid_filename = "grid.vtr";
-
-  grid_file.open(grid_filename.c_str());
-
-  propagation_grid.WriteHeaderVTKXml(&grid_file);
-  propagation_grid.WriteVTKXmlAscii(&grid_file);
-  propagation_grid.WriteFooterVTKXml(&grid_file);
-
-  grid_file.close();
   
   MultiDimensionalStorage4D variable_storage = 
     MultiDimensionalStorage4D(nx, ny, nz, nb_variables, padding);
@@ -127,6 +118,10 @@ int main(int argc, char** argv) {
   RealT* pressure_0 = variable_storage.RawDataSlowDimension(variable::PRESSURE_0);
   RealT* pressure_1 = variable_storage.RawDataSlowDimension(variable::PRESSURE_1);
 
+  const RealT xmid = 0.5 * (x_min + x_max);
+  const RealT ymid = 0.5 * (y_min + y_max);
+  const RealT zmid = 0.5 * (z_min + z_max);
+
   for (int iz = 0; iz < nz; ++iz) {
     for (int iy = 0; iy < ny; ++iy) {
       for (int ix = 0; ix < nx; ++ix) {
@@ -134,13 +129,102 @@ int main(int argc, char** argv) {
 	const int nx_pad = nx + padding;
 
 	const size_t index = ny * nx_pad * iz + nx_pad * iy + ix;
-	pressure_0[index] = expf(- ix * ix * dx * dx);
+
+	const RealT x = (RealT)ix * dx;
+	const RealT y = (RealT)iy * dy;
+	const RealT z = (RealT)iz * dz;
+
+	const RealT distance = 
+	  (x - xmid) * (x - xmid) + (y - ymid) * (y - ymid) + (z - zmid) * (z - zmid);
+
+	pressure_0[index] = expf(- 0.000005 * distance);
+	pressure_1[index] = 3.14f;
 
       }
     }
   }
 
   variable_storage.Validate();
+
+  std::ofstream output_file;
+  const std::string output_filename = "grid.vtr";
+
+  LOG_INFO << "Writing output file \"" << output_filename << "\"...";
+ 
+  output_file.open(output_filename.c_str());
+
+  propagation_grid.WriteHeaderVTKXml(&output_file);
+  propagation_grid.WriteVTKXmlAscii(&output_file);
+
+  output_file << "<CellData>\n";
+  
+  if (variable_support == CELL) {
+
+    const int n_slow = (propagation_grid.n_slow() == 1 ? 1 : propagation_grid.n_slow() - 1);
+    assert(0 < n_slow);
+    const int n_medium = (propagation_grid.n_medium() == 1 ? 1 : propagation_grid.n_medium() - 1);
+    assert(0 < n_medium);
+    const int n_fast = (propagation_grid.n_fast() == 1 ? 1 : propagation_grid.n_fast() - 1);
+    assert(0 < n_fast);
+
+    const size_t nb_grid_elements = n_slow * n_medium * n_fast;
+
+    const size_t nb_elements_storage_3d = 
+      variable_storage.n3() * variable_storage.n2() * variable_storage.n_fast();
+
+    assert(nb_elements_storage_3d == nb_grid_elements);
+
+    for (int ivar = 0; ivar < variable::NB_VARIABLES; ++ivar) {
+     
+      if (variable::VARIABLE_FLAGS[ivar] & WRITTEN) {
+
+	RealT* data = variable_storage.RawDataSlowDimension(ivar);
+
+	WriteVTKXmlVariable(variable::VARIABLE_NAMES[ivar], ASCII, 1, 
+			    variable_storage.n_fast(), variable_storage.padding(),
+			    variable_storage.n2(), variable_storage.n3(), 
+			    data, &output_file);
+
+      }
+    }
+  }
+
+  output_file << "</CellData>\n";
+
+  output_file << "<PointData>\n";
+
+  if (variable_support == NODE) {
+
+    const size_t nb_grid_elements = 
+      propagation_grid.n_slow() * propagation_grid.n_medium() * propagation_grid.n_fast();
+
+    const size_t nb_elements_storage_3d = 
+      variable_storage.n_fast() * variable_storage.n2() * variable_storage.n3();
+
+    assert(nb_elements_storage_3d == nb_grid_elements);
+
+    for (int ivar = 0; ivar < variable::NB_VARIABLES; ++ivar) {
+
+      if (variable::VARIABLE_FLAGS[ivar] & WRITTEN) {
+     
+	RealT* data = variable_storage.RawDataSlowDimension(ivar);
+
+	WriteVTKXmlVariable(variable::VARIABLE_NAMES[ivar], ASCII, 1, 
+			    variable_storage.n_fast(), variable_storage.padding(),
+			    variable_storage.n2(), variable_storage.n3(), 
+			    data, &output_file);
+
+      }
+    }
+  }
+
+  output_file << "</PointData>\n";
+
+  propagation_grid.WriteFooterVTKXml(&output_file);
+
+  output_file.close();
+
+  LOG_INFO << "Writing output file done.\n";
 
   // Variables cleanup.
   variable_storage.DeAllocate();

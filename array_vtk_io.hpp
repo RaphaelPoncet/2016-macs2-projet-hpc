@@ -9,19 +9,19 @@
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
+// See the License for the specific language goveroning permissions and
 // limitations under the License.
 
-#include <vector>
+#ifndef ARRAY_VTK_IO_HPP
+#define ARRAY_VTK_IO_HPP
 
-#include "plog/Log.h"
-#include "plog/Appenders/ColorConsoleAppender.h"
-#include "plog/Appenders/ConsoleAppender.h"
-#include "plog/Appenders/RollingFileAppender.h"
+typedef enum _DataFormat {ASCII, BINARY} DataFormat;
 
-template <typename T>
-T* VectorRawData(std::vector<T>& vec) { 
- 
- return (vec.size() == 0 ? NULL : &vec.at(0));
+void WriteVTKXmlVariable(const std::string& variable_name,
+			 DataFormat format, int nb_components,
+			 int n_fast, int n_fast_padding, 
+			 int n_medium, int n_slow, 
+			 RealT* data,
+			 std::ostream* os_ptr);
 
-}
+#endif // ARRAY_VTK_IO_HPP

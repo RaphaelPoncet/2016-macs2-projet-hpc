@@ -27,7 +27,7 @@ enum VariableFlags {
 
 namespace variable {
 
-  const VariableSupport VARIABLE_SUPPORT = NODE;
+  const VariableSupport VARIABLE_SUPPORT = CELL;
   
   enum {PRESSURE_0,
 	PRESSURE_1,
@@ -41,8 +41,8 @@ namespace variable {
   static const unsigned int VARIABLE_FLAGS[NB_VARIABLES] = 
     {WRITTEN | INITIALIZABLE,
      WRITTEN | INITIALIZABLE,
-     WRITTEN | !INITIALIZABLE,
-     WRITTEN | !INITIALIZABLE};
+     !WRITTEN | !INITIALIZABLE,
+     !WRITTEN | !INITIALIZABLE};
     
 }
 

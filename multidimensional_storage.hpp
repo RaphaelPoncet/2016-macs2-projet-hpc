@@ -22,6 +22,11 @@ class MultiDimensionalStorage4D {
 public:
   MultiDimensionalStorage4D(int n1, int n2, int n3, int n4);
   MultiDimensionalStorage4D(int n1, int n2, int n3, int n4, int padding);
+  int n_fast() { return m_n_fast; }
+  int n2() { return m_n2; }
+  int n3() { return m_n3; }
+  int n_slow() { return m_n_slow; }
+  int padding() { return m_padding; }
   void Allocate();
   void DeAllocate();
   void Validate();
