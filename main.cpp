@@ -40,19 +40,19 @@ int main(int argc, char** argv) {
   LOG_INFO << "**** 2D/3D wave propagator in heterogeneous media ****\n";
 
   // Variables information (hardcoded for now).
-
-  // Variables size.
-  const int nx = 100;
-  const int ny = 100;
-  const int nz = 100;
   const int nb_variables = 4;
   const int padding = 32;
 
-  // Variable extent.
+  // Variables size and extent in all 3 dimensions.
+  const int nx = 100;
   const RealT x_min = 0.0;
   const RealT x_max = 10000.0;
+
+  const int ny = 1;
   const RealT y_min = 0.0;
-  const RealT y_max = 10000.0;
+  const RealT y_max = 0.0;
+
+  const int nz = 100;
   const RealT z_min = 0.0;
   const RealT z_max = 10000.0;
 
@@ -76,15 +76,19 @@ int main(int argc, char** argv) {
   typedef enum _VariableSupport {NODE, CELL} VariableSupport;
   const VariableSupport variable_support = CELL;
 
-  const int nx_grid = (variable_support == CELL ? nx + 1 : nx);
+  // The number of nodes is the number of cells + 1, except if the
+  // number of nodes is 1, when the number of cells is also 1.
+  const int nx_grid = 
+    (variable_support == CELL ? (nx == 1 ? nx : nx + 1) : nx);
+  const int ny_grid = 
+    (variable_support == CELL ? (ny == 1 ? ny : ny + 1) : ny);
+  const int nz_grid = 
+    (variable_support == CELL ? (nz == 1 ? nz : nz + 1) : nz);
+
   const RealT x_min_grid = (variable_support == CELL ? x_min - 0.5 * dx: x_min);
   const RealT x_max_grid = (variable_support == CELL ? x_max + 0.5 * dx: x_max);
-
-  const int ny_grid = (variable_support == CELL ? ny + 1 : ny);
   const RealT y_min_grid = (variable_support == CELL ? y_min - 0.5 * dy: y_min);
   const RealT y_max_grid = (variable_support == CELL ? y_max + 0.5 * dy: y_max);
-
-  const int nz_grid = (variable_support == CELL ? nz + 1 : nz);
   const RealT z_min_grid = (variable_support == CELL ? z_min - 0.5 * dz: z_min);
   const RealT z_max_grid = (variable_support == CELL ? z_max + 0.5 * dz: z_max);
 

@@ -26,20 +26,22 @@ static void ValidateInput(int n1, int n2, int n3,
   assert(0 < n2);
   assert(0 < n3);
 
-  assert(x1_min < x1_max);
-  assert(x2_min < x2_max);
-  assert(x3_min < x3_max);
+  assert(((n1 == 1) && (x1_min == x1_max)) || (x1_min < x1_max));
+  assert(((n2 == 1) && (x2_min == x2_max)) || (x2_min < x2_max));
+  assert(((n3 == 1) && (x3_min == x3_max)) || (x3_min < x3_max));
 
 }
 
 static void LinearArray(RealT value_min, RealT value_max, int nb_elements, RealT* array) {
 
   assert(value_min <= value_max);
-  assert(1 < nb_elements);
+  assert(0 < nb_elements);
   assert(array != NULL);
 
-  const RealT sampling = (value_max - value_min) / (RealT)(nb_elements - 1);
-  assert(0 <= sampling);
+  const RealT sampling = 
+    (nb_elements == 1 ? 0.0 : (value_max - value_min) / (RealT)(nb_elements - 1));
+
+  assert(0.0 <= sampling);
 
   for (int i = 0; i < nb_elements; ++i)
     array[i] = value_min + (RealT)i * sampling;
