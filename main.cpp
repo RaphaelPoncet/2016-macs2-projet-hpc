@@ -39,22 +39,58 @@ int main(int argc, char** argv) {
 
   LOG_INFO << "**** 2D/3D wave propagator in heterogeneous media ****\n";
 
-  // Variables Initialization (hardcoded for now).
+  // Variables information (hardcoded for now).
+
+  // Variables size.
   const int nx = 128;
   const int ny = 128;
   const int nz = 128;
   const int nb_variables = 4;
   const int padding = 32;
 
+  // Variable extent.
   const RealT x_min = 0.0;
   const RealT x_max = 10000.0;
   const RealT y_min = 0.0;
   const RealT y_max = 10000.0;
   const RealT z_min = 0.0;
   const RealT z_max = 10000.0;
+
+  assert(0 < nx);
+  const RealT dx = (x_max - x_min) / (RealT)nx;
+
+  assert(0 < ny);
+  const RealT dy = (y_max - y_min) / (RealT)ny;
+
+  assert(0 < nz);
+  const RealT dz = (z_max - z_min) / (RealT)nz;
   
-  RectilinearGrid3D propagation_grid =
-    RectilinearGrid3D(x_min, x_max, nx, y_min, y_max, ny, z_min, z_max, nz);
+  // Initialize grid from variable informations. 
+
+  // We can choose our variables on grid nodes or grid
+  // cells. Depending on that, grid extent and size will change a little bit.
+  //
+  // In our solver, all variables have the same support, so it is
+  // merely a choice of convenience.
+
+  typedef enum _VariableSupport {NODE, CELL} VariableSupport;
+  const VariableSupport variable_support = CELL;
+
+  const int nx_grid = (variable_support == CELL ? nx + 1 : nx);
+  const RealT x_min_grid = (variable_support == CELL ? x_min - 0.5 * dx: x_min);
+  const RealT x_max_grid = (variable_support == CELL ? x_max + 0.5 * dx: x_max);
+
+  const int ny_grid = (variable_support == CELL ? ny + 1 : ny);
+  const RealT y_min_grid = (variable_support == CELL ? y_min - 0.5 * dy: y_min);
+  const RealT y_max_grid = (variable_support == CELL ? y_max + 0.5 * dy: y_max);
+
+  const int nz_grid = (variable_support == CELL ? nz + 1 : nz);
+  const RealT z_min_grid = (variable_support == CELL ? z_min - 0.5 * dz: z_min);
+  const RealT z_max_grid = (variable_support == CELL ? z_max + 0.5 * dz: z_max);
+
+  RectilinearGrid3D propagation_grid = RectilinearGrid3D(x_min_grid, x_max_grid, nx_grid, 
+							 y_min_grid, y_max_grid, ny_grid, 
+							 z_min_grid, z_max_grid, nz_grid);
 
   std::ofstream grid_file;
   const std::string grid_filename = "grid.vtr";
