@@ -24,10 +24,9 @@ enum VariableFlags {
   DUMMY2 = 1 << 3
 };
 
-
 namespace variable {
 
-  const VariableSupport VARIABLE_SUPPORT = CELL;
+  const VariableSupport VARIABLE_SUPPORT = NODE;
   
   enum {PRESSURE_0,
 	PRESSURE_1,

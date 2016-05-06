@@ -17,6 +17,8 @@
 
 #include <fstream>
 
+#include "array_vtk_io.hpp"
+
 static void ValidateInput(int n1, int n2, int n3,
 			  RealT x1_min, RealT x1_max,
 			  RealT x2_min, RealT x2_max,
@@ -119,38 +121,20 @@ void RectilinearGrid3D::WriteVTKXmlAscii(std::ofstream* os_ptr) {
 
   *os_ptr << "<Coordinates>\n";
 
-  *os_ptr << "<DataArray "
-	  << "type=\"Float32\" "
-	  << "format=\"ascii\">\n";
-
   const int nb_points_fast = m_fast_coordinates.size();
 
-  for (int i = 0; i < nb_points_fast; ++i)
-    *os_ptr << m_fast_coordinates.at(i) << "\n";
-
-  *os_ptr << "</DataArray>\n";
-
-  *os_ptr << "<DataArray "
-	  << "type=\"Float32\" "
-	  << "format=\"ascii\">\n";
+  WriteVTKXmlVariable("x", ASCII, 1, nb_points_fast, 0, 1, 1, 
+  		      VectorRawData(m_fast_coordinates), os_ptr);
 
   const int nb_points_medium = m_medium_coordinates.size();
 
-  for (int i = 0; i < nb_points_medium; ++i)
-    *os_ptr << m_medium_coordinates.at(i) << "\n";
-
-  *os_ptr << "</DataArray>\n";
-
-  *os_ptr << "<DataArray "
-	  << "type=\"Float32\" "
-	  << "format=\"ascii\">\n";
+  WriteVTKXmlVariable("y", ASCII, 1, nb_points_medium, 0, 1, 1, 
+  		      VectorRawData(m_medium_coordinates), os_ptr);
 
   const int nb_points_slow = m_slow_coordinates.size();
-  
-  for (int i = 0; i < nb_points_slow; ++i)
-    *os_ptr << m_slow_coordinates.at(i) << "\n";
-  
-  *os_ptr << "</DataArray>\n";
+
+  WriteVTKXmlVariable("z", ASCII, 1, nb_points_slow, 0, 1, 1, 
+  		      VectorRawData(m_slow_coordinates), os_ptr);
 
   *os_ptr << "</Coordinates>\n";
 

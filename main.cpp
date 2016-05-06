@@ -139,7 +139,7 @@ int main(int argc, char** argv) {
 
 	pressure_0[index] = expf(- 0.000005 * distance);
 	pressure_1[index] = 3.14f;
-
+	
       }
     }
   }
