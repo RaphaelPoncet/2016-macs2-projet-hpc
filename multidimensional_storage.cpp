@@ -63,7 +63,8 @@ void MultiDimensionalStorage4D::Allocate() {
 
   LOG_DEBUG << "Allocation done, memory used = "
 	    << static_cast<double>(size_in_bytes / (1024.0 * 1024.0)) 
-	    << " MBytes.";
+	    << " MBytes."
+	    << "\n";
 
   LOG_DEBUG << "Setting storage...";
 
@@ -93,7 +94,8 @@ void MultiDimensionalStorage4D::Allocate() {
     }
   }
   
-  LOG_DEBUG << "Setting storage done.";
+  LOG_DEBUG << "Setting storage done."
+	    << "\n";
   
 }
 
@@ -104,7 +106,8 @@ void MultiDimensionalStorage4D::DeAllocate() {
   if (m_data != NULL)
     free(m_data);
 
-  LOG_DEBUG << "Deallocation done.";
+  LOG_DEBUG << "Deallocation done."
+	    << "\n";
  
 }
 
@@ -146,6 +149,7 @@ void MultiDimensionalStorage4D::Validate() {
 
   }
 
-  LOG_DEBUG << "Validating 4D storage done.";
+  LOG_DEBUG << "Validating 4D storage done."
+	    << "\n";
 
 }
