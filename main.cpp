@@ -14,6 +14,7 @@
 
 #include "common.hpp"
 
+#include <cmath>
 #include <fstream>
 #include <sstream>
 
@@ -123,18 +124,18 @@ int main(int argc, char** argv) {
 
   variable_storage.Allocate();
 
-  for (int ivar = 0; ivar < nb_variables; ++ivar) {
-    for (int iz = 0; iz < nz; ++iz) {
-      for (int iy = 0; iy < ny; ++iy) {
-	for (int ix = 0; ix < nx; ++ix) {
+  RealT* pressure_0 = variable_storage.RawDataSlowDimension(variable::PRESSURE_0);
+  RealT* pressure_1 = variable_storage.RawDataSlowDimension(variable::PRESSURE_1);
 
-	  const int nx_pad = nx + padding;
+  for (int iz = 0; iz < nz; ++iz) {
+    for (int iy = 0; iy < ny; ++iy) {
+      for (int ix = 0; ix < nx; ++ix) {
 
-	  const size_t index = 
-	    nz * ny * nx_pad * ivar + ny * nx_pad * iz + nx_pad * iy + ix;
-	  variable_storage.m_data[index] = 1.0;
+	const int nx_pad = nx + padding;
 
-	}
+	const size_t index = ny * nx_pad * iz + nx_pad * iy + ix;
+	pressure_0[index] = expf(- ix * ix * dx * dx);
+
       }
     }
   }

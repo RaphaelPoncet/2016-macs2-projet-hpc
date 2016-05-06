@@ -25,13 +25,14 @@ public:
   void Allocate();
   void DeAllocate();
   void Validate();
-  RealT* m_data;
+  RealT* RawDataSlowDimension(int i);
 private:
   int m_n_fast;
   int m_n2;
   int m_n3;
   int m_n_slow;
   int m_padding;
+  RealT* m_data;
 };
 
 

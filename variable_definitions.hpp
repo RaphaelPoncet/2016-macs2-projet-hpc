@@ -29,9 +29,9 @@ namespace variable {
 
   const VariableSupport VARIABLE_SUPPORT = NODE;
   
-  enum {P0,
-	P1,
-	P2,
+  enum {PRESSURE_0,
+	PRESSURE_1,
+	PRESSURE_2,
 	D2P_DT2,
 	NB_VARIABLES};
 
