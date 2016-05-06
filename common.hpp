@@ -12,6 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <vector>
+
 #include "plog/Log.h"
 #include "plog/Appenders/ConsoleAppender.h"
 #include "plog/Appenders/RollingFileAppender.h"
+
+template <typename T>
+T* VectorRawData(std::vector<T>& vec) { 
+ 
+ return (vec.size() == 0 ? NULL : &vec.at(0));
+
+}

@@ -13,7 +13,11 @@
 // limitations under the License.
 
 #include "common.hpp"
+
+#include <fstream>
+
 #include "multidimensional_storage.hpp"
+#include "rectilinear_grid.hpp"
 
 int main(int argc, char** argv) {
 
@@ -33,15 +37,36 @@ int main(int argc, char** argv) {
 
   }
 
-  LOG_INFO << "2D wave propagator in heterogeneous media...";
+  LOG_INFO << "**** 2D/3D wave propagator in heterogeneous media ****\n";
 
   // Variables Initialization (hardcoded for now).
-  const int nx = 256;
-  const int ny = 1;
-  const int nz = 256;
+  const int nx = 128;
+  const int ny = 128;
+  const int nz = 128;
   const int nb_variables = 4;
   const int padding = 32;
 
+  const RealT x_min = 0.0;
+  const RealT x_max = 10000.0;
+  const RealT y_min = 0.0;
+  const RealT y_max = 10000.0;
+  const RealT z_min = 0.0;
+  const RealT z_max = 10000.0;
+  
+  RectilinearGrid3D propagation_grid =
+    RectilinearGrid3D(x_min, x_max, nx, y_min, y_max, ny, z_min, z_max, nz);
+
+  std::ofstream grid_file;
+  const std::string grid_filename = "grid.vtr";
+
+  grid_file.open(grid_filename.c_str());
+
+  propagation_grid.WriteHeaderVTKXml(&grid_file);
+  propagation_grid.WriteVTKXmlAscii(&grid_file);
+  propagation_grid.WriteFooterVTKXml(&grid_file);
+
+  grid_file.close();
+  
   MultiDimensionalStorage4D variable_storage = 
     MultiDimensionalStorage4D(nx, ny, nz, nb_variables, padding);
 

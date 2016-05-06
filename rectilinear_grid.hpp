@@ -15,6 +15,8 @@
 #ifndef RECTILINEAR_GRID_HPP
 #define RECTILINEAR_GRID_HPP
 
+#include <vector>
+
 // Rectilinear 3D grid (also handles 2D as a particular case).
 class RectilinearGrid3D {
 public:
@@ -24,6 +26,9 @@ public:
   int n_fast() const { return m_n_fast; }
   int n_medium() const { return m_n_medium; }
   int n_slow() const { return m_n_slow; }
+  void WriteHeaderVTKXml(std::ofstream* os_ptr);
+  void WriteFooterVTKXml(std::ofstream* os_ptr);
+  void WriteVTKXmlAscii(std::ofstream* os_ptr);
 private:
   int m_n_fast;
   int m_n_medium;
@@ -34,6 +39,9 @@ private:
   RealT m_x_medium_max;
   RealT m_x_slow_min;
   RealT m_x_slow_max;
+  std::vector<RealT> m_fast_coordinates;
+  std::vector<RealT> m_medium_coordinates;
+  std::vector<RealT> m_slow_coordinates;
 };
 
 #endif // RECTILINEAR_GRID_HPP
