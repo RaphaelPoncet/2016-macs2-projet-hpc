@@ -15,9 +15,11 @@
 #include "common.hpp"
 
 #include <fstream>
+#include <sstream>
 
 #include "multidimensional_storage.hpp"
 #include "rectilinear_grid.hpp"
+#include "variable_definitions.hpp"
 
 int main(int argc, char** argv) {
 
@@ -39,8 +41,18 @@ int main(int argc, char** argv) {
 
   LOG_INFO << "**** 2D/3D wave propagator in heterogeneous media ****\n";
 
-  // Variables information (hardcoded for now).
-  const int nb_variables = 4;
+  // Variables information (hardcoded for now, in variable_definitions.hpp).
+  const int nb_variables = variable::NB_VARIABLES;
+  
+  std::stringstream var_name_msg;
+
+  var_name_msg << "List of variables: [";
+  for (int ivar = 0; ivar < nb_variables; ++ivar)
+    var_name_msg << " " << variable::VARIABLE_NAMES[ivar];
+  var_name_msg << " ]\n";
+
+  LOG_DEBUG << var_name_msg.str();
+
   const int padding = 32;
 
   // Variables size and extent in all 3 dimensions.
@@ -73,8 +85,7 @@ int main(int argc, char** argv) {
   // In our solver, all variables have the same support, so it is
   // merely a choice of convenience.
 
-  typedef enum _VariableSupport {NODE, CELL} VariableSupport;
-  const VariableSupport variable_support = CELL;
+  const VariableSupport variable_support = variable::VARIABLE_SUPPORT;
 
   // The number of nodes is the number of cells + 1, except if the
   // number of nodes is 1, when the number of cells is also 1.
