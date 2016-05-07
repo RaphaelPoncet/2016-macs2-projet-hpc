@@ -26,7 +26,7 @@ public:
   int n2() { return m_n2; }
   int n3() { return m_n3; }
   int n_slow() { return m_n_slow; }
-  int padding() { return m_padding; }
+  int n_fast_padding() { return m_n_fast_padding; }
   void Allocate();
   void DeAllocate();
   void Validate();
@@ -36,7 +36,7 @@ private:
   int m_n2;
   int m_n3;
   int m_n_slow;
-  int m_padding;
+  int m_n_fast_padding;
   RealT* m_data;
 };
 

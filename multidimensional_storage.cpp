@@ -34,16 +34,16 @@ static void ValidateInput(int n1, int n2, int n3, int n4, int padding) {
 }
 
 MultiDimensionalStorage4D::MultiDimensionalStorage4D(int n1, int n2, int n3, int n4):
-  m_n_fast(n1), m_n2(n2), m_n3(n3), m_n_slow(n4), m_padding(0), m_data(NULL) {
+  m_n_fast(n1), m_n2(n2), m_n3(n3), m_n_slow(n4), m_n_fast_padding(0), m_data(NULL) {
   
-  ValidateInput(m_n_fast, m_n2, m_n3, m_n_slow, m_padding);
+  ValidateInput(m_n_fast, m_n2, m_n3, m_n_slow, m_n_fast_padding);
   
 }
 
   MultiDimensionalStorage4D::MultiDimensionalStorage4D(int n1, int n2, int n3, int n4, int padding):
-    m_n_fast(n1), m_n2(n2), m_n3(n3), m_n_slow(n4), m_padding(padding), m_data(NULL) {
+    m_n_fast(n1), m_n2(n2), m_n3(n3), m_n_slow(n4), m_n_fast_padding(m_n_fast_padding), m_data(NULL) {
   
-    ValidateInput(m_n_fast, m_n2, m_n3, m_n_slow, m_padding);
+    ValidateInput(m_n_fast, m_n2, m_n3, m_n_slow, m_n_fast_padding);
     
 }
 
@@ -51,12 +51,12 @@ void MultiDimensionalStorage4D::Allocate() {
 
   LOG_DEBUG << "Allocating 4D storage with "
 	    << "[n_fast(+padding), n2, n3, n_slow] = "
-	    << "[" << m_n_fast << "(+" << m_padding << "), "
+	    << "[" << m_n_fast << "(+" << m_n_fast_padding << "), "
     	    << m_n2 << ", "
 	    << m_n3 << ", "
 	    << m_n_slow << "]...";
 
-  const size_t nb_elements = (m_n_fast + m_padding) * m_n2 * m_n3 * m_n_slow;
+  const size_t nb_elements = (m_n_fast + m_n_fast_padding) * m_n2 * m_n3 * m_n_slow;
   const size_t size_in_bytes = nb_elements * sizeof(RealT);
 
   m_data = (RealT*)malloc(size_in_bytes);
@@ -74,7 +74,7 @@ void MultiDimensionalStorage4D::Allocate() {
   // Now, Fill only the padded parts of the data. They should be left
   // untouched by the code.
   const int n_fast = m_n_fast;
-  const int n_fast_pad = n_fast + m_padding;
+  const int n_fast_pad = n_fast + m_n_fast_padding;
   const int n2 = m_n2;
   const int n3 = m_n3;
   const int n_slow = m_n_slow;
@@ -118,7 +118,7 @@ void MultiDimensionalStorage4D::Validate() {
   size_t error_count = 0;
   
   const int n_fast = m_n_fast;
-  const int n_fast_pad = n_fast + m_padding;
+  const int n_fast_pad = n_fast + m_n_fast_padding;
   const int n2 = m_n2;
   const int n3 = m_n3;
   const int n_slow = m_n_slow;
@@ -158,7 +158,7 @@ RealT* MultiDimensionalStorage4D::RawDataSlowDimension(int i) {
 
   assert((0 <= i) && (i < m_n_slow));
 
-  const size_t offset = m_n3 * m_n2 * (m_n_fast + m_padding) * i;
+  const size_t offset = m_n3 * m_n2 * (m_n_fast + m_n_fast_padding) * i;
 
   RealT* result = &(m_data[offset]);
   assert(result != NULL);

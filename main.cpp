@@ -55,7 +55,7 @@ int main(int argc, char** argv) {
 
   LOG_DEBUG << var_name_msg.str();
 
-  const int padding = 32;
+  const int nx_padding = 32;
 
   // Variables size and extent in all 3 dimensions.
   const int nx = 100;
@@ -111,7 +111,7 @@ int main(int argc, char** argv) {
 							 z_min_grid, z_max_grid, nz_grid);
   
   MultiDimensionalStorage4D variable_storage = 
-    MultiDimensionalStorage4D(nx, ny, nz, nb_variables, padding);
+    MultiDimensionalStorage4D(nx, ny, nz, nb_variables, nx_padding);
 
   variable_storage.Allocate();
 
@@ -126,7 +126,7 @@ int main(int argc, char** argv) {
     for (int iy = 0; iy < ny; ++iy) {
       for (int ix = 0; ix < nx; ++ix) {
 
-	const int nx_pad = nx + padding;
+	const int nx_pad = nx + nx_padding;
 
 	const size_t index = ny * nx_pad * iz + nx_pad * iy + ix;
 
@@ -195,7 +195,7 @@ int main(int argc, char** argv) {
 	  output_file << ">\n";
 
 	  WriteVTKXmlVariable(format, nb_components, 
-			      variable_storage.n_fast(), variable_storage.padding(),
+			      variable_storage.n_fast(), variable_storage.n_fast_padding(),
 			      variable_storage.n2(), variable_storage.n3(), 
 			      data, &grid_data_offset_in_bytes, &output_file);
 
@@ -237,7 +237,7 @@ int main(int argc, char** argv) {
 	  output_file << ">\n";
 
 	  WriteVTKXmlVariable(format, nb_components, 
-			      variable_storage.n_fast(), variable_storage.padding(),
+			      variable_storage.n_fast(), variable_storage.n_fast_padding(),
 			      variable_storage.n2(), variable_storage.n3(), 
 			      data, &grid_data_offset_in_bytes, &output_file);
 
@@ -349,7 +349,7 @@ int main(int argc, char** argv) {
 	if (variable::VARIABLE_FLAGS[ivar] & WRITTEN) {
 
 	  WriteVTKXmlVariable(format, nb_components, 
-			      variable_storage.n_fast(), variable_storage.padding(),
+			      variable_storage.n_fast(), variable_storage.n_fast_padding(),
 			      variable_storage.n2(), variable_storage.n3(), 
 			      data, &grid_data_offset_in_bytes, &output_file);
 
@@ -377,7 +377,7 @@ int main(int argc, char** argv) {
 	if (variable::VARIABLE_FLAGS[ivar] & WRITTEN) {
 
 	  WriteVTKXmlVariable(format, nb_components, 
-			      variable_storage.n_fast(), variable_storage.padding(),
+			      variable_storage.n_fast(), variable_storage.n_fast_padding(),
 			      variable_storage.n2(), variable_storage.n3(), 
 			      data, &grid_data_offset_in_bytes, &output_file);
 
