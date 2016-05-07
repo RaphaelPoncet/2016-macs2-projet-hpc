@@ -18,12 +18,18 @@
 #include "common.hpp"
 #include "array_vtk_io.hpp"
 
-static void WriteVTKXmlVariableHeader(const std::string& variable_name,
-				      DataFormat format, int nb_components,
-				      std::ostream* os_ptr) {
+void WriteVTKXmlVariableHeader(const std::string& variable_name,
+			       DataFormat format, int nb_components,
+			       size_t data_size_in_bytes,
+			       size_t* data_offset_in_bytes_ptr,
+			       std::ostream* os_ptr) {
   
+  size_t data_offset_in_bytes = *data_offset_in_bytes_ptr;
+
   const std::string data_type_str = (sizeof(RealT) == 4 ? "Float32": "Float64");
-  const std::string format_str = (format == ASCII ? "ascii" : "binary");
+  // VTK XML has two binary formats: 'binary' aka base64, and
+  // 'appended'. We choose the second one.
+  const std::string format_str = (format == ASCII ? "ascii" : "appended");
   
   std::stringstream stringstream;
   stringstream << nb_components;
@@ -32,20 +38,26 @@ static void WriteVTKXmlVariableHeader(const std::string& variable_name,
   *os_ptr << "type=\"" << data_type_str << "\" "
 	  << "Name=\"" << variable_name << "\" "
 	  << "NumberOfComponents=\"" << nb_components_str << "\" "
-	  << "format=\"ascii\"";
+	  << "format=\"" << format_str << "\"";
 
+  if (format == BINARY) {
+
+    *os_ptr << " offset=\"" << data_offset_in_bytes << "\"";
+
+    // 4 is for an extra integer at the beginning of each array,
+    // holding the length of it.
+    data_offset_in_bytes += data_size_in_bytes + 4;
+    *data_offset_in_bytes_ptr = data_offset_in_bytes;
+
+  }
 }
 
-void WriteVTKXmlVariable(const std::string& variable_name,
-			 DataFormat format, int nb_components,
+void WriteVTKXmlVariable(DataFormat format, int nb_components,
 			 int n_fast, int n_fast_padding, 
 			 int n_medium, int n_slow, 
-			 RealT* data,
+			 const RealT* data,
+			 size_t* data_offset_in_bytes_ptr,
 			 std::ostream* os_ptr) {
-
-  *os_ptr << "<DataArray ";
-  WriteVTKXmlVariableHeader(variable_name, format, nb_components, os_ptr);
-  *os_ptr << ">\n";
 
   if (nb_components == 1) {
 
@@ -64,9 +76,25 @@ void WriteVTKXmlVariable(const std::string& variable_name,
       }
 
     } else if (format == BINARY) {
+      
+      const size_t data_size_in_bytes = n_slow * n_medium * n_fast * sizeof(RealT);
 
-      LOG_ERROR << "VTK binary output not implemented yet.";
-      std::abort();
+      // VTK needs a 4 byte data size number written.
+      assert(sizeof(int) == 4);
+      const int data_size = (int)data_size_in_bytes;
+
+      os_ptr->write(reinterpret_cast<const char*>(&data_size), 4);
+
+      for (int islow = 0; islow < n_slow; ++islow) {
+      	for (int imedium = 0; imedium < n_medium; ++imedium) {
+
+	    const size_t index =
+	      n_medium * (n_fast + n_fast_padding) * islow + (n_fast + n_fast_padding) * imedium;
+
+	  os_ptr->write(reinterpret_cast<const char*>(&(data[index])), n_fast * sizeof(RealT));
+
+      	}
+      }
 
     } else {
 
@@ -87,7 +115,5 @@ void WriteVTKXmlVariable(const std::string& variable_name,
     std::abort();
     
   }
-
-  *os_ptr << "</DataArray>\n";
 
 }

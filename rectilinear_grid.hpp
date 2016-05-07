@@ -15,6 +15,7 @@
 #ifndef RECTILINEAR_GRID_HPP
 #define RECTILINEAR_GRID_HPP
 
+#include <fstream>
 #include <vector>
 
 // Rectilinear 3D grid (also handles 2D as a particular case).

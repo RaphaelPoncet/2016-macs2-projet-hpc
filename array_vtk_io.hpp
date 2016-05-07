@@ -15,13 +15,23 @@
 #ifndef ARRAY_VTK_IO_HPP
 #define ARRAY_VTK_IO_HPP
 
+#include <fstream>
+#include <iosfwd>
+#include <string>
+
 typedef enum _DataFormat {ASCII, BINARY} DataFormat;
 
-void WriteVTKXmlVariable(const std::string& variable_name,
-			 DataFormat format, int nb_components,
+void WriteVTKXmlVariableHeader(const std::string& variable_name,
+			       DataFormat format, int nb_components,
+			       size_t data_size_in_bytes,
+			       size_t* data_offset_in_bytes_ptr,
+			       std::ostream* os_ptr);
+
+void WriteVTKXmlVariable(DataFormat format, int nb_components,
 			 int n_fast, int n_fast_padding, 
 			 int n_medium, int n_slow, 
-			 RealT* data,
+			 const RealT* data,
+			 size_t* grid_data_offset_in_bytes_ptr,
 			 std::ostream* os_ptr);
 
 #endif // ARRAY_VTK_IO_HPP

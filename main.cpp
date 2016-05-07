@@ -62,9 +62,9 @@ int main(int argc, char** argv) {
   const RealT x_min = 0.0;
   const RealT x_max = 10000.0;
 
-  const int ny = 100;
+  const int ny = 1;
   const RealT y_min = 0.0;
-  const RealT y_max = 10000.0;
+  const RealT y_max = 0.0;
 
   const int nz = 100;
   const RealT z_min = 0.0;
@@ -151,83 +151,252 @@ int main(int argc, char** argv) {
 
   LOG_INFO << "Writing output file \"" << output_filename << "\"...";
  
-  output_file.open(output_filename.c_str());
+  output_file.open(output_filename.c_str(), std::ofstream::binary);
+
+  const DataFormat format = BINARY;
 
   propagation_grid.WriteHeaderVTKXml(&output_file);
   propagation_grid.WriteVTKXmlAscii(&output_file);
 
-  output_file << "<CellData>\n";
+  if (format == ASCII) {
+
+    output_file << "<CellData>\n";
   
-  if (variable_support == CELL) {
+    if (variable_support == CELL) {
 
-    const int n_slow = (propagation_grid.n_slow() == 1 ? 1 : propagation_grid.n_slow() - 1);
-    assert(0 < n_slow);
-    const int n_medium = (propagation_grid.n_medium() == 1 ? 1 : propagation_grid.n_medium() - 1);
-    assert(0 < n_medium);
-    const int n_fast = (propagation_grid.n_fast() == 1 ? 1 : propagation_grid.n_fast() - 1);
-    assert(0 < n_fast);
+      const int n_slow = (propagation_grid.n_slow() == 1 ? 1 : propagation_grid.n_slow() - 1);
+      assert(0 < n_slow);
+      const int n_medium = (propagation_grid.n_medium() == 1 ? 1 : propagation_grid.n_medium() - 1);
+      assert(0 < n_medium);
+      const int n_fast = (propagation_grid.n_fast() == 1 ? 1 : propagation_grid.n_fast() - 1);
+      assert(0 < n_fast);
 
-    const size_t nb_grid_elements = n_slow * n_medium * n_fast;
+      const size_t nb_grid_elements = n_slow * n_medium * n_fast;
 
-    const size_t nb_elements_storage_3d = 
-      variable_storage.n3() * variable_storage.n2() * variable_storage.n_fast();
+      const size_t nb_elements_storage_3d = 
+	variable_storage.n3() * variable_storage.n2() * variable_storage.n_fast();
 
-    assert(nb_elements_storage_3d == nb_grid_elements);
+      assert(nb_elements_storage_3d == nb_grid_elements);
 
-    for (int ivar = 0; ivar < variable::NB_VARIABLES; ++ivar) {
-     
-      if (variable::VARIABLE_FLAGS[ivar] & WRITTEN) {
+      for (int ivar = 0; ivar < variable::NB_VARIABLES; ++ivar) {
 
-	RealT* data = variable_storage.RawDataSlowDimension(ivar);
+	const std::string variable_name = variable::VARIABLE_NAMES[ivar];
+	const int nb_components = 1;
 
-	WriteVTKXmlVariable(variable::VARIABLE_NAMES[ivar], ASCII, 1, 
-			    variable_storage.n_fast(), variable_storage.padding(),
-			    variable_storage.n2(), variable_storage.n3(), 
-			    data, &output_file);
+	if (variable::VARIABLE_FLAGS[ivar] & WRITTEN) {
 
+	  size_t grid_data_offset_in_bytes = 0;
+	  const size_t grid_data_size_in_bytes = nb_grid_elements * sizeof(RealT);
+	  RealT* data = variable_storage.RawDataSlowDimension(ivar);
+
+	  output_file << "<DataArray ";
+	  WriteVTKXmlVariableHeader(variable_name, format, nb_components, grid_data_size_in_bytes, 
+				    &grid_data_offset_in_bytes, &output_file);
+	  output_file << ">\n";
+
+	  WriteVTKXmlVariable(format, nb_components, 
+			      variable_storage.n_fast(), variable_storage.padding(),
+			      variable_storage.n2(), variable_storage.n3(), 
+			      data, &grid_data_offset_in_bytes, &output_file);
+
+	  output_file << "</DataArray>\n";
+
+	}
       }
     }
-  }
 
-  output_file << "</CellData>\n";
+    output_file << "</CellData>\n";
 
-  output_file << "<PointData>\n";
+    output_file << "<PointData>\n";
 
-  if (variable_support == NODE) {
+    if (variable_support == NODE) {
 
-    const size_t nb_grid_elements = 
-      propagation_grid.n_slow() * propagation_grid.n_medium() * propagation_grid.n_fast();
+      const size_t nb_grid_elements = 
+	propagation_grid.n_slow() * propagation_grid.n_medium() * propagation_grid.n_fast();
 
-    const size_t nb_elements_storage_3d = 
-      variable_storage.n_fast() * variable_storage.n2() * variable_storage.n3();
+      const size_t nb_elements_storage_3d = 
+	variable_storage.n_fast() * variable_storage.n2() * variable_storage.n3();
 
-    assert(nb_elements_storage_3d == nb_grid_elements);
+      assert(nb_elements_storage_3d == nb_grid_elements);
+
+      for (int ivar = 0; ivar < variable::NB_VARIABLES; ++ivar) {
+
+	const std::string variable_name = variable::VARIABLE_NAMES[ivar];
+	const int nb_components = 1;
+
+	if (variable::VARIABLE_FLAGS[ivar] & WRITTEN) {
+
+	  const size_t grid_data_size_in_bytes = nb_grid_elements * sizeof(RealT);
+	  size_t grid_data_offset_in_bytes = 0;     
+	  RealT* data = variable_storage.RawDataSlowDimension(ivar);
+	  const int nb_components = 1;
+
+	  output_file << "<DataArray ";
+	  WriteVTKXmlVariableHeader(variable_name, format, nb_components, grid_data_size_in_bytes, 
+				    &grid_data_offset_in_bytes, &output_file);
+	  output_file << ">\n";
+
+	  WriteVTKXmlVariable(format, nb_components, 
+			      variable_storage.n_fast(), variable_storage.padding(),
+			      variable_storage.n2(), variable_storage.n3(), 
+			      data, &grid_data_offset_in_bytes, &output_file);
+
+	  output_file << "</DataArray>\n";
+
+	}
+      }
+    }
+
+    output_file << "</PointData>\n";
+
+  } else if (format == BINARY) {
+
+    std::stringstream cell_data_arrays_header;
+    std::stringstream point_data_arrays_header;
+
+    cell_data_arrays_header << "<CellData>\n";
+    point_data_arrays_header << "<PointData>\n";
+
+    size_t grid_data_offset_in_bytes = 0;
 
     for (int ivar = 0; ivar < variable::NB_VARIABLES; ++ivar) {
 
+      const std::string variable_name = variable::VARIABLE_NAMES[ivar];
+      const int nb_components = 1;
+
       if (variable::VARIABLE_FLAGS[ivar] & WRITTEN) {
-     
-	RealT* data = variable_storage.RawDataSlowDimension(ivar);
 
-	WriteVTKXmlVariable(variable::VARIABLE_NAMES[ivar], ASCII, 1, 
-			    variable_storage.n_fast(), variable_storage.padding(),
-			    variable_storage.n2(), variable_storage.n3(), 
-			    data, &output_file);
+	if (variable_support == CELL) {
 
+	  const int n_slow = (propagation_grid.n_slow() == 1 ? 1 : propagation_grid.n_slow() - 1);
+	  assert(0 < n_slow);
+	  const int n_medium = (propagation_grid.n_medium() == 1 ? 1 : propagation_grid.n_medium() - 1);
+	  assert(0 < n_medium);
+	  const int n_fast = (propagation_grid.n_fast() == 1 ? 1 : propagation_grid.n_fast() - 1);
+	  assert(0 < n_fast);
+
+	  const size_t nb_grid_elements = n_slow * n_medium * n_fast;
+
+	  const size_t nb_elements_storage_3d = 
+	    variable_storage.n3() * variable_storage.n2() * variable_storage.n_fast();
+
+	  assert(nb_elements_storage_3d == nb_grid_elements);
+
+	  const size_t grid_data_size_in_bytes = nb_grid_elements * sizeof(RealT);
+
+	  cell_data_arrays_header << "<DataArray ";
+	  WriteVTKXmlVariableHeader(variable_name, format, nb_components, grid_data_size_in_bytes, 
+				    &grid_data_offset_in_bytes, &cell_data_arrays_header);
+	  cell_data_arrays_header << ">\n";
+	  cell_data_arrays_header << "</DataArray>\n";
+
+	} else if (variable_support == NODE) {
+
+	  const size_t nb_grid_elements = 
+	    propagation_grid.n_slow() * propagation_grid.n_medium() * propagation_grid.n_fast();
+
+	  const size_t nb_elements_storage_3d = 
+	    variable_storage.n_fast() * variable_storage.n2() * variable_storage.n3();
+
+	  assert(nb_elements_storage_3d == nb_grid_elements);
+
+	  const size_t grid_data_size_in_bytes = nb_grid_elements * sizeof(RealT);
+
+	  point_data_arrays_header << "<DataArray ";
+	  WriteVTKXmlVariableHeader(variable_name, format, nb_components, grid_data_size_in_bytes, 
+				    &grid_data_offset_in_bytes, &point_data_arrays_header);
+	  point_data_arrays_header << ">\n";
+	  point_data_arrays_header << "</DataArray>\n";
+
+	}
       }
     }
-  }
 
-  output_file << "</PointData>\n";
+    cell_data_arrays_header << "</CellData>\n";
+    point_data_arrays_header << "</PointData>\n";
+
+    output_file << cell_data_arrays_header.str();
+    output_file << point_data_arrays_header.str();
+    
+    output_file << "</Piece>\n"
+		<< "</RectilinearGrid>\n";
+
+    // The underscore is intentional.
+    output_file << "<AppendedData encoding=\"raw\">\n_";
+  
+    if (variable_support == CELL) {
+
+      const int n_slow = (propagation_grid.n_slow() == 1 ? 1 : propagation_grid.n_slow() - 1);
+      assert(0 < n_slow);
+      const int n_medium = (propagation_grid.n_medium() == 1 ? 1 : propagation_grid.n_medium() - 1);
+      assert(0 < n_medium);
+      const int n_fast = (propagation_grid.n_fast() == 1 ? 1 : propagation_grid.n_fast() - 1);
+      assert(0 < n_fast);
+
+      const size_t nb_grid_elements = n_slow * n_medium * n_fast;
+
+      const size_t nb_elements_storage_3d = 
+	variable_storage.n3() * variable_storage.n2() * variable_storage.n_fast();
+
+      for (int ivar = 0; ivar < variable::NB_VARIABLES; ++ivar) {
+
+	const int nb_components = 1;
+	  
+	size_t grid_data_offset_in_bytes = 0;
+	const size_t grid_data_size_in_bytes = nb_grid_elements * sizeof(RealT);
+	RealT* data = variable_storage.RawDataSlowDimension(ivar);
+
+	if (variable::VARIABLE_FLAGS[ivar] & WRITTEN) {
+
+	  WriteVTKXmlVariable(format, nb_components, 
+			      variable_storage.n_fast(), variable_storage.padding(),
+			      variable_storage.n2(), variable_storage.n3(), 
+			      data, &grid_data_offset_in_bytes, &output_file);
+
+	}
+      }
+
+    } else if (variable_support == NODE) {
+
+      const size_t nb_grid_elements = 
+	propagation_grid.n_slow() * propagation_grid.n_medium() * propagation_grid.n_fast();
+
+      const size_t nb_elements_storage_3d = 
+	variable_storage.n_fast() * variable_storage.n2() * variable_storage.n3();
+
+      assert(nb_elements_storage_3d == nb_grid_elements);
+
+      for (int ivar = 0; ivar < variable::NB_VARIABLES; ++ivar) {
+
+	const int nb_components = 1;
+	  
+	size_t grid_data_offset_in_bytes = 0;
+	const size_t grid_data_size_in_bytes = nb_grid_elements * sizeof(RealT);
+	RealT* data = variable_storage.RawDataSlowDimension(ivar);
+
+	if (variable::VARIABLE_FLAGS[ivar] & WRITTEN) {
+
+	  WriteVTKXmlVariable(format, nb_components, 
+			      variable_storage.n_fast(), variable_storage.padding(),
+			      variable_storage.n2(), variable_storage.n3(), 
+			      data, &grid_data_offset_in_bytes, &output_file);
+
+	}
+      }
+    }
+
+    output_file << "\n</AppendedData>\n";
+
+  }
 
   propagation_grid.WriteFooterVTKXml(&output_file);
 
   output_file.close();
 
   LOG_INFO << "Writing output file done.\n";
-
+  
   // Variables cleanup.
   variable_storage.DeAllocate();
-
-  return 0;
+ 
+ return 0;
 }
