@@ -40,8 +40,8 @@ MultiDimensionalStorage4D::MultiDimensionalStorage4D(int n1, int n2, int n3, int
   
 }
 
-  MultiDimensionalStorage4D::MultiDimensionalStorage4D(int n1, int n2, int n3, int n4, int padding):
-    m_n_fast(n1), m_n2(n2), m_n3(n3), m_n_slow(n4), m_n_fast_padding(m_n_fast_padding), m_data(NULL) {
+  MultiDimensionalStorage4D::MultiDimensionalStorage4D(int n1, int n2, int n3, int n4, int n_fast_padding):
+    m_n_fast(n1), m_n2(n2), m_n3(n3), m_n_slow(n4), m_n_fast_padding(n_fast_padding), m_data(NULL) {
   
     ValidateInput(m_n_fast, m_n2, m_n3, m_n_slow, m_n_fast_padding);
     
