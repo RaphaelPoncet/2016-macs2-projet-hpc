@@ -18,6 +18,7 @@
 #include <fstream>
 #include <sstream>
 
+#include "array_binary_io.hpp"
 #include "array_vtk_io.hpp"
 #include "multidimensional_storage.hpp"
 #include "rectilinear_grid.hpp"
@@ -144,6 +145,18 @@ int main(int argc, char** argv) {
     }
   }
 
+  // Read velocity from a file.
+  std::string name_read;
+  DataType datatype;
+  int n_fast_read = -1;
+  int n_medium_read = -1;
+  int n_slow_read = -1;
+  int nb_components_read = -1;
+  std::ifstream velocity_file("velocity.xyz");
+
+  ReadBinaryVariableHeader(velocity_file, &name_read, &datatype, 
+			   &n_fast_read, &n_medium_read, &n_slow_read, &nb_components_read);
+
   variable_storage.Validate();
 
   std::ofstream output_file;
@@ -153,7 +166,7 @@ int main(int argc, char** argv) {
  
   output_file.open(output_filename.c_str(), std::ofstream::binary);
 
-  const DataFormat format = BINARY;
+  const VTKDataFormat format = BINARY;
 
   propagation_grid.WriteHeaderVTKXml(&output_file);
   propagation_grid.WriteVTKXmlAscii(&output_file);

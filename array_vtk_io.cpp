@@ -19,7 +19,7 @@
 #include "array_vtk_io.hpp"
 
 void WriteVTKXmlVariableHeader(const std::string& variable_name,
-			       DataFormat format, int nb_components,
+			       VTKDataFormat format, int nb_components,
 			       size_t data_size_in_bytes,
 			       size_t* data_offset_in_bytes_ptr,
 			       std::ostream* os_ptr) {
@@ -52,7 +52,7 @@ void WriteVTKXmlVariableHeader(const std::string& variable_name,
   }
 }
 
-void WriteVTKXmlVariable(DataFormat format, int nb_components,
+void WriteVTKXmlVariable(VTKDataFormat format, int nb_components,
 			 int n_fast, int n_fast_padding, 
 			 int n_medium, int n_slow, 
 			 const RealT* data,

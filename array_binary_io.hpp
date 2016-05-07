@@ -9,26 +9,20 @@
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
+// See the License for the specific language goveroning permissions and
 // limitations under the License.
 
-#ifndef COMMON_HPP
-#define COMMON_HPP
+#ifndef ARRAY_BINARY_IO_HPP
+#define ARRAY_BINARY_IO_HPP
 
-#include <vector>
+#include <iosfwd>
+#include <string>
 
-#include "plog/Log.h"
-#include "plog/Appenders/ColorConsoleAppender.h"
-#include "plog/Appenders/ConsoleAppender.h"
-#include "plog/Appenders/RollingFileAppender.h"
+#include "common.hpp"
 
-template <typename T>
-T* VectorRawData(std::vector<T>& vec) { 
- 
- return (vec.size() == 0 ? NULL : &vec.at(0));
+void ReadBinaryVariableHeader(std::istream& input_stream, 
+			      std::string* name_ptr, DataType* datatype_ptr, 
+			      int* n_fast_ptr, int* n_medium_ptr, int* n_slow_ptr, 
+			      int* nb_components_ptr);
 
-}
-
-typedef enum _DataType {FLOAT32, FLOAT64} DataType;
-
-#endif // COMMON_HPP
+#endif // ARRAY_BINARY_IO_HPP
