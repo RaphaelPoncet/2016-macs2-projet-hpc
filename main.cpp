@@ -55,7 +55,7 @@ int main(int argc, char** argv) {
 
   LOG_DEBUG << var_name_msg.str();
 
-  const int nx_padding = 32;
+  const int nx_padding = 0;
 
   // Variables size and extent in all 3 dimensions.
   const int nx = 384;
@@ -127,26 +127,26 @@ int main(int argc, char** argv) {
     for (int iy = 0; iy < ny; ++iy) {
       for (int ix = 0; ix < nx; ++ix) {
 
-	const int nx_pad = nx + nx_padding;
+        const int nx_pad = nx + nx_padding;
 
-	const size_t index = ny * nx_pad * iz + nx_pad * iy + ix;
+        const size_t index = ny * nx_pad * iz + nx_pad * iy + ix;
 
-	const RealT x = (RealT)ix * dx;
-	const RealT y = (RealT)iy * dy;
-	const RealT z = (RealT)iz * dz;
+        const RealT x = (RealT)ix * dx;
+        const RealT y = (RealT)iy * dy;
+        const RealT z = (RealT)iz * dz;
 
-	const RealT distance = 
-	  (x - xmid) * (x - xmid) + (y - ymid) * (y - ymid) + (z - zmid) * (z - zmid);
+        const RealT distance = 
+          (x - xmid) * (x - xmid) + (y - ymid) * (y - ymid) + (z - zmid) * (z - zmid);
 
-	pressure_0[index] = expf(- 0.000005 * distance);
-	pressure_1[index] = 3.14f;
+        pressure_0[index] = expf( - 0.0002 * distance);
+        pressure_1[index] = pressure_0[index];
 	
       }
     }
   }
 
   // Read velocity from a file.
-  const std::string input_filename = "data/marmousi.xyz";
+  const std::string input_filename = "data/marmousi_smooth.xyz";
 
   LOG_INFO << "Reading input file \"" << input_filename << "\"...";
 
@@ -157,13 +157,55 @@ int main(int argc, char** argv) {
 
   variable_storage.Validate();
 
-  const int nb_iter = 1000;
+  const int nb_iter = 3000;
 
-  const int output_rhythm = 100;
+  const int output_rhythm = 10;
   const std::string base_name = "output/output";
   const std::string extension = ".vtr";
 
   for (int iter = 0; iter < nb_iter; ++iter) {
+
+    const RealT one = 1.0;
+    const RealT two = 2.0;
+    const RealT dt = 0.001;
+    const RealT hx = one / 24.0;
+    const RealT hy = one / 24.0;
+    const RealT hz = one / 24.0;
+
+    const int radius = 1;
+
+    const int n_fast = propagation_grid.n_fast();    
+    const int n_fast_pad = n_fast + variable_storage.n_fast_padding();
+    const int n_fast_min = radius;
+    const int n_fast_max = n_fast - radius;
+
+    const int n_medium = propagation_grid.n_medium();
+    const int n_medium_min = (n_medium == 1 ? 0 : radius);
+    const int n_medium_max = (n_medium == 1 ? n_medium : n_medium - radius);
+
+    const int n_slow = propagation_grid.n_slow();
+    const int n_slow_min = radius;
+    const int n_slow_max = n_slow - radius;
+    
+    for (int islow = n_slow_min; islow < n_slow_max; ++islow) {
+      for (int imedium = n_medium_min; imedium < n_medium_max; ++imedium) {
+        for (int ifast = n_fast_min; ifast < n_fast_max; ++ifast) {
+            
+          const size_t index = 
+            n_medium * n_fast_pad * islow + n_fast_pad * imedium + ifast;
+
+          const RealT s = velocity[index] * velocity[index] * dt * dt;
+          // const RealT s = 1000 * 1000 * dt * dt;
+
+          pressure_1[index] = two * pressure_0[index] - pressure_1[index];
+          pressure_1[index] += s * hx * hx * (pressure_0[index + 1] - two * pressure_0[index] + pressure_0[index - 1]);
+          pressure_1[index] += s * hz * hz * (pressure_0[index + n_fast_pad] - two * pressure_0[index] + pressure_0[index - n_fast_pad]);
+        
+        }
+      }
+    }
+    
+    std::swap(pressure_0, pressure_1);
 
     if (iter % output_rhythm == 0) {
 

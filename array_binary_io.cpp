@@ -245,7 +245,7 @@ void ReadBinaryVariable(std::istream& input_stream,
       // We only support scalar variables for now.
       assert(nb_components == 1);
 
-      int index = 0;
+      size_t index = 0;
 
       for (int islow = 0; islow < n_slow; ++islow) {
         for (int imedium = 0; imedium < n_medium; ++imedium) {

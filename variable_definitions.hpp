@@ -26,14 +26,14 @@ enum VariableFlags {
 
 namespace variable {
 
-  const VariableSupport VARIABLE_SUPPORT = CELL;
+  const VariableSupport VARIABLE_SUPPORT = NODE;
   
   enum {VELOCITY,
-	PRESSURE_0,
-	PRESSURE_1,
-	PRESSURE_2,
-	D2P_DT2,
-	NB_VARIABLES};
+        PRESSURE_0,
+        PRESSURE_1,
+        PRESSURE_2,
+        D2P_DT2,
+        NB_VARIABLES};
 
   static const char* VARIABLE_NAMES[NB_VARIABLES] = 
     {"velocity", "pressure_0", "pressure_1", "pressure_2", "d2p_dt2"};
