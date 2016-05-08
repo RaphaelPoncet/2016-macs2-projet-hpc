@@ -23,14 +23,20 @@ public:
   MultiDimensionalStorage4D(int n1, int n2, int n3, int n4);
   MultiDimensionalStorage4D(int n1, int n2, int n3, int n4, int padding);
   int n_fast() { return m_n_fast; }
+  int n_fast() const { return m_n_fast; }
   int n2() { return m_n2; }
+  int n2() const { return m_n2; }
   int n3() { return m_n3; }
+  int n3() const { return m_n3; }
   int n_slow() { return m_n_slow; }
+  int n_slow() const { return m_n_slow; }
   int n_fast_padding() { return m_n_fast_padding; }
+  int n_fast_padding() const { return m_n_fast_padding; }
   void Allocate();
   void DeAllocate();
   void Validate();
   RealT* RawDataSlowDimension(int i);
+  const RealT* RawDataSlowDimension(int i) const;
 private:
   int m_n_fast;
   int m_n2;

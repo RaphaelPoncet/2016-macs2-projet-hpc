@@ -29,6 +29,13 @@ T* VectorRawData(std::vector<T>& vec) {
 
 }
 
+template <typename T>
+const T* ConstVectorRawData(const std::vector<T>& vec) { 
+ 
+ return (vec.size() == 0 ? NULL : &vec.at(0));
+
+}
+
 typedef enum _DataType {FLOAT32, FLOAT64, NB_DATATYPES} DataType;
 
 // In bytes.

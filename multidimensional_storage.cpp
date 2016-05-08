@@ -166,3 +166,16 @@ RealT* MultiDimensionalStorage4D::RawDataSlowDimension(int i) {
   return result;
 
 }
+
+const RealT* MultiDimensionalStorage4D::RawDataSlowDimension(int i) const {
+
+  assert((0 <= i) && (i < m_n_slow));
+
+  const size_t offset = m_n3 * m_n2 * (m_n_fast + m_n_fast_padding) * i;
+
+  const RealT* result = &(m_data[offset]);
+  assert(result != NULL);
+
+  return result;
+
+}

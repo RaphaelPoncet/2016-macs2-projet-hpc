@@ -83,7 +83,7 @@ RectilinearGrid3D::RectilinearGrid3D(RealT x_fast_min, RealT x_fast_max, int n_f
 
 }
 
-void RectilinearGrid3D::WriteHeaderVTKXml(std::ofstream* os_ptr) {
+void RectilinearGrid3D::WriteHeaderVTKXml(std::ofstream* os_ptr) const {
 
   *os_ptr << "<?xml version=\"1.0\"?>\n"
 	  << "<VTKFile type=\"RectilinearGrid\" "
@@ -108,7 +108,13 @@ void RectilinearGrid3D::WriteHeaderVTKXml(std::ofstream* os_ptr) {
 
 }
 
-void RectilinearGrid3D::WriteFooterVTKXml(std::ofstream* os_ptr) {
+void RectilinearGrid3D::WriteHeaderVTKXml(std::ofstream* os_ptr) {
+
+  const RectilinearGrid3D& const_me = *this;
+
+}
+
+void RectilinearGrid3D::WriteFooterVTKXml(std::ofstream* os_ptr) const {
 
   // *os_ptr << "</Piece>\n"
   // 	  << "</RectilinearGrid>\n";
@@ -117,7 +123,13 @@ void RectilinearGrid3D::WriteFooterVTKXml(std::ofstream* os_ptr) {
 
 }
 
-void RectilinearGrid3D::WriteVTKXmlAscii(std::ofstream* os_ptr) {
+void RectilinearGrid3D::WriteFooterVTKXml(std::ofstream* os_ptr) {
+
+  assert(0);
+
+}
+
+void RectilinearGrid3D::WriteVTKXmlAscii(std::ofstream* os_ptr) const {
 
   const int nb_points_fast = m_fast_coordinates.size();
   const int nb_points_medium = m_medium_coordinates.size();
@@ -134,9 +146,9 @@ void RectilinearGrid3D::WriteVTKXmlAscii(std::ofstream* os_ptr) {
   *os_ptr << ">\n";
 
   WriteVTKXmlVariable(ASCII, 1, nb_points_fast, 0, 1, 1, 
-  		      VectorRawData(m_fast_coordinates), 
-		      &data_offset_in_bytes, 
-		      os_ptr);
+                      ConstVectorRawData(m_fast_coordinates), 
+                      &data_offset_in_bytes, 
+                      os_ptr);
 
   *os_ptr << "</DataArray>\n";
 
@@ -145,9 +157,9 @@ void RectilinearGrid3D::WriteVTKXmlAscii(std::ofstream* os_ptr) {
   *os_ptr << ">\n";
 
   WriteVTKXmlVariable(ASCII, 1, nb_points_medium, 0, 1, 1, 
-  		      VectorRawData(m_medium_coordinates), 
-		      &data_offset_in_bytes, 
-		      os_ptr);
+                      ConstVectorRawData(m_medium_coordinates), 
+                      &data_offset_in_bytes, 
+                      os_ptr);
 
   *os_ptr << "</DataArray>\n";
 
@@ -156,12 +168,18 @@ void RectilinearGrid3D::WriteVTKXmlAscii(std::ofstream* os_ptr) {
   *os_ptr << ">\n";
 
   WriteVTKXmlVariable(ASCII, 1, nb_points_slow, 0, 1, 1, 
-  		      VectorRawData(m_slow_coordinates), 
-		      &data_offset_in_bytes, 
-		      os_ptr);
+                      ConstVectorRawData(m_slow_coordinates), 
+                      &data_offset_in_bytes, 
+                      os_ptr);
 
   *os_ptr << "</DataArray>\n";
 
   *os_ptr << "</Coordinates>\n";
+
+}
+
+void RectilinearGrid3D::WriteVTKXmlAscii(std::ofstream* os_ptr) {
+
+  assert(0);
 
 }

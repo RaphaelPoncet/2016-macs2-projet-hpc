@@ -27,8 +27,11 @@ public:
   int n_fast() const { return m_n_fast; }
   int n_medium() const { return m_n_medium; }
   int n_slow() const { return m_n_slow; }
+  void WriteHeaderVTKXml(std::ofstream* os_ptr) const;
   void WriteHeaderVTKXml(std::ofstream* os_ptr);
+  void WriteFooterVTKXml(std::ofstream* os_ptr) const;
   void WriteFooterVTKXml(std::ofstream* os_ptr);
+  void WriteVTKXmlAscii(std::ofstream* os_ptr) const;
   void WriteVTKXmlAscii(std::ofstream* os_ptr);
 private:
   int m_n_fast;
