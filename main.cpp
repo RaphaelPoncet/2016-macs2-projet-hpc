@@ -20,6 +20,7 @@
 
 #include "array_binary_io.hpp"
 #include "array_vtk_io.hpp"
+#include "grid_output.hpp"
 #include "multidimensional_storage.hpp"
 #include "rectilinear_grid.hpp"
 #include "variable_definitions.hpp"
@@ -157,6 +158,8 @@ int main(int argc, char** argv) {
   LOG_INFO << "Reading input file done.\n";
 
   variable_storage.Validate();
+
+  OutputGridAndData(propagation_grid, variable_storage);
 
   std::ofstream output_file;
   const std::string output_filename = "output/output.vtr";
