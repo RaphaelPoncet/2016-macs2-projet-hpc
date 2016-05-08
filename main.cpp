@@ -58,15 +58,27 @@ int main(int argc, char** argv) {
   const int nx_padding = 0;
 
   // Variables size and extent in all 3 dimensions.
-  const int nx = 384;
+  // const int nx = 384;
+  // const RealT x_min = 0.0;
+  // const RealT x_max = 9192.0;
+
+  // const int ny = 1;
+  // const RealT y_min = 0.0;
+  // const RealT y_max = 0.0;
+
+  // const int nz = 122;
+  // const RealT z_min = 0.0;
+  // const RealT z_max = 2904.0;
+
+  const int nx = 1700;
   const RealT x_min = 0.0;
-  const RealT x_max = 9192.0;
+  const RealT x_max = 13600;
 
   const int ny = 1;
   const RealT y_min = 0.0;
   const RealT y_max = 0.0;
 
-  const int nz = 122;
+  const int nz = 350;
   const RealT z_min = 0.0;
   const RealT z_max = 2904.0;
 
@@ -146,7 +158,8 @@ int main(int argc, char** argv) {
   }
 
   // Read velocity from a file.
-  const std::string input_filename = "data/marmousi_smooth.xyz";
+  const std::string input_filename = "data/marm2_downsampled_8.xyz";
+  // const std::string input_filename = "data/marmousi_smooth.xyz";
 
   LOG_INFO << "Reading input file \"" << input_filename << "\"...";
 
@@ -157,9 +170,9 @@ int main(int argc, char** argv) {
 
   variable_storage.Validate();
 
-  const int nb_iter = 3000;
+  const int nb_iter = 25000;
 
-  const int output_rhythm = 10;
+  const int output_rhythm = 100;
   const std::string base_name = "output/output";
   const std::string extension = ".vtr";
 
@@ -167,7 +180,7 @@ int main(int argc, char** argv) {
 
     const RealT one = 1.0;
     const RealT two = 2.0;
-    const RealT dt = 0.001;
+    const RealT dt = 0.0005;
     const RealT hx = one / 24.0;
     const RealT hy = one / 24.0;
     const RealT hz = one / 24.0;

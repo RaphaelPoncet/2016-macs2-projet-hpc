@@ -82,14 +82,14 @@ void MultiDimensionalStorage4D::Allocate() {
   for (int islow = 0; islow < n_slow; ++islow) {
     for (int i3 = 0; i3 < n3; ++i3) {
       for (int i2 = 0; i2 < n2; ++i2) {
-	for (int ifast = n_fast; ifast < n_fast_pad; ++ifast) {
+        for (int ifast = n_fast; ifast < n_fast_pad; ++ifast) {
 
-	  const size_t index = 
-	    n3 * n2 * n_fast_pad * islow + n2 * n_fast_pad * i3 + n_fast_pad * i2 + ifast;
+          const size_t index = 
+            n3 * n2 * n_fast_pad * islow + n2 * n_fast_pad * i3 + n_fast_pad * i2 + ifast;
 
-	  m_data[index] = PADDING_FILL;
-
-	}
+          m_data[index] = PADDING_FILL;
+          
+        }
       }
     }
   }
