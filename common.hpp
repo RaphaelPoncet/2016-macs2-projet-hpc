@@ -29,6 +29,9 @@ T* VectorRawData(std::vector<T>& vec) {
 
 }
 
-typedef enum _DataType {FLOAT32, FLOAT64} DataType;
+typedef enum _DataType {FLOAT32, FLOAT64, NB_DATATYPES} DataType;
+
+// In bytes.
+static const int DATATYPE_SIZE[NB_DATATYPES] = {4, 8};
 
 #endif // COMMON_HPP

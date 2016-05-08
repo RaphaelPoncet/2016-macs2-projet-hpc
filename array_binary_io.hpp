@@ -20,9 +20,8 @@
 
 #include "common.hpp"
 
-void ReadBinaryVariableHeader(std::istream& input_stream, 
-			      std::string* name_ptr, DataType* datatype_ptr, 
-			      int* n_fast_ptr, int* n_medium_ptr, int* n_slow_ptr, 
-			      int* nb_components_ptr);
+void ReadBinaryVariable(std::istream& input_stream, 
+			int n_fast, int n_fast_padding, int n_medium, 
+			int n_slow, int nb_components, RealT* data);
 
 #endif // ARRAY_BINARY_IO_HPP

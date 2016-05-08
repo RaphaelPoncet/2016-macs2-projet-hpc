@@ -59,17 +59,17 @@ int main(int argc, char** argv) {
   const int nx_padding = 32;
 
   // Variables size and extent in all 3 dimensions.
-  const int nx = 100;
+  const int nx = 384;
   const RealT x_min = 0.0;
-  const RealT x_max = 10000.0;
+  const RealT x_max = 9192.0;
 
   const int ny = 1;
   const RealT y_min = 0.0;
   const RealT y_max = 0.0;
 
-  const int nz = 100;
+  const int nz = 122;
   const RealT z_min = 0.0;
-  const RealT z_max = 10000.0;
+  const RealT z_max = 2904.0;
 
   assert(0 < nx);
   const RealT dx = (x_max - x_min) / (RealT)nx;
@@ -108,8 +108,8 @@ int main(int argc, char** argv) {
   const RealT z_max_grid = (variable_support == CELL ? z_max + 0.5 * dz: z_max);
 
   RectilinearGrid3D propagation_grid = RectilinearGrid3D(x_min_grid, x_max_grid, nx_grid, 
-							 y_min_grid, y_max_grid, ny_grid, 
-							 z_min_grid, z_max_grid, nz_grid);
+                                                         y_min_grid, y_max_grid, ny_grid, 
+                                                         z_min_grid, z_max_grid, nz_grid);
   
   MultiDimensionalStorage4D variable_storage = 
     MultiDimensionalStorage4D(nx, ny, nz, nb_variables, nx_padding);
@@ -118,6 +118,7 @@ int main(int argc, char** argv) {
 
   RealT* pressure_0 = variable_storage.RawDataSlowDimension(variable::PRESSURE_0);
   RealT* pressure_1 = variable_storage.RawDataSlowDimension(variable::PRESSURE_1);
+  RealT* velocity = variable_storage.RawDataSlowDimension(variable::VELOCITY);
 
   const RealT xmid = 0.5 * (x_min + x_max);
   const RealT ymid = 0.5 * (y_min + y_max);
@@ -146,26 +147,24 @@ int main(int argc, char** argv) {
   }
 
   // Read velocity from a file.
-  std::string name_read;
-  DataType datatype;
-  int n_fast_read = -1;
-  int n_medium_read = -1;
-  int n_slow_read = -1;
-  int nb_components_read = -1;
-  std::ifstream velocity_file("velocity.xyz");
+  const std::string input_filename = "data/marmousi.xyz";
 
-  ReadBinaryVariableHeader(velocity_file, &name_read, &datatype, 
-			   &n_fast_read, &n_medium_read, &n_slow_read, &nb_components_read);
+  LOG_INFO << "Reading input file \"" << input_filename << "\"...";
+
+  std::ifstream velocity_file(input_filename.c_str(), std::ifstream::in | std::ifstream::binary);
+  ReadBinaryVariable(velocity_file, nx, nx_padding, ny, nz, 1, velocity);
+
+  LOG_INFO << "Reading input file done.\n";
 
   variable_storage.Validate();
 
   std::ofstream output_file;
-  const std::string output_filename = "grid.vtr";
+  const std::string output_filename = "output/output.vtr";
 
   LOG_INFO << "Writing output file \"" << output_filename << "\"...";
  
   output_file.open(output_filename.c_str(), std::ofstream::binary);
-
+  
   const VTKDataFormat format = BINARY;
 
   propagation_grid.WriteHeaderVTKXml(&output_file);
@@ -213,7 +212,7 @@ int main(int argc, char** argv) {
 			      data, &grid_data_offset_in_bytes, &output_file);
 
 	  output_file << "</DataArray>\n";
-
+    
 	}
       }
     }

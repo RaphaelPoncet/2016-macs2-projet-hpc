@@ -64,15 +64,15 @@ void WriteVTKXmlVariable(VTKDataFormat format, int nb_components,
     if (format == ASCII) {
 
       for (int islow = 0; islow < n_slow; ++islow) {
-	for (int imedium = 0; imedium < n_medium; ++imedium) {
-	  for (int ifast = 0; ifast < n_fast; ++ifast) {
+        for (int imedium = 0; imedium < n_medium; ++imedium) {
+          for (int ifast = 0; ifast < n_fast; ++ifast) {
 
-	    const size_t index =
-	      n_medium * (n_fast + n_fast_padding) * islow + (n_fast + n_fast_padding) * imedium + ifast;
-	    *os_ptr << data[index] << "\n";
+            const size_t index =
+              n_medium * (n_fast + n_fast_padding) * islow + (n_fast + n_fast_padding) * imedium + ifast;
+            *os_ptr << data[index] << "\n";
 
-	  }
-	}
+          }
+        }
       }
 
     } else if (format == BINARY) {
@@ -91,7 +91,7 @@ void WriteVTKXmlVariable(VTKDataFormat format, int nb_components,
 	    const size_t index =
 	      n_medium * (n_fast + n_fast_padding) * islow + (n_fast + n_fast_padding) * imedium;
 
-	  os_ptr->write(reinterpret_cast<const char*>(&(data[index])), n_fast * sizeof(RealT));
+      os_ptr->write(reinterpret_cast<const char*>(&(data[index])), n_fast * sizeof(RealT));
 
       	}
       }
