@@ -19,6 +19,7 @@
 
 #include "array_binary_io.hpp"
 #include "grid_output.hpp"
+#include "location_output.hpp"
 #include "multidimensional_storage.hpp"
 #include "rectilinear_grid.hpp"
 #include "variable_definitions.hpp"
@@ -192,8 +193,15 @@ int main(int argc, char** argv) {
   std::ofstream sponge_slow_out("sponge_slow.txt", std::ofstream::out);
   DumpSpongeArray(propagation_grid.n_slow(), sponge_slow, &sponge_slow_out);
   sponge_slow_out.close();
-  
+
   const int nb_iter = 25000;
+  
+  const int index_slow = 10;
+
+  LocationOutput location_output = LocationOutput(index_slow);
+  std::ofstream receiver_file("receivers.txt", std::ofstream::out);
+  location_output.WriteHeader(propagation_grid, nb_iter, &receiver_file);
+  receiver_file.close();
 
   const int output_rhythm = 100;
   const std::string base_name = "output/output";
@@ -278,6 +286,18 @@ int main(int argc, char** argv) {
     
     std::swap(pressure_0, pressure_1);
 
+    // For now, write receiver file every timestep.
+    const int receiver_output_rhythm = 1;
+
+    if (iter % receiver_output_rhythm == 0) {
+      
+      // We should open and close the file every timestep, so that it
+      // is not empty if we interrupt code execution.
+
+      // location_output.Write(propagation_grid, variable_storage, &receiver_file);
+
+    }
+
     if (iter % output_rhythm == 0) {
 
       LOG_INFO << "Iteration " << iter;
@@ -298,6 +318,7 @@ int main(int argc, char** argv) {
       output_file.close();
       
       LOG_INFO << "Writing output file done.\n";
+
     }
   }
 
