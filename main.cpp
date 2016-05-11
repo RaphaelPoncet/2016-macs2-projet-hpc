@@ -22,6 +22,7 @@
 #include "multidimensional_storage.hpp"
 #include "rectilinear_grid.hpp"
 #include "variable_definitions.hpp"
+#include "wave_propagation.hpp"
 
 int main(int argc, char** argv) {
 
@@ -150,7 +151,7 @@ int main(int argc, char** argv) {
         const RealT distance = 
           (x - xmid) * (x - xmid) + (y - ymid) * (y - ymid) + (z - zmid) * (z - zmid);
 
-        pressure_0[index] = expf( - 0.0002 * distance);
+        pressure_0[index] = expf( - 0.001 * distance);
         pressure_1[index] = pressure_0[index];
 	
       }
@@ -170,6 +171,28 @@ int main(int argc, char** argv) {
 
   variable_storage.Validate();
 
+  // Init sponge layers.
+  const int sponge_width = 40;
+  RealT* sponge_fast = (RealT*) malloc(propagation_grid.n_fast() * sizeof(RealT));
+  RealT* sponge_medium = (RealT*) malloc(propagation_grid.n_medium() * sizeof(RealT));
+  RealT* sponge_slow = (RealT*) malloc(propagation_grid.n_slow() * sizeof(RealT));
+
+  InitSpongeArray(sponge_width, propagation_grid.n_fast(), sponge_fast);
+  InitSpongeArray(sponge_width, propagation_grid.n_medium(), sponge_medium);
+  InitSpongeArray(sponge_width, propagation_grid.n_slow(), sponge_slow);
+
+  std::ofstream sponge_fast_out("sponge_fast.txt", std::ofstream::out);
+  DumpSpongeArray(propagation_grid.n_fast(), sponge_fast, &sponge_fast_out);
+  sponge_fast_out.close();
+
+  std::ofstream sponge_medium_out("sponge_medium.txt", std::ofstream::out);
+  DumpSpongeArray(propagation_grid.n_medium(), sponge_medium, &sponge_medium_out);
+  sponge_medium_out.close();
+
+  std::ofstream sponge_slow_out("sponge_slow.txt", std::ofstream::out);
+  DumpSpongeArray(propagation_grid.n_slow(), sponge_slow, &sponge_slow_out);
+  sponge_slow_out.close();
+  
   const int nb_iter = 25000;
 
   const int output_rhythm = 100;
@@ -199,7 +222,25 @@ int main(int argc, char** argv) {
     const int n_slow = propagation_grid.n_slow();
     const int n_slow_min = radius;
     const int n_slow_max = n_slow - radius;
-    
+
+    // Sponge layer.
+    for (int islow = 0; islow < n_slow; ++islow) {
+      for (int imedium = 0; imedium < n_medium; ++imedium) {
+        for (int ifast = 0; ifast < n_fast; ++ifast) {
+          
+          const size_t index = 
+            n_medium * n_fast_pad * islow + n_fast_pad * imedium + ifast;
+
+          const RealT scaling = sponge_slow[islow] * sponge_medium[imedium] * sponge_fast[ifast];
+          // const RealT scaling = 1.0;
+
+          pressure_0[index] *= scaling;
+
+        }
+      }
+    }
+     
+    // Advance pressure.
     for (int islow = n_slow_min; islow < n_slow_max; ++islow) {
       for (int imedium = n_medium_min; imedium < n_medium_max; ++imedium) {
         for (int ifast = n_fast_min; ifast < n_fast_max; ++ifast) {
@@ -207,13 +248,30 @@ int main(int argc, char** argv) {
           const size_t index = 
             n_medium * n_fast_pad * islow + n_fast_pad * imedium + ifast;
 
-          const RealT s = velocity[index] * velocity[index] * dt * dt;
-          // const RealT s = 1000 * 1000 * dt * dt;
+          // const RealT s = velocity[index] * velocity[index] * dt * dt;
+          const RealT s = 1000.0 * 1000.0 * dt * dt;
 
           pressure_1[index] = two * pressure_0[index] - pressure_1[index];
           pressure_1[index] += s * hx * hx * (pressure_0[index + 1] - two * pressure_0[index] + pressure_0[index - 1]);
           pressure_1[index] += s * hz * hz * (pressure_0[index + n_fast_pad] - two * pressure_0[index] + pressure_0[index - n_fast_pad]);
         
+        }
+      }
+    }
+
+    // Sponge layer.
+    for (int islow = 0; islow < n_slow; ++islow) {
+      for (int imedium = 0; imedium < n_medium; ++imedium) {
+        for (int ifast = 0; ifast < n_fast; ++ifast) {
+          
+          const size_t index = 
+            n_medium * n_fast_pad * islow + n_fast_pad * imedium + ifast;
+
+          const RealT scaling = sponge_slow[islow] * sponge_medium[imedium] * sponge_fast[ifast];
+          // const RealT scaling = 1.0;
+
+          pressure_1[index] *= scaling;
+
         }
       }
     }
@@ -242,6 +300,10 @@ int main(int argc, char** argv) {
       LOG_INFO << "Writing output file done.\n";
     }
   }
+
+  free(sponge_fast);
+  free(sponge_medium);
+  free(sponge_slow);
 
   // Variables cleanup.
   variable_storage.DeAllocate();
