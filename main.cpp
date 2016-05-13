@@ -194,16 +194,17 @@ int main(int argc, char** argv) {
   DumpSpongeArray(propagation_grid.n_slow(), sponge_slow, &sponge_slow_out);
   sponge_slow_out.close();
 
-  const int nb_iter = 25000;
+  const int nb_iter = 200;
   
   const int index_slow = 10;
 
   LocationOutput location_output = LocationOutput(index_slow);
-  std::ofstream receiver_file("receivers.txt", std::ofstream::out);
+  const std::string receiver_filename = "receivers.txt";
+  std::ofstream receiver_file;
+  receiver_file.open(receiver_filename.c_str(), std::ofstream::binary);
   location_output.WriteHeader(propagation_grid, nb_iter, &receiver_file);
-  receiver_file.close();
 
-  const int output_rhythm = 100;
+  const int output_rhythm = 300;
   const std::string base_name = "output/output";
   const std::string extension = ".vtr";
 
@@ -291,10 +292,7 @@ int main(int argc, char** argv) {
 
     if (iter % receiver_output_rhythm == 0) {
       
-      // We should open and close the file every timestep, so that it
-      // is not empty if we interrupt code execution.
-
-      // location_output.Write(propagation_grid, variable_storage, &receiver_file);
+      location_output.Write(propagation_grid, variable_storage, &receiver_file);
 
     }
 
@@ -321,6 +319,8 @@ int main(int argc, char** argv) {
 
     }
   }
+
+  receiver_file.close();
 
   free(sponge_fast);
   free(sponge_medium);

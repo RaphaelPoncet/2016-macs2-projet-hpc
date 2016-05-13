@@ -20,6 +20,7 @@
 #include "location_output.hpp"
 #include "multidimensional_storage.hpp"
 #include "rectilinear_grid.hpp"
+#include "variable_definitions.hpp"
 
 static void ValidateIndex(int i) {
 
@@ -74,6 +75,25 @@ void LocationOutput::Write(const RectilinearGrid3D& propagation_grid,
 
   }
 
-  assert(0);
+  const int n_fast = variable_storage.n_fast();
+  const int n_fast_padding = variable_storage.n_fast_padding();
+  const int n_fast_padded = n_fast + n_fast_padding;
+  const int n2 = variable_storage.n2();
+  const int n3 = variable_storage.n3();
+  const int index_slow = m_index_slow;
+  
+  const int variable_id = variable::PRESSURE_0;
+  const RealT* data = variable_storage.RawDataSlowDimension(variable_id);
+  assert(data != NULL);
+
+  const size_t index_base = index_slow * n2 * n_fast_padded;
+  size_t index = index_base;
+
+  for (int i2 = 0; i2 < n2; ++i2) {
+
+    os_ptr->write(reinterpret_cast<const char*>(&(data[index])), n_fast * sizeof(RealT));
+      index += n_fast_padded;
+      
+  }
 
 }
