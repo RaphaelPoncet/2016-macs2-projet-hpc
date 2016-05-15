@@ -8,6 +8,8 @@ COMPILE_FLAGS = -Wall -Wextra -Werror -O2 -g
 
 INCLUDES := -I ./external/plog/include
 DEFINES := -D RealT=double
+LDFLAGS := -lrt
+
 
 SHELL := /bin/bash
 

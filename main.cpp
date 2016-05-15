@@ -217,7 +217,7 @@ int main(int argc, char** argv) {
   DumpSpongeArray(propagation_grid.n_slow(), sponge_slow, &sponge_slow_out);
   sponge_slow_out.close();
 
-  const int nb_iter = 15000;
+  const int nb_iter = 1500;
   
   const int index_slow = 100;
 
