@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
 
   LOG_DEBUG << var_name_msg.str();
 
-  const int nx_padding = 0;
+  const int nx_padding = 17;
 
   // Variables size and extent in all 3 dimensions.
   // const int nx = 384;
@@ -135,7 +135,7 @@ int main(int argc, char** argv) {
 
   const RealT xmid = 0.5 * (x_min + x_max);
   const RealT ymid = 0.5 * (y_min + y_max);
-  const RealT zmid = 0.5 * (z_min + z_max);
+  const RealT zmid = 500.0;//0.5 * (z_min + z_max);
 
   for (int iz = 0; iz < nz; ++iz) {
     for (int iy = 0; iy < ny; ++iy) {
@@ -152,7 +152,7 @@ int main(int argc, char** argv) {
         const RealT distance = 
           (x - xmid) * (x - xmid) + (y - ymid) * (y - ymid) + (z - zmid) * (z - zmid);
 
-        pressure_0[index] = expf( - 0.001 * distance);
+        pressure_0[index] = expf( - 0.005 * distance);
         pressure_1[index] = pressure_0[index];
 	
       }
@@ -194,25 +194,28 @@ int main(int argc, char** argv) {
   DumpSpongeArray(propagation_grid.n_slow(), sponge_slow, &sponge_slow_out);
   sponge_slow_out.close();
 
-  const int nb_iter = 200;
+  const int nb_iter = 10000;
   
   const int index_slow = 10;
 
   LocationOutput location_output = LocationOutput(index_slow);
   const std::string receiver_filename = "receivers.txt";
+  // For now, write receiver file every timestep.
+  const int receiver_output_rhythm = 10;
   std::ofstream receiver_file;
-  receiver_file.open(receiver_filename.c_str(), std::ofstream::binary);
-  location_output.WriteHeader(propagation_grid, nb_iter, &receiver_file);
+  receiver_file.open(receiver_filename.c_str(), std::ios::out | std::ios::binary);
+  location_output.WriteHeader(propagation_grid, nb_iter / receiver_output_rhythm, &receiver_file);
 
-  const int output_rhythm = 300;
+  const int output_rhythm = 1000;
   const std::string base_name = "output/output";
   const std::string extension = ".vtr";
+
+  const RealT dt = 0.0005;
 
   for (int iter = 0; iter < nb_iter; ++iter) {
 
     const RealT one = 1.0;
     const RealT two = 2.0;
-    const RealT dt = 0.0005;
     const RealT hx = one / 24.0;
     const RealT hy = one / 24.0;
     const RealT hz = one / 24.0;
@@ -232,22 +235,22 @@ int main(int argc, char** argv) {
     const int n_slow_min = radius;
     const int n_slow_max = n_slow - radius;
 
-    // Sponge layer.
-    for (int islow = 0; islow < n_slow; ++islow) {
-      for (int imedium = 0; imedium < n_medium; ++imedium) {
-        for (int ifast = 0; ifast < n_fast; ++ifast) {
+    // // Sponge layer.
+    // for (int islow = 0; islow < n_slow; ++islow) {
+    //   for (int imedium = 0; imedium < n_medium; ++imedium) {
+    //     for (int ifast = 0; ifast < n_fast; ++ifast) {
           
-          const size_t index = 
-            n_medium * n_fast_pad * islow + n_fast_pad * imedium + ifast;
+    //       const size_t index = 
+    //         n_medium * n_fast_pad * islow + n_fast_pad * imedium + ifast;
 
-          const RealT scaling = sponge_slow[islow] * sponge_medium[imedium] * sponge_fast[ifast];
-          // const RealT scaling = 1.0;
+    //       const RealT scaling = sponge_slow[islow] * sponge_medium[imedium] * sponge_fast[ifast];
+    //       // const RealT scaling = 1.0;
 
-          pressure_0[index] *= scaling;
+    //       pressure_1[index] *= scaling;
 
-        }
-      }
-    }
+    //     }
+    //   }
+    // }
      
     // Advance pressure.
     for (int islow = n_slow_min; islow < n_slow_max; ++islow) {
@@ -257,8 +260,8 @@ int main(int argc, char** argv) {
           const size_t index = 
             n_medium * n_fast_pad * islow + n_fast_pad * imedium + ifast;
 
-          // const RealT s = velocity[index] * velocity[index] * dt * dt;
-          const RealT s = 1000.0 * 1000.0 * dt * dt;
+          const RealT s = velocity[index] * velocity[index] * dt * dt;
+          // const RealT s = 1000.0 * 1000.0 * dt * dt;
 
           pressure_1[index] = two * pressure_0[index] - pressure_1[index];
           pressure_1[index] += s * hx * hx * (pressure_0[index + 1] - two * pressure_0[index] + pressure_0[index - 1]);
@@ -268,27 +271,24 @@ int main(int argc, char** argv) {
       }
     }
 
-    // Sponge layer.
-    for (int islow = 0; islow < n_slow; ++islow) {
-      for (int imedium = 0; imedium < n_medium; ++imedium) {
-        for (int ifast = 0; ifast < n_fast; ++ifast) {
+    // // Sponge layer.
+    // for (int islow = 0; islow < n_slow; ++islow) {
+    //   for (int imedium = 0; imedium < n_medium; ++imedium) {
+    //     for (int ifast = 0; ifast < n_fast; ++ifast) {
           
-          const size_t index = 
-            n_medium * n_fast_pad * islow + n_fast_pad * imedium + ifast;
+    //       const size_t index = 
+    //         n_medium * n_fast_pad * islow + n_fast_pad * imedium + ifast;
 
-          const RealT scaling = sponge_slow[islow] * sponge_medium[imedium] * sponge_fast[ifast];
-          // const RealT scaling = 1.0;
+    //       const RealT scaling = sponge_slow[islow] * sponge_medium[imedium] * sponge_fast[ifast];
+    //       // const RealT scaling = 1.0;
 
-          pressure_1[index] *= scaling;
+    //       pressure_1[index] *= scaling;
 
-        }
-      }
-    }
+    //     }
+    //   }
+    // }
     
     std::swap(pressure_0, pressure_1);
-
-    // For now, write receiver file every timestep.
-    const int receiver_output_rhythm = 1;
 
     if (iter % receiver_output_rhythm == 0) {
       
@@ -317,6 +317,9 @@ int main(int argc, char** argv) {
       
       LOG_INFO << "Writing output file done.\n";
 
+      // For debug.
+      variable_storage.Validate();
+
     }
   }
 
@@ -328,6 +331,49 @@ int main(int argc, char** argv) {
 
   // Variables cleanup.
   variable_storage.DeAllocate();
+
+  // Convert receiver file to VTK.
+
+  // Time is in milliseconds.
+  const RectilinearGrid3D receiver_grid = 
+    RectilinearGrid3D(x_min_grid, x_max_grid, nx, 
+                      y_min_grid, y_max_grid, ny,
+                      z_min_grid, z_max_grid,
+                      nb_iter / receiver_output_rhythm);
+
+  MultiDimensionalStorage4D variable_storage_receivers = 
+    MultiDimensionalStorage4D(nx, ny, nb_iter / receiver_output_rhythm, nb_variables, nx_padding);
+
+  variable_storage_receivers.Allocate();
+  
+  RealT* data = variable_storage_receivers.RawDataSlowDimension(variable::PRESSURE_0);
+
+  std::ifstream receiver_file_binary;
+  LOG_INFO << "Reading receiver file "
+           << "\'" << receiver_filename << "\'"
+           << " for VTK conversion...";
+
+  receiver_file_binary.open(receiver_filename.c_str(), std::ifstream::in | std::ifstream::binary);
+  ReadBinaryVariable(receiver_file_binary, nx, nx_padding, ny, nb_iter / receiver_output_rhythm, 1, data);
+  receiver_file_binary.close();
+
+  LOG_INFO << "Reading receiver file done.";
+  
+  variable_storage_receivers.Validate();
+
+  const std::string output_filename = "receivers.vtr";
+
+  LOG_INFO << "Writing VTK receiver file \"" << output_filename << "\"...";
+  
+  std::ofstream receivers_vtk_file(output_filename.c_str(), std::ofstream::binary);
+  
+  OutputGridAndData(receiver_grid, variable_storage_receivers, &receivers_vtk_file);
+  
+  receivers_vtk_file.close();
+  
+  LOG_INFO << "Writing VTK receiver file done.\n";
+  
+  variable_storage_receivers.DeAllocate();
  
- return 0;
+  return 0;
 }

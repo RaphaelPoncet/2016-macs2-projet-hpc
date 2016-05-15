@@ -22,8 +22,8 @@
 class RectilinearGrid3D {
 public:
   RectilinearGrid3D(RealT x_fast_min, RealT x_fast_max, int n_fast,
-		    RealT x_medium_min, RealT x_medium_max, int n_medium,
-		    RealT x_slow_min, RealT x_slow_max, int n_slow);
+                    RealT x_medium_min, RealT x_medium_max, int n_medium,
+                    RealT x_slow_min, RealT x_slow_max, int n_slow);
   int n_fast() const { return m_n_fast; }
   int n_medium() const { return m_n_medium; }
   int n_slow() const { return m_n_slow; }

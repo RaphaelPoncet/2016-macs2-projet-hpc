@@ -13,6 +13,8 @@
 // limitations under the License.
 
 #include <cassert>
+#include <cmath>
+#include <limits>
 #include <memory>
 
 // Dummy value for padded areas of storage (for debug).
@@ -22,6 +24,7 @@ const RealT INIT_FILL = 3.1415926;
 
 #include "common.hpp"
 #include "multidimensional_storage.hpp"
+#include "variable_definitions.hpp"
 
 static void ValidateInput(int n1, int n2, int n3, int n4, int padding) {
 
@@ -113,7 +116,7 @@ void MultiDimensionalStorage4D::DeAllocate() {
 
 void MultiDimensionalStorage4D::Validate() {
 
-  LOG_DEBUG << "Validating 4D storage...";
+  LOG_INFO << "Validating 4D storage...";
 
   size_t error_count = 0;
   
@@ -123,19 +126,52 @@ void MultiDimensionalStorage4D::Validate() {
   const int n3 = m_n3;
   const int n_slow = m_n_slow;
 
+  RealT* minimums = (RealT*) malloc(n_slow * sizeof(RealT));
+  RealT* maximums = (RealT*) malloc(n_slow * sizeof(RealT));
+
+  for (int islow = 0; islow < n_slow; ++islow) {
+
+    minimums[islow] = std::numeric_limits<RealT>::max();
+    maximums[islow] = std::numeric_limits<RealT>::min();
+
+  }
+  
+  LOG_DEBUG << "Size: [" 
+            << m_n_fast << "(+" << m_n_fast_padding << "), "
+            << m_n2 << ", "
+            << m_n3 << ", "
+            << m_n_slow << ")";
+
   // Padded area should be left untouched by the code.
   for (int islow = 0; islow < n_slow; ++islow) {
     for (int i3 = 0; i3 < n3; ++i3) {
       for (int i2 = 0; i2 < n2; ++i2) {
-	for (int ifast = n_fast; ifast < n_fast_pad; ++ifast) {
+        for (int ifast = 0; ifast < n_fast; ++ifast) {
 
-	const size_t index = 
-	  n3 * n2 * n_fast_pad * islow + n2 * n_fast_pad * i3 + n_fast_pad * i2 + ifast;
+          const size_t index = 
+            n3 * n2 * n_fast_pad * islow + n2 * n_fast_pad * i3 + n_fast_pad * i2 + ifast;
 
-	if (m_data[index] != PADDING_FILL)
-	  error_count += 1;
+          minimums[islow] = fmin(minimums[islow], m_data[index]);
+          maximums[islow] = fmax(maximums[islow], m_data[index]);
+          
+        }
+      }
+    }
+  }
 
-	}
+  // Padded area should be left untouched by the code.
+  for (int islow = 0; islow < n_slow; ++islow) {
+    for (int i3 = 0; i3 < n3; ++i3) {
+      for (int i2 = 0; i2 < n2; ++i2) {
+        for (int ifast = n_fast; ifast < n_fast_pad; ++ifast) {
+
+          const size_t index = 
+            n3 * n2 * n_fast_pad * islow + n2 * n_fast_pad * i3 + n_fast_pad * i2 + ifast;
+
+          if (m_data[index] != PADDING_FILL)
+            error_count += 1;
+          
+        }
       }
     }
   }
@@ -149,9 +185,23 @@ void MultiDimensionalStorage4D::Validate() {
 
   }
 
-  LOG_DEBUG << "Validating 4D storage done."
-	    << "\n";
+  std::stringstream msg;
+  msg << "Variables range:\n\n";
 
+  for (int islow = 0; islow < m_n_slow; ++islow) {
+
+    msg << "____ " << variable::VARIABLE_NAMES[islow] << " in " 
+        << "[" << minimums[islow] << ", " << maximums[islow] << "]\n";
+    
+  }
+
+  LOG_DEBUG << msg.str();
+  
+  LOG_INFO << "Validating 4D storage done."
+           << "\n";
+
+  free(minimums);
+  free(maximums);
 }
 
 RealT* MultiDimensionalStorage4D::RawDataSlowDimension(int i) {

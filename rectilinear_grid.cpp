@@ -111,6 +111,7 @@ void RectilinearGrid3D::WriteHeaderVTKXml(std::ofstream* os_ptr) const {
 void RectilinearGrid3D::WriteHeaderVTKXml(std::ofstream* os_ptr) {
 
   const RectilinearGrid3D& const_me = *this;
+  assert(0);
 
 }
 

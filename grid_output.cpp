@@ -19,6 +19,7 @@
 #include <sstream>
 
 #include "array_vtk_io.hpp"
+#include "common.hpp"
 #include "multidimensional_storage.hpp"
 #include "rectilinear_grid.hpp"
 #include "variable_definitions.hpp"
@@ -173,7 +174,17 @@ void OutputGridAndData(const RectilinearGrid3D& grid,
           const size_t nb_elements_storage_3d = 
             variable_storage.n_fast() * variable_storage.n2() * variable_storage.n3();
 
-          assert(nb_elements_storage_3d == nb_grid_elements);
+          if (nb_elements_storage_3d != nb_grid_elements) {
+
+            LOG_ERROR << "Incompatible grid and storage sizes: "
+                      << "grid size = (" 
+                      << grid.n_fast() << ", " << grid.n_medium() << ", " << grid.n_slow() << ")  vs "
+                      << "storage size = (" << variable_storage.n_fast() << ", " 
+                      << variable_storage.n2() << ", " 
+                      << variable_storage.n3() << ")";
+            std::abort();
+
+          }
 
           const size_t grid_data_size_in_bytes = nb_grid_elements * sizeof(RealT);
 

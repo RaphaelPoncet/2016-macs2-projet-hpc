@@ -63,7 +63,7 @@ void ReadBinaryVariable(std::istream& input_stream,
     std::abort();
 
   }
-
+  
   LOG_DEBUG << "Parsing binary variable...";
 
   // Will hold the current line.

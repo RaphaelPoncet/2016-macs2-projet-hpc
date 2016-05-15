@@ -13,8 +13,10 @@
 // limitations under the License.
 
 #include <cassert>
+#include <cmath>
 #include <fstream>
 #include <iostream>
+#include <limits>
 
 #include "common.hpp"
 #include "location_output.hpp"
@@ -83,17 +85,21 @@ void LocationOutput::Write(const RectilinearGrid3D& propagation_grid,
   const int index_slow = m_index_slow;
   
   const int variable_id = variable::PRESSURE_0;
+  // LOG_INFO << "variable id = " << variable_id;
   const RealT* data = variable_storage.RawDataSlowDimension(variable_id);
   assert(data != NULL);
 
   const size_t index_base = index_slow * n2 * n_fast_padded;
   size_t index = index_base;
 
+  RealT min = std::numeric_limits<RealT>::max();
+  RealT max = std::numeric_limits<RealT>::min();
+
   for (int i2 = 0; i2 < n2; ++i2) {
 
     os_ptr->write(reinterpret_cast<const char*>(&(data[index])), n_fast * sizeof(RealT));
-      index += n_fast_padded;
-      
+    
+    index += n_fast_padded;
   }
 
 }
