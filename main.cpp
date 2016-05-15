@@ -152,7 +152,7 @@ int main(int argc, char** argv) {
         const RealT distance = 
           (x - xmid) * (x - xmid) + (y - ymid) * (y - ymid) + (z - zmid) * (z - zmid);
 
-        pressure_0[index] = expf( - 0.005 * distance);
+        pressure_0[index] = expf( - 0.003 * distance);
         pressure_1[index] = pressure_0[index];
 	
       }
@@ -196,7 +196,7 @@ int main(int argc, char** argv) {
 
   const int nb_iter = 10000;
   
-  const int index_slow = 10;
+  const int index_slow = 100;
 
   LocationOutput location_output = LocationOutput(index_slow);
   const std::string receiver_filename = "receivers.txt";
