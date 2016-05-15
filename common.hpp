@@ -41,4 +41,6 @@ typedef enum _DataType {FLOAT32, FLOAT64, NB_DATATYPES} DataType;
 // In bytes.
 static const int DATATYPE_SIZE[NB_DATATYPES] = {4, 8};
 
+#define UNUSED(expr) do { (void)(expr); } while (0)
+
 #endif // COMMON_HPP

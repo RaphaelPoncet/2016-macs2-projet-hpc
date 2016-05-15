@@ -99,6 +99,7 @@ void OutputGridAndData(const RectilinearGrid3D& grid,
 
         const std::string variable_name = variable::VARIABLE_NAMES[ivar];
         const int nb_components = 1;
+        UNUSED(nb_components);
 
         if (variable::VARIABLE_FLAGS[ivar] & WRITTEN) {
 
@@ -219,17 +220,11 @@ void OutputGridAndData(const RectilinearGrid3D& grid,
       const int n_fast = (grid.n_fast() == 1 ? 1 : grid.n_fast() - 1);
       assert(0 < n_fast);
 
-      const size_t nb_grid_elements = n_slow * n_medium * n_fast;
-
-      const size_t nb_elements_storage_3d = 
-        variable_storage.n3() * variable_storage.n2() * variable_storage.n_fast();
-
       for (int ivar = 0; ivar < variable::NB_VARIABLES; ++ivar) {
 
         const int nb_components = 1;
 	  
         size_t grid_data_offset_in_bytes = 0;
-        const size_t grid_data_size_in_bytes = nb_grid_elements * sizeof(RealT);
         const RealT* data = variable_storage.RawDataSlowDimension(ivar);
 
         if (variable::VARIABLE_FLAGS[ivar] & WRITTEN) {
@@ -257,7 +252,6 @@ void OutputGridAndData(const RectilinearGrid3D& grid,
         const int nb_components = 1;
 	  
         size_t grid_data_offset_in_bytes = 0;
-        const size_t grid_data_size_in_bytes = nb_grid_elements * sizeof(RealT);
         const RealT* data = variable_storage.RawDataSlowDimension(ivar);
 
         if (variable::VARIABLE_FLAGS[ivar] & WRITTEN) {

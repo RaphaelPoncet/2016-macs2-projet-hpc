@@ -27,6 +27,9 @@
 
 int main(int argc, char** argv) {
 
+  UNUSED(argc);
+  UNUSED(argv);
+
   // Initialize logging.
   const bool log_to_file = false;
 
@@ -218,6 +221,7 @@ int main(int argc, char** argv) {
     const RealT two = 2.0;
     const RealT hx = one / 24.0;
     const RealT hy = one / 24.0;
+    UNUSED(hy);
     const RealT hz = one / 24.0;
 
     const int radius = 1;

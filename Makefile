@@ -4,7 +4,7 @@ CXX := g++
 
 SRC_EXTENSION := cpp
 
-COMPILE_FLAGS = -Wall -Wextra -O2 -g
+COMPILE_FLAGS = -Wall -Wextra -Werror -O2 -g
 
 INCLUDES := -I ./external/plog/include
 DEFINES := -D RealT=double

@@ -110,7 +110,10 @@ void RectilinearGrid3D::WriteHeaderVTKXml(std::ofstream* os_ptr) const {
 
 void RectilinearGrid3D::WriteHeaderVTKXml(std::ofstream* os_ptr) {
 
+  UNUSED(os_ptr);
+
   const RectilinearGrid3D& const_me = *this;
+  UNUSED(const_me);
   assert(0);
 
 }
@@ -126,6 +129,7 @@ void RectilinearGrid3D::WriteFooterVTKXml(std::ofstream* os_ptr) const {
 
 void RectilinearGrid3D::WriteFooterVTKXml(std::ofstream* os_ptr) {
 
+  UNUSED(os_ptr);
   assert(0);
 
 }
@@ -181,6 +185,7 @@ void RectilinearGrid3D::WriteVTKXmlAscii(std::ofstream* os_ptr) const {
 
 void RectilinearGrid3D::WriteVTKXmlAscii(std::ofstream* os_ptr) {
 
+  UNUSED(os_ptr);
   assert(0);
 
 }

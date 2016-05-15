@@ -53,11 +53,13 @@ void WriteVTKXmlVariableHeader(const std::string& variable_name,
 }
 
 void WriteVTKXmlVariable(VTKDataFormat format, int nb_components,
-			 int n_fast, int n_fast_padding, 
-			 int n_medium, int n_slow, 
-			 const RealT* data,
-			 size_t* data_offset_in_bytes_ptr,
-			 std::ostream* os_ptr) {
+                         int n_fast, int n_fast_padding, 
+                         int n_medium, int n_slow, 
+                         const RealT* data,
+                         size_t* data_offset_in_bytes_ptr,
+                         std::ostream* os_ptr) {
+
+  UNUSED(data_offset_in_bytes_ptr);
 
   if (nb_components == 1) {
 
