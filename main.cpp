@@ -16,14 +16,20 @@
 
 #include <cmath>
 #include <fstream>
+#include <vector>
 
 #include "array_binary_io.hpp"
 #include "grid_output.hpp"
 #include "location_output.hpp"
 #include "multidimensional_storage.hpp"
 #include "rectilinear_grid.hpp"
+#include "timer.hpp"
 #include "variable_definitions.hpp"
 #include "wave_propagation.hpp"
+
+struct timespec timer_start;
+struct timespec timer_stop;
+std::vector<double> timings_update;
 
 int main(int argc, char** argv) {
 
@@ -86,6 +92,19 @@ int main(int argc, char** argv) {
   const int nz = 350;
   const RealT z_min = 0.0;
   const RealT z_max = 2904.0;
+
+  // const int nx = 3000;
+  // const RealT x_min = 0.0;
+  // const RealT x_max = 13600;
+
+  // const int ny = 1;
+  // const RealT y_min = 0.0;
+  // const RealT y_max = 0.0;
+
+  // const int nz = 3000;
+  // const RealT z_min = 0.0;
+  // const RealT z_max = 2904.0;
+
 
   assert(0 < nx);
   const RealT dx = (x_max - x_min) / (RealT)nx;
@@ -157,6 +176,7 @@ int main(int argc, char** argv) {
 
         pressure_0[index] = expf( - 0.003 * distance);
         pressure_1[index] = pressure_0[index];
+        //velocity[index] = 1.0;
 	
       }
     }
@@ -197,12 +217,12 @@ int main(int argc, char** argv) {
   DumpSpongeArray(propagation_grid.n_slow(), sponge_slow, &sponge_slow_out);
   sponge_slow_out.close();
 
-  const int nb_iter = 10000;
+  const int nb_iter = 15000;
   
   const int index_slow = 100;
 
   LocationOutput location_output = LocationOutput(index_slow);
-  const std::string receiver_filename = "receivers.txt";
+  const std::string receiver_filename = "output/receivers.txt";
   // For now, write receiver file every timestep.
   const int receiver_output_rhythm = 10;
   std::ofstream receiver_file;
@@ -255,6 +275,8 @@ int main(int argc, char** argv) {
     //     }
     //   }
     // }
+
+    timer_start = Timer::Now();
      
     // Advance pressure.
     for (int islow = n_slow_min; islow < n_slow_max; ++islow) {
@@ -274,6 +296,10 @@ int main(int argc, char** argv) {
         }
       }
     }
+
+    timer_stop = Timer::Now();
+
+    timings_update.push_back(Timer::DiffTime(timer_start, timer_stop));
 
     // // Sponge layer.
     // for (int islow = 0; islow < n_slow; ++islow) {
@@ -365,7 +391,7 @@ int main(int argc, char** argv) {
   
   variable_storage_receivers.Validate();
 
-  const std::string output_filename = "receivers.vtr";
+  const std::string output_filename = "output/receivers.vtr";
 
   LOG_INFO << "Writing VTK receiver file \"" << output_filename << "\"...";
   
@@ -378,6 +404,10 @@ int main(int argc, char** argv) {
   LOG_INFO << "Writing VTK receiver file done.\n";
   
   variable_storage_receivers.DeAllocate();
+
+  LOG_INFO << "";
+
+  Timer::PrintTimings(timings_update, "WavePropagation", &std::cerr);
  
   return 0;
 }
