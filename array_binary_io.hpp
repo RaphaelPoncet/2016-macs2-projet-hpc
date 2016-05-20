@@ -24,4 +24,9 @@ void ReadBinaryVariable(std::istream& input_stream,
 			int n_fast, int n_fast_padding, int n_medium, 
 			int n_slow, int nb_components, RealT* data);
 
+void WriteBinaryVariable(const std::string& variable_name,
+                         int n_fast, int n_fast_padding, 
+                         int n_medium, int n_slow, int nb_components, 
+                         const RealT* data, std::ostream* os_ptr);
+
 #endif // ARRAY_BINARY_IO_HPP

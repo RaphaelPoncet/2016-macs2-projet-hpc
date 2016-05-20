@@ -38,8 +38,8 @@ static void ValidatePositiveInteger(int parsed_integer, int* output_integer_ptr)
 // # variable_name datatype nb_components nx ny nz
 //
 void ReadBinaryVariable(std::istream& input_stream, 
-			int n_fast, int n_fast_padding, int n_medium, 
-			int n_slow, int nb_components, RealT* data) {
+                        int n_fast, int n_fast_padding, int n_medium, 
+                        int n_slow, int nb_components, RealT* data) {
 
   assert(0 < n_fast);
   assert(0 < n_medium);
@@ -277,5 +277,47 @@ void ReadBinaryVariable(std::istream& input_stream,
   }
 
   LOG_DEBUG << "Parsing done.";
+
+}
+
+void WriteBinaryVariable(const std::string& variable_name,
+                         int n_fast, int n_fast_padding, 
+                         int n_medium, int n_slow, int nb_components, 
+                         const RealT* data, std::ostream* os_ptr) {
+
+  UNUSED(nb_components);
+
+  assert(0 < n_fast);
+  assert(0 < n_medium);
+  assert(0 < n_slow);
+  assert(0 <= n_fast_padding);
+  assert(data != NULL);
+
+  const int n_fast_padded = n_fast + n_fast_padding;
+
+  if (!*os_ptr) {
+
+    LOG_ERROR << "Invalid output stream";
+    std::abort();
+
+  }
+
+  *os_ptr << "# " << variable_name << " "
+          << "Float64" << " "
+          << nb_components << " "
+          << n_fast << " "
+          << n_medium << " "
+          << n_slow << "\n";
+
+  for (int islow = 0; islow < n_slow; ++islow) {
+    for (int imedium = 0; imedium < n_medium; ++imedium) {
+
+        const size_t index_base = 
+          n_medium * n_fast_padded * islow + n_fast_padded * imedium;
+
+        os_ptr->write(reinterpret_cast<const char*>(&data[index_base]), sizeof(RealT) * n_fast);
+
+    }
+  }
 
 }

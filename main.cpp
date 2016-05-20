@@ -217,7 +217,7 @@ int main(int argc, char** argv) {
   DumpSpongeArray(propagation_grid.n_slow(), sponge_slow, &sponge_slow_out);
   sponge_slow_out.close();
 
-  const int nb_iter = 1500;
+  const int nb_iter = 10000;
   
   const int index_slow = 100;
 
@@ -229,9 +229,12 @@ int main(int argc, char** argv) {
   receiver_file.open(receiver_filename.c_str(), std::ios::out | std::ios::binary);
   location_output.WriteHeader(propagation_grid, nb_iter / receiver_output_rhythm, &receiver_file);
 
-  const int output_rhythm = 1000;
+  const int validation_rhythm = 2000;
+
+  const int output_rhythm = 2000;
   const std::string base_name = "output/output";
-  const std::string extension = ".vtr";
+  const std::string vtk_extension = ".vtr";
+  const std::string binary_extension = ".xyz";
 
   const RealT dt = 0.0005;
 
@@ -328,24 +331,51 @@ int main(int argc, char** argv) {
 
     if (iter % output_rhythm == 0) {
 
-      LOG_INFO << "Iteration " << iter;
+      std::stringstream vtk_sstr_output_filename;
+      vtk_sstr_output_filename << base_name;
+      vtk_sstr_output_filename << std::setfill('0') << std::setw(5) << iter;
+      vtk_sstr_output_filename << vtk_extension;
 
-      std::stringstream sstr_output_filename;
-      sstr_output_filename << base_name;
-      sstr_output_filename << std::setfill('0') << std::setw(5) << iter;
-      sstr_output_filename << extension;
+      const std::string vtk_output_filename = vtk_sstr_output_filename.str();
 
-      const std::string output_filename = sstr_output_filename.str();
-
-      LOG_INFO << "Writing output file \"" << output_filename << "\"...";
+      LOG_INFO << "Writing output file \"" << vtk_output_filename << "\"...";
     
-      std::ofstream output_file(output_filename.c_str(), std::ofstream::binary);
+      std::ofstream vtk_output_file(vtk_output_filename.c_str(), std::ofstream::binary);
       
-      OutputGridAndData(propagation_grid, variable_storage, &output_file);
+      OutputGridAndData(propagation_grid, variable_storage, &vtk_output_file);
       
-      output_file.close();
+      vtk_output_file.close();
       
       LOG_INFO << "Writing output file done.\n";
+
+      std::stringstream binary_sstr_output_filename;
+      binary_sstr_output_filename << base_name;
+      binary_sstr_output_filename << std::setfill('0') << std::setw(5) << iter;
+      binary_sstr_output_filename << binary_extension;
+
+      const std::string binary_output_filename = binary_sstr_output_filename.str();
+
+      LOG_INFO << "Writing output file \"" << binary_output_filename << "\"...";
+    
+      std::ofstream binary_output_file(binary_output_filename.c_str(), std::ofstream::binary);
+      
+      WriteBinaryVariable(variable::VARIABLE_NAMES[variable::PRESSURE_0],
+                          variable_storage.n_fast(), variable_storage.n_fast_padding(),
+                          variable_storage.n2(), variable_storage.n3(), 1,
+                          variable_storage.RawDataSlowDimension(variable::PRESSURE_0),
+                          &binary_output_file);
+      
+      binary_output_file.close();
+      
+      LOG_INFO << "Writing output file done.\n";
+
+    }
+
+
+
+    if (iter % validation_rhythm == 0) {
+
+      LOG_INFO << "Iteration " << iter;
 
       // For debug.
       variable_storage.Validate();
