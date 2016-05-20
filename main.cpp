@@ -360,6 +360,7 @@ int main(int argc, char** argv) {
       std::ofstream binary_output_file(binary_output_filename.c_str(), std::ofstream::binary);
       
       WriteBinaryVariable(variable::VARIABLE_NAMES[variable::PRESSURE_0],
+                          (sizeof(RealT) == 4 ? FLOAT32 : FLOAT64),
                           variable_storage.n_fast(), variable_storage.n_fast_padding(),
                           variable_storage.n2(), variable_storage.n3(), 1,
                           variable_storage.RawDataSlowDimension(variable::PRESSURE_0),

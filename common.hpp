@@ -36,10 +36,15 @@ const T* ConstVectorRawData(const std::vector<T>& vec) {
 
 }
 
-typedef enum _DataType {FLOAT32, FLOAT64, NB_DATATYPES} DataType;
+const int MAX_NB_CHARS = 8;
+
+typedef enum _DataType {NONE, FLOAT32, FLOAT64, NB_DATATYPES} DataType;
 
 // In bytes.
-static const int DATATYPE_SIZE[NB_DATATYPES] = {4, 8};
+static const int DATATYPE_SIZE[NB_DATATYPES] = {0, 4, 8};
+
+// VTK names.
+static const char DATATYPE_NAME[NB_DATATYPES][MAX_NB_CHARS] = {"None", "Float32", "Float64"};
 
 #define UNUSED(expr) do { (void)(expr); } while (0)
 

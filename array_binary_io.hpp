@@ -20,11 +20,28 @@
 
 #include "common.hpp"
 
+void ReadBinaryVariableHeader(std::istream* is_ptr, 
+                              std::string* name_ptr, 
+                              DataType* data_type_ptr,
+                              int* nb_components_ptr, 
+                              int* n_fast_ptr,
+                              int* n_medium_ptr,
+                              int* n_slow_ptr);
+
 void ReadBinaryVariable(std::istream& input_stream, 
-			int n_fast, int n_fast_padding, int n_medium, 
-			int n_slow, int nb_components, RealT* data);
+                        int n_fast, int n_fast_padding, int n_medium, 
+                        int n_slow, int nb_components, RealT* data);
+
+void WriteBinaryVariableHeader(const std::string& variable_name, DataType data_type, 
+                               int nb_components, int n_fast, int n_medium, int n_slow, 
+                               std::ostream* os_ptr);
+
+void WriteBinaryVariableSliceSlowDimension(int n_fast, int n_fast_padding, 
+                                           int n_medium, int islow,
+                                           const RealT* data, std::ostream* os_ptr);
 
 void WriteBinaryVariable(const std::string& variable_name,
+                         DataType data_type,
                          int n_fast, int n_fast_padding, 
                          int n_medium, int n_slow, int nb_components, 
                          const RealT* data, std::ostream* os_ptr);

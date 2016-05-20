@@ -18,6 +18,7 @@
 #include <iostream>
 #include <limits>
 
+#include "array_binary_io.hpp"
 #include "common.hpp"
 #include "location_output.hpp"
 #include "multidimensional_storage.hpp"
@@ -47,22 +48,15 @@ void LocationOutput::WriteHeader(const RectilinearGrid3D& propagation_grid,
 
   }
 
-  // The variable to dump, and its type, are currently hardcoded.
-  const std::string header_header = "#";
+  // Currently hardcoded.
   const std::string variable_name = "pressure_0";
-  const std::string variable_datatype = (sizeof(RealT) == 8 ? "Float64" : "Float32");
+  // The I/O data type must be coherent with the one used internally in the code.
+  const DataType data_type = (sizeof(RealT) == 4 ? FLOAT32 : FLOAT64);
   const int nb_components = 1;
-  const int n_fast = propagation_grid.n_fast();
-  const int n_medium = propagation_grid.n_medium();
-  const int n_slow = nb_timesteps;
 
-  *os_ptr << header_header << " " 
-          << variable_name << " "
-          << variable_datatype << " "
-          << nb_components << " "
-          << n_fast << " "
-          << n_medium << " "
-          << n_slow << "\n";
+  WriteBinaryVariableHeader(variable_name, data_type, nb_components, 
+                            propagation_grid.n_fast(), propagation_grid.n_medium(), 
+                            nb_timesteps, os_ptr);
 
 }
 
@@ -82,7 +76,6 @@ void LocationOutput::Write(const RectilinearGrid3D& propagation_grid,
 
   const int n_fast = variable_storage.n_fast();
   const int n_fast_padding = variable_storage.n_fast_padding();
-  const int n_fast_padded = n_fast + n_fast_padding;
   const int n2 = variable_storage.n2();
   const int index_slow = m_index_slow;
   
@@ -90,13 +83,7 @@ void LocationOutput::Write(const RectilinearGrid3D& propagation_grid,
   const RealT* data = variable_storage.RawDataSlowDimension(variable_id);
   assert(data != NULL);
 
-  const size_t index_base = index_slow * n2 * n_fast_padded;
-  size_t index = index_base;
+  WriteBinaryVariableSliceSlowDimension(n_fast, n_fast_padding, n2, index_slow,
+                                        data, os_ptr);
 
-  for (int i2 = 0; i2 < n2; ++i2) {
-
-    os_ptr->write(reinterpret_cast<const char*>(&(data[index])), n_fast * sizeof(RealT));
-    index += n_fast_padded;
-
-  }
 }
