@@ -4,9 +4,9 @@ CXX := g++
 
 SRC_EXTENSION := cpp
 
-COMPILE_FLAGS = -Wall -Wextra -Werror -O2 -g
+COMPILE_FLAGS = -Wall -Wextra -Werror -std=c++11 -O2 -g
 
-INCLUDES := -I ./external/plog/include
+INCLUDES := -I ./external/plog/include -I ./external/picojson/
 DEFINES := -D RealT=double
 LDFLAGS := -lrt
 

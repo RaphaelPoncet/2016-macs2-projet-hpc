@@ -22,6 +22,7 @@
 #include "grid_output.hpp"
 #include "location_output.hpp"
 #include "multidimensional_storage.hpp"
+#include "parameter_parser.hpp"
 #include "rectilinear_grid.hpp"
 #include "timer.hpp"
 #include "variable_definitions.hpp"
@@ -53,6 +54,21 @@ int main(int argc, char** argv) {
   }
 
   LOG_INFO << "**** 2D/3D wave propagator in heterogeneous media ****\n";
+
+  const std::string parameter_filename = "./run_me.json";
+
+  LOG_INFO << "Reading parameter file \"" << parameter_filename << "\"...";
+
+  std::vector<OutputEvent> output_events;
+  std::ifstream parameter_file(parameter_filename.c_str(), std::ifstream::in);
+
+  ParseParameterFile(&parameter_file, &output_events);
+
+  parameter_file.close();
+
+  const int nb_iter = 2001;
+
+  // assert(0);
 
   // Variables information (hardcoded for now, in variable_definitions.hpp).
   const int nb_variables = variable::NB_VARIABLES;
@@ -195,6 +211,10 @@ int main(int argc, char** argv) {
 
   variable_storage.Validate();
 
+  // Init output events.
+  for (auto it = output_events.begin(); it != output_events.end(); ++it)
+    it->Create(nb_iter, variable_storage, propagation_grid);
+
   // Init sponge layers.
   const int sponge_width = 40;
   RealT* sponge_fast = (RealT*) malloc(propagation_grid.n_fast() * sizeof(RealT));
@@ -216,25 +236,6 @@ int main(int argc, char** argv) {
   std::ofstream sponge_slow_out("sponge_slow.txt", std::ofstream::out);
   DumpSpongeArray(propagation_grid.n_slow(), sponge_slow, &sponge_slow_out);
   sponge_slow_out.close();
-
-  const int nb_iter = 10000;
-  
-  const int index_slow = 100;
-
-  LocationOutput location_output = LocationOutput(index_slow);
-  const std::string receiver_filename = "output/receivers.txt";
-  // For now, write receiver file every timestep.
-  const int receiver_output_rhythm = 10;
-  std::ofstream receiver_file;
-  receiver_file.open(receiver_filename.c_str(), std::ios::out | std::ios::binary);
-  location_output.WriteHeader(propagation_grid, nb_iter / receiver_output_rhythm, &receiver_file);
-
-  const int validation_rhythm = 2000;
-
-  const int output_rhythm = 2000;
-  const std::string base_name = "output/output";
-  const std::string vtk_extension = ".vtr";
-  const std::string binary_extension = ".xyz";
 
   const RealT dt = 0.0005;
 
@@ -323,68 +324,18 @@ int main(int argc, char** argv) {
     
     std::swap(pressure_0, pressure_1);
 
-    if (iter % receiver_output_rhythm == 0) {
-      
-      location_output.Write(propagation_grid, variable_storage, &receiver_file);
+    for (auto it = output_events.begin(); it != output_events.end(); ++it) {
 
-    }
+      const bool event_happens = (iter % it->rhythm() == 0);
 
-    if (iter % output_rhythm == 0) {
+      if (event_happens) {
 
-      std::stringstream vtk_sstr_output_filename;
-      vtk_sstr_output_filename << base_name;
-      vtk_sstr_output_filename << std::setfill('0') << std::setw(5) << iter;
-      vtk_sstr_output_filename << vtk_extension;
+        // LOG_VERBOSE << "Iteration " << iter << ", event " << it->type() << " happens";
+        it->Execute(iter, variable_storage, propagation_grid);
 
-      const std::string vtk_output_filename = vtk_sstr_output_filename.str();
-
-      LOG_INFO << "Writing output file \"" << vtk_output_filename << "\"...";
-    
-      std::ofstream vtk_output_file(vtk_output_filename.c_str(), std::ofstream::binary);
-      
-      OutputGridAndData(propagation_grid, variable_storage, &vtk_output_file);
-      
-      vtk_output_file.close();
-      
-      LOG_INFO << "Writing output file done.\n";
-
-      std::stringstream binary_sstr_output_filename;
-      binary_sstr_output_filename << base_name;
-      binary_sstr_output_filename << std::setfill('0') << std::setw(5) << iter;
-      binary_sstr_output_filename << binary_extension;
-
-      const std::string binary_output_filename = binary_sstr_output_filename.str();
-
-      LOG_INFO << "Writing output file \"" << binary_output_filename << "\"...";
-    
-      std::ofstream binary_output_file(binary_output_filename.c_str(), std::ofstream::binary);
-      
-      WriteBinaryVariable(variable::VARIABLE_NAMES[variable::PRESSURE_0],
-                          (sizeof(RealT) == 4 ? FLOAT32 : FLOAT64),
-                          variable_storage.n_fast(), variable_storage.n_fast_padding(),
-                          variable_storage.n2(), variable_storage.n3(), 1,
-                          variable_storage.RawDataSlowDimension(variable::PRESSURE_0),
-                          &binary_output_file);
-      
-      binary_output_file.close();
-      
-      LOG_INFO << "Writing output file done.\n";
-
-    }
-
-
-
-    if (iter % validation_rhythm == 0) {
-
-      LOG_INFO << "Iteration " << iter;
-
-      // For debug.
-      variable_storage.Validate();
-
+      }
     }
   }
-
-  receiver_file.close();
 
   free(sponge_fast);
   free(sponge_medium);
@@ -393,52 +344,10 @@ int main(int argc, char** argv) {
   // Variables cleanup.
   variable_storage.DeAllocate();
 
-  // Convert receiver file to VTK.
-
-  // Time is in milliseconds.
-  const RectilinearGrid3D receiver_grid = 
-    RectilinearGrid3D(x_min_grid, x_max_grid, nx, 
-                      y_min_grid, y_max_grid, ny,
-                      z_min_grid, z_max_grid,
-                      nb_iter / receiver_output_rhythm);
-
-  MultiDimensionalStorage4D variable_storage_receivers = 
-    MultiDimensionalStorage4D(nx, ny, nb_iter / receiver_output_rhythm, nb_variables, nx_padding);
-
-  variable_storage_receivers.Allocate();
-  
-  RealT* data = variable_storage_receivers.RawDataSlowDimension(variable::PRESSURE_0);
-
-  std::ifstream receiver_file_binary;
-  LOG_INFO << "Reading receiver file "
-           << "\'" << receiver_filename << "\'"
-           << " for VTK conversion...";
-
-  receiver_file_binary.open(receiver_filename.c_str(), std::ifstream::in | std::ifstream::binary);
-  ReadBinaryVariable(receiver_file_binary, nx, nx_padding, ny, nb_iter / receiver_output_rhythm, 1, data);
-  receiver_file_binary.close();
-
-  LOG_INFO << "Reading receiver file done.";
-  
-  variable_storage_receivers.Validate();
-
-  const std::string output_filename = "output/receivers.vtr";
-
-  LOG_INFO << "Writing VTK receiver file \"" << output_filename << "\"...";
-  
-  std::ofstream receivers_vtk_file(output_filename.c_str(), std::ofstream::binary);
-  
-  OutputGridAndData(receiver_grid, variable_storage_receivers, &receivers_vtk_file);
-  
-  receivers_vtk_file.close();
-  
-  LOG_INFO << "Writing VTK receiver file done.\n";
-  
-  variable_storage_receivers.DeAllocate();
-
-  LOG_INFO << "";
-
   Timer::PrintTimings(timings_update, "WavePropagation", &std::cerr);
+
+  for (auto it = output_events.begin(); it != output_events.end(); ++it)
+    it->Destroy();
  
   return 0;
 }

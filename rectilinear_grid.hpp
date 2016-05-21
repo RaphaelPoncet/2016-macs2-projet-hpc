@@ -27,6 +27,12 @@ public:
   int n_fast() const { return m_n_fast; }
   int n_medium() const { return m_n_medium; }
   int n_slow() const { return m_n_slow; }
+  int x_fast_min() const {return m_x_fast_min; }
+  int x_fast_max() const {return m_x_fast_max; }
+  int x_medium_min() const {return m_x_medium_min; }
+  int x_medium_max() const {return m_x_medium_max; }
+  int x_slow_min() const {return m_x_slow_min; }
+  int x_slow_max() const {return m_x_slow_max; }
   void WriteHeaderVTKXml(std::ofstream* os_ptr) const;
   void WriteHeaderVTKXml(std::ofstream* os_ptr);
   void WriteFooterVTKXml(std::ofstream* os_ptr) const;

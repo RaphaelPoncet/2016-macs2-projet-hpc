@@ -114,7 +114,7 @@ void MultiDimensionalStorage4D::DeAllocate() {
  
 }
 
-void MultiDimensionalStorage4D::Validate() {
+void MultiDimensionalStorage4D::Validate() const {
 
   LOG_INFO << "Validating 4D storage...";
 
@@ -179,7 +179,7 @@ void MultiDimensionalStorage4D::Validate() {
   if (error_count != 0) {
 
     LOG_ERROR << "in MultiDimensional4D instance, "
-	      << error_count << " elements in padded area have been touched.";
+              << error_count << " elements in padded area have been touched.";
 
     std::abort();
 
@@ -202,6 +202,12 @@ void MultiDimensionalStorage4D::Validate() {
 
   free(minimums);
   free(maximums);
+}
+
+void MultiDimensionalStorage4D::Validate() {
+
+  return const_cast<const MultiDimensionalStorage4D*>(this)->Validate();
+
 }
 
 RealT* MultiDimensionalStorage4D::RawDataSlowDimension(int i) {

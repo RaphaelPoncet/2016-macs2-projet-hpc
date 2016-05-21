@@ -206,7 +206,7 @@ void OutputGridAndData(const RectilinearGrid3D& grid,
     *os_ptr << point_data_arrays_header.str();
     
     *os_ptr << "</Piece>\n"
-                << "</RectilinearGrid>\n";
+            << "</RectilinearGrid>\n";
 
     // The underscore is intentional.
     *os_ptr << "<AppendedData encoding=\"raw\">\n_";

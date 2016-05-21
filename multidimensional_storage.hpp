@@ -35,6 +35,7 @@ public:
   void Allocate();
   void DeAllocate();
   void Validate();
+  void Validate() const;
   RealT* RawDataSlowDimension(int i);
   const RealT* RawDataSlowDimension(int i) const;
 private:

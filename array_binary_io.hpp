@@ -26,14 +26,31 @@ void ReadBinaryVariableHeader(std::istream* is_ptr,
                               int* nb_components_ptr, 
                               int* n_fast_ptr,
                               int* n_medium_ptr,
-                              int* n_slow_ptr);
+                              int* n_slow_ptr,
+                              RealT* x_fast_min_ptr,
+                              RealT* x_fast_max_ptr,
+                              RealT* x_medium_min_ptr,
+                              RealT* x_medium_max_ptr,
+                              RealT* x_slow_min_ptr,
+                              RealT* x_slow_max_ptr);
+
 
 void ReadBinaryVariable(std::istream& input_stream, 
                         int n_fast, int n_fast_padding, int n_medium, 
                         int n_slow, int nb_components, RealT* data);
 
-void WriteBinaryVariableHeader(const std::string& variable_name, DataType data_type, 
-                               int nb_components, int n_fast, int n_medium, int n_slow, 
+void WriteBinaryVariableHeader(const std::string& variable_name, 
+                               DataType data_type, 
+                               int nb_components, 
+                               int n_fast, 
+                               int n_medium, 
+                               int n_slow, 
+                               RealT x_fast_min, 
+                               RealT x_fast_max,
+                               RealT x_medium_min, 
+                               RealT x_medium_max,
+                               RealT x_slow_min, 
+                               RealT x_slow_max,
                                std::ostream* os_ptr);
 
 void WriteBinaryVariableSliceSlowDimension(int n_fast, int n_fast_padding, 
@@ -42,8 +59,12 @@ void WriteBinaryVariableSliceSlowDimension(int n_fast, int n_fast_padding,
 
 void WriteBinaryVariable(const std::string& variable_name,
                          DataType data_type,
+                         int nb_components,
                          int n_fast, int n_fast_padding, 
-                         int n_medium, int n_slow, int nb_components, 
+                         int n_medium, int n_slow,
+                         RealT x_fast_min, RealT x_fast_max,
+                         RealT x_medium_min, RealT x_medium_max,
+                         RealT x_slow_min, RealT x_slow_max,
                          const RealT* data, std::ostream* os_ptr);
 
 #endif // ARRAY_BINARY_IO_HPP

@@ -38,7 +38,13 @@ void ReadBinaryVariableHeader(std::istream* is_ptr,
                               int* nb_components_ptr, 
                               int* n_fast_ptr,
                               int* n_medium_ptr,
-                              int* n_slow_ptr) {
+                              int* n_slow_ptr,
+                              RealT* x_fast_min_ptr,
+                              RealT* x_fast_max_ptr,
+                              RealT* x_medium_min_ptr,
+                              RealT* x_medium_max_ptr,
+                              RealT* x_slow_min_ptr,
+                              RealT* x_slow_max_ptr) {
 
   if (!*is_ptr) {
 
@@ -49,11 +55,17 @@ void ReadBinaryVariableHeader(std::istream* is_ptr,
 
   std::string parsed_name = "";
   std::string parsed_datatype_str = "";
+  DataType parsed_datatype = NONE;
+  int parsed_nb_components = -1;
   int parsed_n_fast = -1;
   int parsed_n_medium = -1;
   int parsed_n_slow = -1;
-  int parsed_nb_components = -1;
-  DataType parsed_datatype = NONE;
+  RealT parsed_x_fast_min = 0.0;
+  RealT parsed_x_fast_max = 0.0;
+  RealT parsed_x_medium_min = 0.0;
+  RealT parsed_x_medium_max = 0.0;
+  RealT parsed_x_slow_min = 0.0;
+  RealT parsed_x_slow_max = 0.0;
 
   // Will hold the current line.
   std::string line = "";
@@ -135,6 +147,66 @@ void ReadBinaryVariableHeader(std::istream* is_ptr,
 
       }
 
+      // x_fast_min
+      std::getline(isstream, token, ' ');
+      if (!ParseToken<RealT>(token, &parsed_x_fast_min)) {
+          
+        LOG_ERROR << "Bad input for variable x_fast_min (expecting a real): "
+                  << "\'" << token << "\'";
+        std::abort();
+
+      }
+
+      // x_fast_max.
+      std::getline(isstream, token, ' ');
+      if (!ParseToken<RealT>(token, &parsed_x_fast_max)) {
+
+        LOG_ERROR << "Bad input for variable x_fast_max (expecting a real): "
+                  << "\'" << token << "\'";
+        std::abort();
+
+      }
+
+      // x_medium_min
+      std::getline(isstream, token, ' ');
+      if (!ParseToken<RealT>(token, &parsed_x_medium_min)) {
+
+        LOG_ERROR << "Bad input for variable x_medium_min (expecting a real): "
+                  << "\'" << token << "\'";
+        std::abort();
+
+      }
+
+      // x_medium_max.
+      std::getline(isstream, token, ' ');
+      if (!ParseToken<RealT>(token, &parsed_x_medium_max)) {
+
+        LOG_ERROR << "Bad input for variable x_medium_max (expecting a real): "
+                  << "\'" << token << "\'";
+        std::abort();
+
+      }
+
+      // x_slow_min
+      std::getline(isstream, token, ' ');
+      if (!ParseToken<RealT>(token, &parsed_x_slow_min)) {
+
+        LOG_ERROR << "Bad input for variable x_slow_min (expecting a real): "
+                  << "\'" << token << "\'";
+        std::abort();
+
+      }
+
+      // x_slow_max.
+      std::getline(isstream, token, ' ');
+      if (!ParseToken<RealT>(token, &parsed_x_slow_max)) {
+
+        LOG_ERROR << "Bad input for variable x_slow_max (expecting a real): "
+                  << "\'" << token << "\'";
+        std::abort();
+
+      }
+
       break;
     }
 
@@ -190,7 +262,13 @@ void ReadBinaryVariableHeader(std::istream* is_ptr,
               << "nb_components:" << "\'" << parsed_nb_components << "\',"
               << "n_fast:" << "\'" << parsed_n_fast << "\',"
               << "n_medium:" << "\'" << parsed_n_medium << "\',"
-              << "n_slow:" << "\'" << parsed_n_slow << "\'"
+              << "n_slow:" << "\'" << parsed_n_slow << "\',"
+              << "x_fast_min:" << "\'" << parsed_x_fast_min << "\',"
+              << "x_fast_max:" << "\'" << parsed_x_fast_max << "\',"
+              << "x_medium_min:" << "\'" << parsed_x_medium_min << "\',"
+              << "x_medium_max:" << "\'" << parsed_x_medium_max << "\',"
+              << "x_slow_min:" << "\'" << parsed_x_slow_min << "\',"
+              << "x_slow_max:" << "\'" << parsed_x_slow_max << "\',"
               << "}";
 
   *name_ptr = parsed_name;
@@ -199,6 +277,12 @@ void ReadBinaryVariableHeader(std::istream* is_ptr,
   *n_fast_ptr = parsed_n_fast;
   *n_medium_ptr = parsed_n_medium;
   *n_slow_ptr = parsed_n_slow;
+  *x_fast_min_ptr = parsed_x_fast_min;
+  *x_fast_max_ptr = parsed_x_fast_max;
+  *x_medium_min_ptr = parsed_x_medium_min;
+  *x_medium_max_ptr = parsed_x_medium_max;
+  *x_slow_min_ptr = parsed_x_slow_min;
+  *x_slow_max_ptr = parsed_x_slow_max;
 
 }
 
@@ -222,6 +306,12 @@ void ReadBinaryVariable(std::istream& input_stream,
   int variable_n_fast = - 1;
   int variable_n_medium = - 1;
   int variable_n_slow = - 1;
+  RealT x_fast_min = 0.0;
+  RealT x_fast_max = 0.0;
+  RealT x_medium_min = 0.0;
+  RealT x_medium_max = 0.0;
+  RealT x_slow_min = 0.0;
+  RealT x_slow_max = 0.0;
 
   if (!input_stream) {
 
@@ -238,7 +328,13 @@ void ReadBinaryVariable(std::istream& input_stream,
                            &variable_nb_components,
                            &variable_n_fast, 
                            &variable_n_medium,
-                           &variable_n_slow);
+                           &variable_n_slow,
+                           &x_fast_min,
+                           &x_fast_max,
+                           &x_medium_min,
+                           &x_medium_max,
+                           &x_slow_min,
+                           &x_slow_max);
 
   // Validate that the parsed variable header is compatible with
   // the parameters passed to this function.
@@ -301,7 +397,11 @@ void ReadBinaryVariable(std::istream& input_stream,
 }
 
 void WriteBinaryVariableHeader(const std::string& variable_name, DataType data_type, 
-                               int nb_components, int n_fast, int n_medium, int n_slow, 
+                               int nb_components, 
+                               int n_fast, int n_medium, int n_slow, 
+                               RealT x_fast_min, RealT x_fast_max,
+                               RealT x_medium_min, RealT x_medium_max,
+                               RealT x_slow_min, RealT x_slow_max,
                                std::ostream* os_ptr) {
   
   *os_ptr << HEADER_MAGIC_CHAR << " " 
@@ -310,7 +410,11 @@ void WriteBinaryVariableHeader(const std::string& variable_name, DataType data_t
           << nb_components << " "
           << n_fast << " "
           << n_medium << " "
-          << n_slow << "\n";
+          << n_slow << " "
+          << x_fast_min << " " << x_fast_max << " "
+          << x_medium_min << " " << x_medium_max << " "
+          << x_slow_min << " " << x_slow_max << " "
+          << "\n";
  
 }
 
@@ -334,8 +438,12 @@ void WriteBinaryVariableSliceSlowDimension(int n_fast, int n_fast_padding,
 
 void WriteBinaryVariable(const std::string& variable_name,
                          DataType data_type,
+                         int nb_components,
                          int n_fast, int n_fast_padding, 
-                         int n_medium, int n_slow, int nb_components, 
+                         int n_medium, int n_slow,
+                         RealT x_fast_min, RealT x_fast_max,
+                         RealT x_medium_min, RealT x_medium_max,
+                         RealT x_slow_min, RealT x_slow_max,
                          const RealT* data, std::ostream* os_ptr) {
 
   UNUSED(nb_components);
@@ -354,7 +462,11 @@ void WriteBinaryVariable(const std::string& variable_name,
   }
 
   WriteBinaryVariableHeader(variable_name, data_type, nb_components,
-                            n_fast, n_medium, n_slow, os_ptr);
+                            n_fast, n_medium, n_slow, 
+                            x_fast_min, x_fast_max,
+                            x_medium_min, x_medium_max,
+                            x_slow_min, x_slow_max,
+                            os_ptr);
 
   for (int islow = 0; islow < n_slow; ++islow)
     WriteBinaryVariableSliceSlowDimension(n_fast, n_fast_padding, n_medium, islow,

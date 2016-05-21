@@ -54,9 +54,18 @@ void LocationOutput::WriteHeader(const RectilinearGrid3D& propagation_grid,
   const DataType data_type = (sizeof(RealT) == 4 ? FLOAT32 : FLOAT64);
   const int nb_components = 1;
 
-  WriteBinaryVariableHeader(variable_name, data_type, nb_components, 
-                            propagation_grid.n_fast(), propagation_grid.n_medium(), 
-                            nb_timesteps, os_ptr);
+  // N.B. Taking for the slow dimensions of the variable the same as
+  // the grid is just a convention (because the thirs variable for
+  // LocationOutput is time).
+  WriteBinaryVariableHeader(variable_name, data_type, 
+                            nb_components, 
+                            propagation_grid.n_fast(), 
+                            propagation_grid.n_medium(), 
+                            nb_timesteps, 
+                            propagation_grid.x_fast_min(), propagation_grid.x_fast_max(),
+                            propagation_grid.x_medium_min(), propagation_grid.x_medium_max(),
+                            propagation_grid.x_slow_min(), propagation_grid.x_slow_max(),
+                            os_ptr);
 
 }
 

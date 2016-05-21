@@ -1,0 +1,403 @@
+// Copyright 2016 Raphael Poncet.
+
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+
+//      http://www.apache.org/licenses/LICENSE-2.0
+
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language goveroning permissions and
+// limitations under the License.
+
+#include "parameter_parser.hpp"
+
+#include <cmath>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <streambuf>
+#include <vector>
+
+#include "picojson.h"
+
+#include "array_binary_io.hpp"
+#include "grid_output.hpp"
+#include "location_output.hpp"
+#include "multidimensional_storage.hpp"
+#include "rectilinear_grid.hpp"
+#include "variable_definitions.hpp"
+
+const std::string TMP_BINARY_FILENAME = "./tmp.dat";
+
+OutputEvent::OutputEvent():
+  m_type(""), m_format(""), m_stream_name(""), m_rhythm(0), 
+  m_output_stream_ptr(NULL), m_file_ptr(NULL), m_index_slow(-1) {};
+
+void OutputEvent::ParseFromJson(const picojson::value& v) {
+
+  // check if the type of the value is "object"
+  if (! v.is<picojson::object>()) {
+
+    LOG_ERROR << "Malformed JSON string. Check yout parameter file.";
+    std::abort();
+
+  }
+
+  picojson::object o = v.get<picojson::object>();
+
+  if (o["type"].is<std::string>())
+    m_type = o["type"].get<std::string>();
+  
+  if (o["format"].is<std::string>())
+    m_format = o["format"].get<std::string>();
+
+  if (o["file"].is<std::string>())
+    m_stream_name = o["file"].get<std::string>();
+
+  if (o["rhythm"].is<double>())
+    m_rhythm = o["rhythm"].get<double>();
+
+  if (o["iz"].is<double>())
+      m_index_slow = o["iz"].get<double>();
+
+}
+
+void OutputEvent::Validate() {
+
+  // Type is in a white list.
+  if (m_type == "OutputVariables") {
+
+    if (m_format == "binary" || m_format == "VTK") {
+
+    } else {
+
+      LOG_ERROR << "Invalid value for output event type: expected "
+                << "\'VTK\'"
+                << "or \'binary\'"
+                << ", got \'" << m_format << "\'";
+
+      std::abort();
+
+    }
+
+  } else if (m_type == "OutputReceivers") {
+
+    if (m_format == "binary" || m_format == "VTK") {
+
+    } else {
+
+      LOG_ERROR << "Invalid value for output event type: expected "
+                << "\'VTK\'"
+                << "or \'binary\'"
+                << ", got \'" << m_format << "\'";
+
+      std::abort();
+
+    }
+
+  } else if (m_type == "CheckVariables") {
+
+  } else {
+
+    LOG_ERROR << "Invalid value for output event type: expected "
+              << "\'OutputVariables\'"
+              << "or \'OutputReceivers\'"
+              << ", got \'" << m_type << "\'";
+
+    std::abort();
+
+  }
+  
+}
+
+void OutputEvent::Create(int nb_iter,
+                         const MultiDimensionalStorage4D& storage,
+                         const RectilinearGrid3D& grid) {
+
+  if (this->type() == "OutputVariables") {
+
+  } else if (this->type() == "OutputReceivers") {
+
+    m_file_ptr = new std::ofstream;
+    
+    // Whatever the format (VTK or gridded binary), we write the
+    // receivers data in a binary file, and convert it at the end if
+    // needed.
+
+    const std::string filename = 
+      (m_format != "binary" ? TMP_BINARY_FILENAME : m_stream_name);
+
+    m_file_ptr->open(filename, std::ios::out | std::ios::binary);
+
+    m_location_output_ptr = new LocationOutput(m_index_slow);
+    assert(0 < m_rhythm);
+    const int nb_outputs = std::ceil((RealT)nb_iter / (RealT)m_rhythm);
+    m_location_output_ptr->WriteHeader(grid, nb_outputs, m_file_ptr);
+
+  } else if (this->type() == "CheckVariables") {
+
+  } else {
+
+    assert(0);
+
+  }
+
+  UNUSED(storage);
+
+}
+
+void OutputEvent::Destroy() {
+
+  if (this->type() == "OutputVariables") {
+
+  } else if (this->type() == "OutputReceivers") {
+
+    m_file_ptr->close();
+    delete m_file_ptr;
+    delete m_location_output_ptr;
+
+    // Convert the receiver file, if needed.
+    
+    assert(m_format == "binary" || m_format == "VTK");
+
+    if (m_format == "VTK") {
+
+      std::string name = "";
+      DataType datatype = NONE;
+      int nb_components = - 1;
+      int n_fast = - 1;
+      int n_medium = - 1;
+      int n_slow = - 1;
+      RealT x_fast_min = 0.0;
+      RealT x_fast_max = 0.0;
+      RealT x_medium_min = 0.0;
+      RealT x_medium_max = 0.0;
+      RealT x_slow_min = 0.0;
+      RealT x_slow_max = 0.0;
+
+      LOG_VERBOSE << "Opening temporary file "
+                  << "\'" << TMP_BINARY_FILENAME << "\'"
+                  << " for VTK conversion...";
+
+      std::ifstream tmp_binary_file(TMP_BINARY_FILENAME, std::ifstream::in | std::ifstream::binary);
+
+      if (!tmp_binary_file) {
+    
+        LOG_ERROR << "Invalid input stream";
+        std::abort();
+
+      }
+
+      ReadBinaryVariableHeader(&tmp_binary_file,
+                               &name, 
+                               &datatype,
+                               &nb_components,
+                               &n_fast, 
+                               &n_medium,
+                               &n_slow,
+                               &x_fast_min,
+                               &x_fast_max,
+                               &x_medium_min,
+                               &x_medium_max,
+                               &x_slow_min,
+                               &x_slow_max);
+
+      const RectilinearGrid3D receiver_grid = 
+        RectilinearGrid3D(x_fast_min, x_fast_max, n_fast, 
+                          x_medium_min, x_medium_max, n_medium, 
+                          x_slow_min, x_slow_max, n_slow);
+
+      const int n_fast_padding = 0;
+
+      MultiDimensionalStorage4D variable_storage_receivers = 
+        MultiDimensionalStorage4D(n_fast, n_medium, n_slow, variable::NB_VARIABLES, n_fast_padding);
+      
+      variable_storage_receivers.Allocate();
+
+      RealT* data = variable_storage_receivers.RawDataSlowDimension(variable::PRESSURE_0);
+
+      tmp_binary_file.clear();
+      tmp_binary_file.seekg(0);
+
+      ReadBinaryVariable(tmp_binary_file, n_fast, n_fast_padding, n_medium, n_slow, nb_components, data);
+
+      tmp_binary_file.close();
+
+      LOG_VERBOSE << "Reading temporary file done.";
+
+      LOG_VERBOSE << "Destroying temporary file...";
+
+      LOG_VERBOSE << "Destroying temporary file done.";
+  
+      variable_storage_receivers.Validate();
+      
+      const std::string output_filename = m_stream_name;
+
+      LOG_VERBOSE << "Writing VTK receiver file \"" << output_filename << "\"...";
+  
+      std::ofstream receivers_vtk_file(output_filename.c_str(), std::ofstream::binary);
+  
+      OutputGridAndData(receiver_grid, variable_storage_receivers, &receivers_vtk_file);
+  
+      receivers_vtk_file.close();
+  
+      LOG_VERBOSE << "Writing VTK receiver file done.\n";
+      
+      variable_storage_receivers.DeAllocate();
+      
+    }
+
+  } else if (this->type() == "CheckVariables") {
+
+  } else {
+
+    assert(0);
+
+  }
+
+}
+
+void OutputEvent::Execute(int iter,
+                          const MultiDimensionalStorage4D& variable_storage, 
+                          const RectilinearGrid3D& grid) {
+
+  if (this->type() == std::string("OutputVariables")) {
+
+    m_file_ptr = new std::ofstream;
+
+    const std::string base_name = m_stream_name;
+
+    if (m_format == std::string("VTK")) {
+
+      const std::string vtk_extension = ".vtr";
+
+      std::stringstream vtk_sstr_output_filename;
+      vtk_sstr_output_filename << base_name;
+      vtk_sstr_output_filename << std::setfill('0') << std::setw(5) << iter;
+      vtk_sstr_output_filename << vtk_extension;
+    
+      const std::string vtk_output_filename = vtk_sstr_output_filename.str();
+      
+      LOG_INFO << "Writing output file \"" << vtk_output_filename << "\"...";
+
+      m_file_ptr->open(vtk_output_filename.c_str(), std::ofstream::binary);
+      OutputGridAndData(grid, variable_storage, m_file_ptr);
+
+      LOG_INFO << "Writing output file done.\n";
+
+    } else if (m_format == std::string("binary")) {
+
+      const std::string binary_extension = ".dat";
+
+      std::stringstream binary_sstr_output_filename;
+      binary_sstr_output_filename << base_name;
+      binary_sstr_output_filename << std::setfill('0') << std::setw(5) << iter;
+      binary_sstr_output_filename << binary_extension;
+
+      const std::string binary_output_filename = binary_sstr_output_filename.str();
+
+      LOG_INFO << "Writing output file \"" << binary_output_filename << "\"...";
+    
+      m_file_ptr->open(binary_output_filename, std::ios::out | std::ios::binary);
+
+      const int nb_components = 1;
+
+      WriteBinaryVariable(variable::VARIABLE_NAMES[variable::PRESSURE_0],
+                          (sizeof(RealT) == 4 ? FLOAT32 : FLOAT64),
+                          nb_components,
+                          variable_storage.n_fast(), variable_storage.n_fast_padding(),
+                          variable_storage.n2(), variable_storage.n3(),
+                          grid.x_fast_min(), grid.x_fast_max(),
+                          grid.x_medium_min(), grid.x_medium_max(),
+                          grid.x_slow_min(), grid.x_slow_max(),
+                          variable_storage.RawDataSlowDimension(variable::PRESSURE_0),
+                          m_file_ptr);
+      
+      LOG_INFO << "Writing output file done.\n";
+
+    } else {
+
+      assert(0);
+
+    }
+
+    m_file_ptr->flush();
+    m_file_ptr->close();
+    delete m_file_ptr;
+
+  } else if (this->type() == std::string("OutputReceivers")) {
+
+    if (m_location_output_ptr == NULL) {
+
+      LOG_ERROR << "in output event "
+                << "\'" << m_type << "\'"
+                << " (stream name \'" << m_stream_name << "\')"
+                << ", attempting to write a NULL file object. "
+                << "Did you initialize the event with Create() ?";
+
+      std::abort();
+
+    }
+    
+    m_location_output_ptr->Write(grid, variable_storage, m_file_ptr);
+
+  } else if (this->type() == "CheckVariables") {
+
+    variable_storage.Validate();
+
+  } else {
+
+    assert(0);
+
+  }
+
+}
+
+void ParseParameterFile(std::istream* input_stream_ptr,
+                        std::vector<OutputEvent>* output_events_ptr) {
+
+  std::string json_string;
+
+  input_stream_ptr->seekg(0, std::ios::end);   
+
+  json_string.reserve(input_stream_ptr->tellg());
+
+  input_stream_ptr->seekg(0, std::ios::beg);
+  
+  json_string.assign((std::istreambuf_iterator<char>(*input_stream_ptr)),
+                     std::istreambuf_iterator<char>());
+
+  std::stringstream sstr(json_string);
+
+  picojson::value v;
+  sstr >> v;
+
+  picojson::object o = v.get<picojson::object>();
+
+  picojson::array variable_names = o["variables"].get<picojson::array>();
+
+  for (picojson::array::iterator it = variable_names.begin(); it != variable_names.end(); it++)
+    LOG_ERROR << "found variable: " << it->get<std::string>();
+
+  picojson::array output_events_json = o["output"].get<picojson::array>();
+
+  for (picojson::array::iterator it = output_events_json.begin(); 
+       it != output_events_json.end(); it++) {
+
+    OutputEvent event = OutputEvent();
+    event.ParseFromJson(*it);
+    event.Validate();
+    output_events_ptr->push_back(event);
+
+    LOG_INFO << "Found output event: "
+             << "type=\'" << event.type() << "\', "
+             << "format=\'" << event.format() << "\', "
+             << "filename=\'" << event.stream_name() << "\', "
+             << "rhythm=\'" << event.rhythm() << "\'";
+
+  }
+
+}
