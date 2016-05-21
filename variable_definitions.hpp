@@ -31,19 +31,17 @@ namespace variable {
   enum {VELOCITY,
         PRESSURE_0,
         PRESSURE_1,
-        PRESSURE_2,
-        D2P_DT2,
+        LAPLACE_PRESSURE,
         NB_VARIABLES};
 
   static const char* VARIABLE_NAMES[NB_VARIABLES] = 
-    {"velocity", "pressure_0", "pressure_1", "pressure_2", "d2p_dt2"};
+    {"velocity", "pressure_0", "pressure_1", "laplace_pressure"};
   
   static const unsigned int VARIABLE_FLAGS[NB_VARIABLES] = 
     {WRITTEN | INITIALIZABLE,
      WRITTEN | INITIALIZABLE,
      WRITTEN | INITIALIZABLE,
-     !WRITTEN | !INITIALIZABLE,
-     !WRITTEN | !INITIALIZABLE};
+     WRITTEN | INITIALIZABLE};
     
 }
 

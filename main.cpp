@@ -66,9 +66,7 @@ int main(int argc, char** argv) {
 
   parameter_file.close();
 
-  const int nb_iter = 2001;
-
-  // assert(0);
+  const int nb_iter = 10001;
 
   // Variables information (hardcoded for now, in variable_definitions.hpp).
   const int nb_variables = variable::NB_VARIABLES;
@@ -169,6 +167,7 @@ int main(int argc, char** argv) {
 
   RealT* pressure_0 = variable_storage.RawDataSlowDimension(variable::PRESSURE_0);
   RealT* pressure_1 = variable_storage.RawDataSlowDimension(variable::PRESSURE_1);
+  RealT* laplace_p = variable_storage.RawDataSlowDimension(variable::LAPLACE_PRESSURE);
   RealT* velocity = variable_storage.RawDataSlowDimension(variable::VELOCITY);
 
   const RealT xmid = 0.5 * (x_min + x_max);
@@ -239,90 +238,44 @@ int main(int argc, char** argv) {
 
   const RealT dt = 0.0005;
 
+  // Main time loop. All numerics (except time step computation) is in
+  // here.
   for (int iter = 0; iter < nb_iter; ++iter) {
 
-    const RealT one = 1.0;
-    const RealT two = 2.0;
-    const RealT hx = one / 24.0;
-    const RealT hy = one / 24.0;
-    UNUSED(hy);
-    const RealT hz = one / 24.0;
+    const int stencil_radius = 1;
 
-    const int radius = 1;
-
-    const int n_fast = propagation_grid.n_fast();    
-    const int n_fast_pad = n_fast + variable_storage.n_fast_padding();
-    const int n_fast_min = radius;
-    const int n_fast_max = n_fast - radius;
-
-    const int n_medium = propagation_grid.n_medium();
-    const int n_medium_min = (n_medium == 1 ? 0 : radius);
-    const int n_medium_max = (n_medium == 1 ? n_medium : n_medium - radius);
-
-    const int n_slow = propagation_grid.n_slow();
-    const int n_slow_min = radius;
-    const int n_slow_max = n_slow - radius;
-
-    // // Sponge layer.
-    // for (int islow = 0; islow < n_slow; ++islow) {
-    //   for (int imedium = 0; imedium < n_medium; ++imedium) {
-    //     for (int ifast = 0; ifast < n_fast; ++ifast) {
-          
-    //       const size_t index = 
-    //         n_medium * n_fast_pad * islow + n_fast_pad * imedium + ifast;
-
-    //       const RealT scaling = sponge_slow[islow] * sponge_medium[imedium] * sponge_fast[ifast];
-    //       // const RealT scaling = 1.0;
-
-    //       pressure_1[index] *= scaling;
-
-    //     }
-    //   }
-    // }
+    const int n_fast = variable_storage.n_fast();
+    const int n_fast_padding = variable_storage.n_fast_padding();
+    const int n_medium = variable_storage.n2();
+    const int n_slow = variable_storage.n3();
 
     timer_start = Timer::Now();
+
+    // Apply sponge.
+    ApplySpongeLayer_0(n_fast, n_fast_padding, n_medium, n_slow,
+                       sponge_fast, sponge_medium, sponge_slow, 
+                       pressure_1);
+
+    ComputeLaplacian_0(n_fast, n_fast_padding, n_medium, n_slow,
+                       stencil_radius, dx, dy, dz, 
+                       pressure_0, laplace_p);
      
     // Advance pressure.
-    for (int islow = n_slow_min; islow < n_slow_max; ++islow) {
-      for (int imedium = n_medium_min; imedium < n_medium_max; ++imedium) {
-        for (int ifast = n_fast_min; ifast < n_fast_max; ++ifast) {
-            
-          const size_t index = 
-            n_medium * n_fast_pad * islow + n_fast_pad * imedium + ifast;
+    AdvanceWavePressure_0(n_fast, n_fast_padding, n_medium, n_slow, 
+                          stencil_radius, dt,
+                          velocity, laplace_p, pressure_0, pressure_1);
 
-          const RealT s = velocity[index] * velocity[index] * dt * dt;
-          // const RealT s = 1000.0 * 1000.0 * dt * dt;
+    // Apply sponge.
+    ApplySpongeLayer_0(n_fast, n_fast_padding, n_medium, n_slow,
+                       sponge_fast, sponge_medium, sponge_slow, 
+                       pressure_1);
 
-          pressure_1[index] = two * pressure_0[index] - pressure_1[index];
-          pressure_1[index] += s * hx * hx * (pressure_0[index + 1] - two * pressure_0[index] + pressure_0[index - 1]);
-          pressure_1[index] += s * hz * hz * (pressure_0[index + n_fast_pad] - two * pressure_0[index] + pressure_0[index - n_fast_pad]);
-        
-        }
-      }
-    }
+    // Exchange pressure arrays.
+    std::swap(pressure_0, pressure_1);
 
     timer_stop = Timer::Now();
 
     timings_update.push_back(Timer::DiffTime(timer_start, timer_stop));
-
-    // // Sponge layer.
-    // for (int islow = 0; islow < n_slow; ++islow) {
-    //   for (int imedium = 0; imedium < n_medium; ++imedium) {
-    //     for (int ifast = 0; ifast < n_fast; ++ifast) {
-          
-    //       const size_t index = 
-    //         n_medium * n_fast_pad * islow + n_fast_pad * imedium + ifast;
-
-    //       const RealT scaling = sponge_slow[islow] * sponge_medium[imedium] * sponge_fast[ifast];
-    //       // const RealT scaling = 1.0;
-
-    //       pressure_1[index] *= scaling;
-
-    //     }
-    //   }
-    // }
-    
-    std::swap(pressure_0, pressure_1);
 
     for (auto it = output_events.begin(); it != output_events.end(); ++it) {
 
@@ -344,10 +297,10 @@ int main(int argc, char** argv) {
   // Variables cleanup.
   variable_storage.DeAllocate();
 
-  Timer::PrintTimings(timings_update, "WavePropagation", &std::cerr);
-
   for (auto it = output_events.begin(); it != output_events.end(); ++it)
     it->Destroy();
+
+  Timer::PrintTimings(timings_update, "WavePropagation", &std::cerr);
  
   return 0;
 }

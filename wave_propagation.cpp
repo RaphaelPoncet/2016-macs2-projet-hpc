@@ -79,3 +79,109 @@ void DumpSpongeArray(int n, RealT* sponge_array, std::ostream* os_ptr) {
   DumpArrayAscii(n, sponge_array, os_ptr);
 
 }
+
+// Basic absorbing boundary conditions.
+void ApplySpongeLayer_0(int n_fast, int n_fast_padding, 
+                        int n_medium, int n_slow,
+                        const RealT* sponge_fast,
+                        const RealT* sponge_medium,
+                        const RealT* sponge_slow,
+                        RealT* data) {
+
+  const int n_fast_pad = n_fast + n_fast_padding;
+
+  // Sponge layer.
+  for (int islow = 0; islow < n_slow; ++islow) {
+    for (int imedium = 0; imedium < n_medium; ++imedium) {
+      for (int ifast = 0; ifast < n_fast; ++ifast) {
+          
+        const size_t index = 
+          n_medium * n_fast_pad * islow + n_fast_pad * imedium + ifast;
+
+        const RealT scaling = sponge_slow[islow] * sponge_medium[imedium] * sponge_fast[ifast];
+        // const RealT scaling = 1.0;
+
+        data[index] *= scaling;
+
+        }
+      }
+    }
+}
+
+void ComputeLaplacian_0(int n_fast, int n_fast_padding, 
+                        int n_medium, int n_slow,
+                        int stencil_radius,
+                        RealT dx, RealT dy, RealT dz, 
+                        const RealT* p, RealT* laplace_p) {
+  
+  UNUSED(dy);
+  
+  const int n_fast_pad = n_fast + n_fast_padding;
+
+  const bool two_dimensional_mode = (n_medium == 1);
+
+  if (two_dimensional_mode) {
+
+    for (int islow = 0; islow < n_slow; ++islow) {
+      if ((islow >= stencil_radius) && (islow < n_slow - stencil_radius)) {
+        for (int ifast = 0; ifast < n_fast; ++ifast) {
+          if ((ifast >= stencil_radius) && (ifast < n_fast - stencil_radius)) {
+
+            const size_t index = n_fast_pad * islow + ifast;
+
+            laplace_p[index] = (p[index + 1] - 2.0 * p[index] + p[index - 1]) / (dx * dx);
+            laplace_p[index] += (p[index + n_fast_pad] - 2.0 * p[index] + p[index - n_fast_pad]) / (dz * dz);
+              
+          }
+        }
+      }
+    }
+
+  } else {
+
+    LOG_ERROR << "3D wave propagation not implemented";
+    std::abort();
+
+  }
+
+}
+
+void AdvanceWavePressure_0(int n_fast, int n_fast_padding, 
+                           int n_medium, int n_slow,
+                           int stencil_radius,
+                           RealT dt, 
+                           const RealT* velocity,
+                           const RealT* laplace_p, 
+                           const RealT* p0, 
+                           RealT* p1) {
+  
+  const int n_fast_pad = n_fast + n_fast_padding;
+
+  const bool two_dimensional_mode = (n_medium == 1);
+
+  if (two_dimensional_mode) {
+
+    for (int islow = 0; islow < n_slow; ++islow) {
+      if ((islow >= stencil_radius) && (islow < n_slow - stencil_radius)) {
+        for (int ifast = 0; ifast < n_fast; ++ifast) {
+          if ((ifast >= stencil_radius) && (ifast < n_fast - stencil_radius)) {
+
+                const size_t index = n_fast_pad * islow + ifast;
+                
+                const RealT s = velocity[index] * velocity[index] * dt * dt;
+                
+                p1[index] = 2.0 * p0[index] - p1[index] + s * laplace_p[index];;
+              
+          }
+        }
+      }
+    }
+
+  } else {
+
+    LOG_ERROR << "3D wave propagation not implemented";
+    std::abort();
+
+  }
+
+}

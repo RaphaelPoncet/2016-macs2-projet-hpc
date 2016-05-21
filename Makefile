@@ -10,7 +10,6 @@ INCLUDES := -I ./external/plog/include -I ./external/picojson/
 DEFINES := -D RealT=double
 LDFLAGS := -lrt
 
-
 SHELL := /bin/bash
 
 SRC_PATH = ./

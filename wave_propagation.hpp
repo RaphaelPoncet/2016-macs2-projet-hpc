@@ -23,4 +23,29 @@ void InitSpongeArray(int sponge_width, int n, RealT* out);
 
 void DumpSpongeArray(int n, RealT* sponge_array, std::ostream* os_ptr);
 
+// Baseline non optimized kernel.
+void ApplySpongeLayer_0(int n_fast, int n_fast_padding, 
+                        int n_medium, int n_slow,
+                        const RealT* sponge_fast,
+                        const RealT* sponge_medium,
+                        const RealT* sponge_slow,
+                        RealT* data);
+
+// Baseline non optimized kernel.
+void ComputeLaplacian_0(int n_fast, int n_fast_padding, 
+                        int n_medium, int n_slow,
+                        int stencil_radius,
+                        RealT dx, RealT dy, RealT dz, 
+                        const RealT* p, RealT* laplace_p);
+
+// Baseline non optimized kernel.
+void AdvanceWavePressure_0(int n_fast, int n_fast_padding, 
+                           int n_medium, int n_slow,
+                           int stencil_radius,
+                           RealT dt, 
+                           const RealT* velocity,
+                           const RealT* laplace_p, 
+                           const RealT* p0, 
+                           RealT* p1);
+
 #endif // WAVE_PROPAGATION_HPP

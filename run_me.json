@@ -6,12 +6,12 @@
     "output" : [ {"type" : "CheckVariables",
                   "rhythm" : 1000},
                  {"type" : "OutputVariables", 
-                  "rhythm" : 1000, 
+                  "rhythm" : 3000, 
                   "format": "binary",
                   "file" : "./output/foobar"},
                  {"type" : "OutputReceivers", 
                   "rhythm" : 10, 
-                  "format": "VTK",
-                  "iz" : 10,
-                  "file" : "./output/receivers.vtr"}]
+                  "format": "binary",
+                  "iz" : 100,
+                  "file" : "./output/receivers.dat"}]
 }
