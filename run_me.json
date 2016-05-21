@@ -1,0 +1,17 @@
+{
+    "grid" : { "nx" : 100, "ny" : 1, "nz" : 100 },
+
+    "variables" : ["pressure_0", "pressure_1", "velocity"],
+
+    "output" : [ {"type" : "CheckVariables",
+                  "rhythm" : 1000},
+                 {"type" : "OutputVariables", 
+                  "rhythm" : 1000, 
+                  "format": "binary",
+                  "file" : "./output/foobar"},
+                 {"type" : "OutputReceivers", 
+                  "rhythm" : 10, 
+                  "format": "VTK",
+                  "iz" : 10,
+                  "file" : "./output/receivers.vtr"}]
+}
