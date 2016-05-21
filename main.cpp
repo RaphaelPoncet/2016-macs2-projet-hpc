@@ -55,15 +55,14 @@ int main(int argc, char** argv) {
 
   LOG_INFO << "**** 2D/3D wave propagator in heterogeneous media ****\n";
 
-  const std::string parameter_filename = "./run_me.json";
+  RectilinearGrid3D propagation_grid = RectilinearGrid3D();
+  std::vector<OutputEvent> output_events;
 
+  const std::string parameter_filename = "./run_me.json";
   LOG_INFO << "Reading parameter file \"" << parameter_filename << "\"...";
 
-  std::vector<OutputEvent> output_events;
   std::ifstream parameter_file(parameter_filename.c_str(), std::ifstream::in);
-
-  ParseParameterFile(&parameter_file, &output_events);
-
+  ParseParameterFile(&parameter_file, &propagation_grid, &output_events);
   parameter_file.close();
 
   const int nb_iter = 10001;
@@ -82,57 +81,13 @@ int main(int argc, char** argv) {
 
   const int nx_padding = 17;
 
-  const int nx = 1700;
-  const RealT x_min = 0.0;
-  const RealT x_max = 13600;
+  const RealT dx = propagation_grid.dx_fast();
+  const RealT dy = propagation_grid.dx_medium();
+  const RealT dz = propagation_grid.dx_slow();
 
-  const int ny = 1;
-  const RealT y_min = 0.0;
-  const RealT y_max = 0.0;
-
-  const int nz = 350;
-  const RealT z_min = 0.0;
-  const RealT z_max = 2904.0;
-
-  assert(0 < nx);
-  const RealT dx = (x_max - x_min) / (RealT)nx;
-
-  assert(0 < ny);
-  const RealT dy = (y_max - y_min) / (RealT)ny;
-
-  assert(0 < nz);
-  const RealT dz = (z_max - z_min) / (RealT)nz;
-  
-  // Initialize grid from variable informations. 
-
-  // Depending on variable support (cell or node), grid extent
-  // and size will change a little.
-  //
-  // It is merely a matter of convenience for visualization: by
-  // default, Paraview outputs cell variables with no interpolation,
-  // and node variables with interpolation.
-
-  const VariableSupport variable_support = variable::VARIABLE_SUPPORT;
-
-  // The number of nodes is the number of cells + 1, except if the
-  // number of nodes is 1, when the number of cells is also 1.
-  const int nx_grid = 
-    (variable_support == CELL ? (nx == 1 ? nx : nx + 1) : nx);
-  const int ny_grid = 
-    (variable_support == CELL ? (ny == 1 ? ny : ny + 1) : ny);
-  const int nz_grid = 
-    (variable_support == CELL ? (nz == 1 ? nz : nz + 1) : nz);
-
-  const RealT x_min_grid = (variable_support == CELL ? x_min - 0.5 * dx: x_min);
-  const RealT x_max_grid = (variable_support == CELL ? x_max + 0.5 * dx: x_max);
-  const RealT y_min_grid = (variable_support == CELL ? y_min - 0.5 * dy: y_min);
-  const RealT y_max_grid = (variable_support == CELL ? y_max + 0.5 * dy: y_max);
-  const RealT z_min_grid = (variable_support == CELL ? z_min - 0.5 * dz: z_min);
-  const RealT z_max_grid = (variable_support == CELL ? z_max + 0.5 * dz: z_max);
-
-  RectilinearGrid3D propagation_grid = RectilinearGrid3D(x_min_grid, x_max_grid, nx_grid, 
-                                                         y_min_grid, y_max_grid, ny_grid, 
-                                                         z_min_grid, z_max_grid, nz_grid);
+  const int nx = propagation_grid.n_fast();
+  const int ny = propagation_grid.n_medium();
+  const int nz = propagation_grid.n_slow();
   
   MultiDimensionalStorage4D variable_storage = 
     MultiDimensionalStorage4D(nx, ny, nz, nb_variables, nx_padding);
@@ -144,9 +99,9 @@ int main(int argc, char** argv) {
   RealT* laplace_p = variable_storage.RawDataSlowDimension(variable::LAPLACE_PRESSURE);
   RealT* velocity = variable_storage.RawDataSlowDimension(variable::VELOCITY);
 
-  const RealT xmid = 0.5 * (x_min + x_max);
-  const RealT ymid = 0.5 * (y_min + y_max);
-  const RealT zmid = 500.0;//0.5 * (z_min + z_max);
+  const RealT xmid = 0.5 * (propagation_grid.x_fast_min() + propagation_grid.x_fast_max());
+  const RealT ymid = 0.5 * (propagation_grid.x_medium_min() + propagation_grid.x_medium_max());
+  const RealT zmid = 0.5 * (propagation_grid.x_slow_min() + propagation_grid.x_slow_max());
 
   for (int iz = 0; iz < nz; ++iz) {
     for (int iy = 0; iy < ny; ++iy) {

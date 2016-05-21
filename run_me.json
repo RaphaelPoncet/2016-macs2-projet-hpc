@@ -1,7 +1,7 @@
 {
-    "grid" : { "nx" : 100, "ny" : 1, "nz" : 100 },
-
     "variables" : ["pressure_0", "pressure_1", "velocity"],
+
+    "grid" : {"file" : "./data/marm2_downsampled_8.xyz"},
 
     "output" : [ {"type" : "CheckVariables",
                   "rhythm" : 1000},
@@ -9,9 +9,17 @@
                   "rhythm" : 3000, 
                   "format": "binary",
                   "file" : "./output/foobar"},
+                 {"type" : "OutputVariables", 
+                  "rhythm" : 2000, 
+                  "format": "VTK",
+                  "file" : "./output/dump"},
                  {"type" : "OutputReceivers", 
                   "rhythm" : 10, 
-                  "format": "VTK",
+                  "format": "binary",
                   "iz" : 100,
-                  "file" : "./output/receivers.vtr"}]
+                  "file" : "./output/receivers.dat"}],
+
+    "input" : [  {"velocity" : "./data/marm2_downsampled_8.xyz"},
+                 {"pressure_0" : "./data/marm2_downsampled_8.xyz"} ]
+
 }

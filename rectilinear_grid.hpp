@@ -21,6 +21,7 @@
 // Rectilinear 3D grid (also handles 2D as a particular case).
 class RectilinearGrid3D {
 public:
+  RectilinearGrid3D();
   RectilinearGrid3D(RealT x_fast_min, RealT x_fast_max, int n_fast,
                     RealT x_medium_min, RealT x_medium_max, int n_medium,
                     RealT x_slow_min, RealT x_slow_max, int n_slow);
@@ -33,6 +34,9 @@ public:
   int x_medium_max() const {return m_x_medium_max; }
   int x_slow_min() const {return m_x_slow_min; }
   int x_slow_max() const {return m_x_slow_max; }
+  RealT dx_fast() const;
+  RealT dx_medium() const;
+  RealT dx_slow() const;
   void WriteHeaderVTKXml(std::ofstream* os_ptr) const;
   void WriteHeaderVTKXml(std::ofstream* os_ptr);
   void WriteFooterVTKXml(std::ofstream* os_ptr) const;

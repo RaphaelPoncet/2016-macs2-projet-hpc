@@ -37,7 +37,7 @@ public:
   std::string stream_name() const { return m_stream_name; }
   int rhythm() { return m_rhythm; }
   int rhythm() const { return m_rhythm; }
-  void ParseFromJson(const picojson::value& v);
+  void ParseFromJSON(const picojson::value& v);
   void Validate();
   void Execute(int iter,
                const MultiDimensionalStorage4D& variable_storage,
@@ -58,6 +58,7 @@ private:
 };
 
 void ParseParameterFile(std::istream* input_stream_ptr,
+                        RectilinearGrid3D* grid_ptr,
                         std::vector<OutputEvent>* output_events_ptr);
 
 #endif // PARAMETER_PARSER_HPP

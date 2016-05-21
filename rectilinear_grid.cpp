@@ -50,9 +50,15 @@ static void LinearArray(RealT value_min, RealT value_max, int nb_elements, RealT
   
 }
 
+RectilinearGrid3D::RectilinearGrid3D():
+  m_n_fast(0), m_n_medium(0), m_n_slow(0), 
+  m_x_fast_min(0.0), m_x_fast_max(0.0), 
+  m_x_medium_min(0.0), m_x_medium_max(0.0), 
+  m_x_slow_min(0.0), m_x_slow_max(0.0) {}
+
 RectilinearGrid3D::RectilinearGrid3D(RealT x_fast_min, RealT x_fast_max, int n_fast,
-				     RealT x_medium_min, RealT x_medium_max, int n_medium,
-				     RealT x_slow_min, RealT x_slow_max, int n_slow):
+                                     RealT x_medium_min, RealT x_medium_max, int n_medium,
+                                     RealT x_slow_min, RealT x_slow_max, int n_slow):
   m_n_fast(n_fast), m_n_medium(n_medium), m_n_slow(n_slow), 
   m_x_fast_min(x_fast_min), m_x_fast_max(x_fast_max), 
   m_x_medium_min(x_medium_min), m_x_medium_max(x_medium_max), 
@@ -80,6 +86,30 @@ RectilinearGrid3D::RectilinearGrid3D(RealT x_fast_min, RealT x_fast_max, int n_f
   LinearArray(m_x_slow_min, m_x_slow_max, m_n_slow, VectorRawData<RealT>(m_slow_coordinates));
 		
   LOG_DEBUG << "Initialization done.\n";
+
+}
+
+RealT RectilinearGrid3D::dx_fast() const {
+
+  assert(0 < m_n_fast);
+  
+  return (m_x_fast_max - m_x_fast_min) / (RealT)m_n_fast;
+
+}
+
+RealT RectilinearGrid3D::dx_medium() const {
+
+  assert(0 < m_n_medium);
+  
+  return (m_x_medium_max - m_x_medium_min) / (RealT)m_n_medium;
+
+}
+
+RealT RectilinearGrid3D::dx_slow() const {
+
+  assert(0 < m_n_slow);
+  
+  return (m_x_slow_max - m_x_slow_min) / (RealT)m_n_slow;
 
 }
 

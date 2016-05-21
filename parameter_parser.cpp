@@ -36,7 +36,7 @@ OutputEvent::OutputEvent():
   m_type(""), m_format(""), m_stream_name(""), m_rhythm(0), 
   m_output_stream_ptr(NULL), m_file_ptr(NULL), m_index_slow(-1) {};
 
-void OutputEvent::ParseFromJson(const picojson::value& v) {
+void OutputEvent::ParseFromJSON(const picojson::value& v) {
 
   // check if the type of the value is "object"
   if (! v.is<picojson::object>()) {
@@ -358,7 +358,107 @@ void OutputEvent::Execute(int iter,
 
 }
 
+static void ParseGridFromJSON(picojson::object& v_grid, 
+                              RectilinearGrid3D* grid_ptr) {
+
+  UNUSED(v_grid);
+  UNUSED(grid_ptr);
+
+  const bool has_file = v_grid["file"].is<std::string>();
+  assert(has_file);
+
+  if (has_file) {
+    
+    const std::string grid_filename = v_grid["file"].get<std::string>();
+    
+    std::ifstream tmp_binary_file(grid_filename, std::ifstream::in | std::ifstream::binary);
+
+    if (!tmp_binary_file) {
+      
+      LOG_ERROR << "Invalid input stream";
+      std::abort();
+      
+    }
+
+    std::string dummy_name = "";
+    DataType dummy_datatype = NONE;
+    int dummy_nb_components = - 1;
+    int n_fast = - 1;
+    int n_medium = - 1;
+    int n_slow = - 1;
+    RealT x_fast_min = 0.0;
+    RealT x_fast_max = 0.0;
+    RealT x_medium_min = 0.0;
+    RealT x_medium_max = 0.0;
+    RealT x_slow_min = 0.0;
+    RealT x_slow_max = 0.0;
+
+    ReadBinaryVariableHeader(&tmp_binary_file,
+                             &dummy_name, 
+                             &dummy_datatype,
+                             &dummy_nb_components,
+                             &n_fast, 
+                             &n_medium,
+                             &n_slow,
+                             &x_fast_min,
+                             &x_fast_max,
+                             &x_medium_min,
+                             &x_medium_max,
+                             &x_slow_min,
+                             &x_slow_max);
+
+    // Initialize grid from geometry informations. 
+    
+    // Depending on variable support (cell or node), grid extent
+    // and size will change a little.
+    //
+    // It is merely a matter of convenience for visualization: by
+    // default, Paraview outputs cell variables with no interpolation,
+    // and node variables with interpolation.
+
+    const VariableSupport variable_support = variable::VARIABLE_SUPPORT;
+
+    // The number of nodes is the number of cells + 1, except if the
+    // number of nodes is 1, when the number of cells is also 1.
+    const int n_fast_grid = 
+      (variable_support == CELL ? (n_fast == 1 ? n_fast : n_fast + 1) : n_fast);
+    const int n_medium_grid = 
+      (variable_support == CELL ? (n_medium == 1 ? n_medium : n_medium + 1) : n_medium);
+    const int n_slow_grid = 
+      (variable_support == CELL ? (n_slow == 1 ? n_slow : n_slow + 1) : n_slow);
+    
+    assert(0 < n_fast);
+    const RealT dx_fast = (x_fast_max - x_fast_min) / (RealT)n_fast;
+
+    assert(0 < n_medium);
+    const RealT dx_medium = (x_medium_max - x_medium_min) / (RealT)n_medium;
+
+    assert(0 < n_slow);
+    const RealT dx_slow = (x_slow_max - x_slow_min) / (RealT)n_slow;
+
+    const RealT x_fast_min_grid = 
+      (variable_support == CELL ? x_fast_min - 0.5 * dx_fast: x_fast_min);
+    const RealT x_fast_max_grid = 
+      (variable_support == CELL ? x_fast_max + 0.5 * dx_fast: x_fast_max);
+    const RealT x_medium_min_grid = 
+      (variable_support == CELL ? x_medium_min - 0.5 * dx_medium: x_medium_min);
+    const RealT x_medium_max_grid = 
+      (variable_support == CELL ? x_medium_max + 0.5 * dx_medium: x_medium_max);
+    const RealT x_slow_min_grid = 
+      (variable_support == CELL ? x_slow_min - 0.5 * dx_slow: x_slow_min);
+    const RealT x_slow_max_grid = 
+      (variable_support == CELL ? x_slow_max + 0.5 * dx_slow: x_slow_max);
+
+    *grid_ptr = RectilinearGrid3D(x_fast_min_grid, x_fast_max_grid, n_fast_grid, 
+                                  x_medium_min_grid, x_medium_max_grid, n_medium_grid, 
+                                  x_slow_min_grid, x_slow_max_grid, n_slow_grid);
+    
+  }
+
+}
+
 void ParseParameterFile(std::istream* input_stream_ptr,
+                        RectilinearGrid3D* grid_ptr,
                         std::vector<OutputEvent>* output_events_ptr) {
 
   std::string json_string;
@@ -379,27 +479,62 @@ void ParseParameterFile(std::istream* input_stream_ptr,
 
   picojson::object o = v.get<picojson::object>();
 
-  picojson::array variable_names = o["variables"].get<picojson::array>();
+  const bool has_grid = o["grid"].is<picojson::object>();
 
-  for (picojson::array::iterator it = variable_names.begin(); it != variable_names.end(); it++)
-    LOG_ERROR << "found variable: " << it->get<std::string>();
+  if (has_grid) {
 
-  picojson::array output_events_json = o["output"].get<picojson::array>();
+    picojson::object v_grid = o["grid"].get<picojson::object>();
 
-  for (picojson::array::iterator it = output_events_json.begin(); 
-       it != output_events_json.end(); it++) {
+    ParseGridFromJSON(v_grid, grid_ptr);
+    
+  }
 
-    OutputEvent event = OutputEvent();
-    event.ParseFromJson(*it);
-    event.Validate();
-    output_events_ptr->push_back(event);
+  const bool has_variables = o["variables"].is<picojson::array>();
 
-    LOG_INFO << "Found output event: "
-             << "type=\'" << event.type() << "\', "
-             << "format=\'" << event.format() << "\', "
-             << "filename=\'" << event.stream_name() << "\', "
-             << "rhythm=\'" << event.rhythm() << "\'";
+  if (has_variables) {
 
+    picojson::array variable_names = o["variables"].get<picojson::array>();
+
+    // for (auto it = variable_names.begin(); it != variable_names.end(); ++it)
+    //   LOG_ERROR << "found variable: " << it->get<std::string>();
+
+  }
+
+  const bool has_output = o["output"].is<picojson::array>();
+
+  if (has_output) {
+
+    picojson::array output_events_json = o["output"].get<picojson::array>();
+
+    for (auto it = output_events_json.begin(); it != output_events_json.end(); ++it) {
+
+      OutputEvent event = OutputEvent();
+      event.ParseFromJSON(*it);
+      event.Validate();
+      output_events_ptr->push_back(event);
+
+      LOG_INFO << "Found output event: "
+               << "type=\'" << event.type() << "\', "
+               << "format=\'" << event.format() << "\', "
+               << "filename=\'" << event.stream_name() << "\', "
+               << "rhythm=\'" << event.rhythm() << "\'";
+
+    }
+
+  }
+
+
+
+  const bool has_input = o["input"].is<picojson::array>();
+
+  if (has_input) {
+
+    picojson::array input_events_json = o["input"].get<picojson::array>();
+
+    // for (auto it = input_events_json.begin(); it != input_events_json.end(); ++it) {
+    //   LOG_ERROR << it->to_str();
+
+    // }
   }
 
 }
