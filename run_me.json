@@ -11,7 +11,7 @@
                   "file" : "./output/foobar"},
                  {"type" : "OutputReceivers", 
                   "rhythm" : 10, 
-                  "format": "binary",
+                  "format": "VTK",
                   "iz" : 100,
-                  "file" : "./output/receivers.dat"}]
+                  "file" : "./output/receivers.vtr"}]
 }

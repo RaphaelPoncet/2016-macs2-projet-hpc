@@ -230,6 +230,8 @@ void OutputEvent::Destroy() {
 
       LOG_VERBOSE << "Destroying temporary file...";
 
+      std::remove(TMP_BINARY_FILENAME.c_str());
+
       LOG_VERBOSE << "Destroying temporary file done.";
   
       variable_storage_receivers.Validate();
