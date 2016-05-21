@@ -82,19 +82,6 @@ int main(int argc, char** argv) {
 
   const int nx_padding = 17;
 
-  // Variables size and extent in all 3 dimensions.
-  // const int nx = 384;
-  // const RealT x_min = 0.0;
-  // const RealT x_max = 9192.0;
-
-  // const int ny = 1;
-  // const RealT y_min = 0.0;
-  // const RealT y_max = 0.0;
-
-  // const int nz = 122;
-  // const RealT z_min = 0.0;
-  // const RealT z_max = 2904.0;
-
   const int nx = 1700;
   const RealT x_min = 0.0;
   const RealT x_max = 13600;
@@ -106,19 +93,6 @@ int main(int argc, char** argv) {
   const int nz = 350;
   const RealT z_min = 0.0;
   const RealT z_max = 2904.0;
-
-  // const int nx = 3000;
-  // const RealT x_min = 0.0;
-  // const RealT x_max = 13600;
-
-  // const int ny = 1;
-  // const RealT y_min = 0.0;
-  // const RealT y_max = 0.0;
-
-  // const int nz = 3000;
-  // const RealT z_min = 0.0;
-  // const RealT z_max = 2904.0;
-
 
   assert(0 < nx);
   const RealT dx = (x_max - x_min) / (RealT)nx;
