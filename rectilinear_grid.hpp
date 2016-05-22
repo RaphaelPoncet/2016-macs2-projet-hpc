@@ -37,12 +37,12 @@ public:
   RealT dx_fast() const;
   RealT dx_medium() const;
   RealT dx_slow() const;
+  std::vector<RealT>fast_coordinates() const {return m_fast_coordinates;}
+  std::vector<RealT>medium_coordinates() const {return m_medium_coordinates;}
+  std::vector<RealT>slow_coordinates() const {return m_slow_coordinates;}
   void WriteHeaderVTKXml(std::ofstream* os_ptr) const;
-  void WriteHeaderVTKXml(std::ofstream* os_ptr);
   void WriteFooterVTKXml(std::ofstream* os_ptr) const;
-  void WriteFooterVTKXml(std::ofstream* os_ptr);
   void WriteVTKXmlAscii(std::ofstream* os_ptr) const;
-  void WriteVTKXmlAscii(std::ofstream* os_ptr);
 private:
   int m_n_fast;
   int m_n_medium;

@@ -42,7 +42,7 @@ subdirs:
 
 $(EXE_NAME): $(OBJECTS) subdirs
 	@echo "Linking: $@"
-	$(CXX) $(OBJECTS) -L ${LIB_DIR} $(LDFLAGS) -o $@
+	$(CXX) $(OBJECTS) -o $@ -L ${LIB_DIR} $(LDFLAGS)
 
 $(BUILD_PATH)/%.$(SRC_EXTENSION).o: %.$(SRC_EXTENSION)
 	@echo $(SOURCES)

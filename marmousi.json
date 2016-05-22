@@ -1,6 +1,6 @@
 {
-    "variables" : {"velocity" : {"file" : "./data/marmousi_smooth.xyz"},
-                   "pressure_0" : {"formula" : "exp(-0.005 * ((x-100.0)*(x-100.0) - (y-100.0)*(y-100.0)))"}},
+    "init" : {"velocity" : {"file" : "./data/marmousi_smooth.xyz"},
+              "pressure_0" : {"formula" : "exp(-0.005 * ((x-100.0)*(x-100.0) - (y-100.0)*(y-100.0)))"}},
 
     "grid" : {"file" : "./data/marmousi_smooth.xyz"},
 

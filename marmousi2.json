@@ -1,5 +1,7 @@
 {
-    "variables" : {"velocity" : {"file" : "./data/marm2_downsampled_8.xyz"}},
+    "init" : {"velocity" : {"file" : "./data/marm2_downsampled_8.xyz"},
+              "pressure_0" : {"formula" : "exp(-0.003*((x-0.5*(xmin+xmax))^2 + (z-0.5*(zmin+zmax))^2))"},
+              "pressure_1" : {"formula" : "pressure_0"}},
 
     "grid" : {"file" : "./data/marm2_downsampled_8.xyz"},
 

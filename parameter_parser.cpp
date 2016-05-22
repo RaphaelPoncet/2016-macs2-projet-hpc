@@ -28,6 +28,7 @@
 #include "array_binary_io.hpp"
 #include "grid_output.hpp"
 #include "location_output.hpp"
+#include "mathematical_parser.hpp"
 #include "multidimensional_storage.hpp"
 #include "rectilinear_grid.hpp"
 #include "variable_definitions.hpp"
@@ -463,6 +464,7 @@ void ParseParameterFile(int n_fast_padding,
                         std::istream* input_stream_ptr,
                         RectilinearGrid3D* grid_ptr,
                         MultiDimensionalStorage4D* storage_ptr,
+                        MathematicalParser* math_parser_ptr,
                         std::vector<OutputEvent>* output_events_ptr) {
 
   std::string json_string;
@@ -493,6 +495,8 @@ void ParseParameterFile(int n_fast_padding,
     
   }
 
+  math_parser_ptr->SetGridConstants(*grid_ptr);
+
   *storage_ptr = MultiDimensionalStorage4D(grid_ptr->n_fast(),
                                            grid_ptr->n_medium(),
                                            grid_ptr->n_slow(),
@@ -501,9 +505,9 @@ void ParseParameterFile(int n_fast_padding,
 
   storage_ptr->Allocate();
 
-  const bool has_variables = o["variables"].is<picojson::object>();
+  const bool has_init = o["init"].is<picojson::object>();
 
-  if (has_variables) {
+  if (has_init) {
     
     std::map<std::string, int> variable_database;
     
@@ -514,8 +518,7 @@ void ParseParameterFile(int n_fast_padding,
       
     }
     
-    UNUSED(storage_ptr);
-    picojson::object variable_names_json = o["variables"].get<picojson::object>();
+    picojson::object variable_names_json = o["init"].get<picojson::object>();
 
     for (auto i = variable_names_json.begin(); i != variable_names_json.end(); ++i) {
 
@@ -569,6 +572,11 @@ void ParseParameterFile(int n_fast_padding,
                       << "\'" << var_name << "\'"
                       << " from formula "
                       << "\'" << formula << "\'";
+
+          std::stringstream parser_formula;
+          parser_formula << var_name << "=" << formula;
+
+          math_parser_ptr->EvaluateExpression(parser_formula.str(), *grid_ptr, storage_ptr);
 
         }
 
