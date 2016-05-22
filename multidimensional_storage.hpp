@@ -20,6 +20,7 @@
 // dimension. Fastest dimension can be padded.
 class MultiDimensionalStorage4D {
 public:
+  MultiDimensionalStorage4D();
   MultiDimensionalStorage4D(int n1, int n2, int n3, int n4);
   MultiDimensionalStorage4D(int n1, int n2, int n3, int n4, int padding);
   int n_fast() { return m_n_fast; }

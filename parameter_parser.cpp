@@ -17,8 +17,10 @@
 #include <cmath>
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <sstream>
 #include <streambuf>
+#include <utility>
 #include <vector>
 
 #include "picojson.h"
@@ -457,8 +459,10 @@ static void ParseGridFromJSON(picojson::object& v_grid,
 
 }
 
-void ParseParameterFile(std::istream* input_stream_ptr,
+void ParseParameterFile(int n_fast_padding,
+                        std::istream* input_stream_ptr,
                         RectilinearGrid3D* grid_ptr,
+                        MultiDimensionalStorage4D* storage_ptr,
                         std::vector<OutputEvent>* output_events_ptr) {
 
   std::string json_string;
@@ -489,16 +493,101 @@ void ParseParameterFile(std::istream* input_stream_ptr,
     
   }
 
-  const bool has_variables = o["variables"].is<picojson::array>();
+  *storage_ptr = MultiDimensionalStorage4D(grid_ptr->n_fast(),
+                                           grid_ptr->n_medium(),
+                                           grid_ptr->n_slow(),
+                                           variable::NB_VARIABLES,
+                                           n_fast_padding);
+
+  storage_ptr->Allocate();
+
+  const bool has_variables = o["variables"].is<picojson::object>();
 
   if (has_variables) {
+    
+    std::map<std::string, int> variable_database;
+    
+    for (int i = 0; i < variable::NB_VARIABLES; ++i) {
 
-    picojson::array variable_names = o["variables"].get<picojson::array>();
+      auto pair = std::make_pair(std::string(variable::VARIABLE_NAMES[i]), i);
+      variable_database.insert(pair);
+      
+    }
+    
+    UNUSED(storage_ptr);
+    picojson::object variable_names_json = o["variables"].get<picojson::object>();
 
-    // for (auto it = variable_names.begin(); it != variable_names.end(); ++it)
-    //   LOG_ERROR << "found variable: " << it->get<std::string>();
+    for (auto i = variable_names_json.begin(); i != variable_names_json.end(); ++i) {
 
+      const std::string var_name = i->first;
+      int index_var = - 1;
+
+      const bool var_found_in_database = 
+        (variable_database.find(var_name) != variable_database.end());
+
+      if (var_found_in_database) {
+
+        index_var = variable_database[var_name];
+        RealT* data = storage_ptr->RawDataSlowDimension(index_var);
+        UNUSED(data);
+
+        LOG_VERBOSE << "Variable "
+                    << "\'" << var_name << "\'"
+                    << " found in database with index "
+                    << index_var;
+
+        // TODO. Add init from formula.
+
+        const bool has_filename = 
+          i->second.is<std::string>();
+
+        if (has_filename) {
+
+          const std::string filename = i->second.get<std::string>();
+            
+          LOG_VERBOSE << "Reading variable from file "
+                      << "\'" << filename << "\'";
+
+          std::ifstream variable_file(filename, std::ifstream::in | std::ifstream::binary);
+          
+          if (!variable_file) {
+      
+            LOG_ERROR << "Invalid input stream";
+            std::abort();
+      
+          }
+
+          const int nb_components = 1;
+
+          ReadBinaryVariable(variable_file, 
+                             storage_ptr->n_fast(),
+                             storage_ptr->n_fast_padding(),
+                             storage_ptr->n2(),
+                             storage_ptr->n3(),
+                             nb_components, data);
+
+          variable_file.close();
+
+        }
+          
+      } else {
+
+        LOG_ERROR << "Variable "
+                  << "\'" << var_name << "\'"
+                  << " not found in database";
+        
+        std::abort();
+        
+      }
+
+    }
+
+    // assert(0);
+
+    storage_ptr->Validate();
   }
+
+  // assert(0);
 
   const bool has_output = o["output"].is<picojson::array>();
 
@@ -521,20 +610,6 @@ void ParseParameterFile(std::istream* input_stream_ptr,
 
     }
 
-  }
-
-
-
-  const bool has_input = o["input"].is<picojson::array>();
-
-  if (has_input) {
-
-    picojson::array input_events_json = o["input"].get<picojson::array>();
-
-    // for (auto it = input_events_json.begin(); it != input_events_json.end(); ++it) {
-    //   LOG_ERROR << it->to_str();
-
-    // }
   }
 
 }

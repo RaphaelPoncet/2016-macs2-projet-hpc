@@ -57,8 +57,10 @@ private:
   int m_index_slow;
 };
 
-void ParseParameterFile(std::istream* input_stream_ptr,
+void ParseParameterFile(int n_fast_padding,
+                        std::istream* input_stream_ptr,
                         RectilinearGrid3D* grid_ptr,
+                        MultiDimensionalStorage4D* storage_ptr,
                         std::vector<OutputEvent>* output_events_ptr);
 
 #endif // PARAMETER_PARSER_HPP

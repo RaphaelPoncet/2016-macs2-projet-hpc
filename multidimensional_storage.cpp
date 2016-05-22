@@ -36,6 +36,9 @@ static void ValidateInput(int n1, int n2, int n3, int n4, int padding) {
 
 }
 
+MultiDimensionalStorage4D::MultiDimensionalStorage4D():
+  m_n_fast(0), m_n2(0), m_n3(0), m_n_slow(0), m_n_fast_padding(0), m_data(NULL) {};
+
 MultiDimensionalStorage4D::MultiDimensionalStorage4D(int n1, int n2, int n3, int n4):
   m_n_fast(n1), m_n2(n2), m_n3(n3), m_n_slow(n4), m_n_fast_padding(0), m_data(NULL) {
   

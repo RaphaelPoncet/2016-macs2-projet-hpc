@@ -56,13 +56,16 @@ int main(int argc, char** argv) {
   LOG_INFO << "**** 2D/3D wave propagator in heterogeneous media ****\n";
 
   RectilinearGrid3D propagation_grid = RectilinearGrid3D();
+  MultiDimensionalStorage4D variable_storage;
   std::vector<OutputEvent> output_events;
 
-  const std::string parameter_filename = "./run_me.json";
+  const std::string parameter_filename = "./marmousi.json";
   LOG_INFO << "Reading parameter file \"" << parameter_filename << "\"...";
 
   std::ifstream parameter_file(parameter_filename.c_str(), std::ifstream::in);
-  ParseParameterFile(&parameter_file, &propagation_grid, &output_events);
+  const int nx_padding = 17;
+  ParseParameterFile(nx_padding, &parameter_file, &propagation_grid, 
+                     &variable_storage, &output_events);
   parameter_file.close();
 
   const int nb_iter = 10001;
@@ -79,8 +82,6 @@ int main(int argc, char** argv) {
 
   LOG_DEBUG << var_name_msg.str();
 
-  const int nx_padding = 17;
-
   const RealT dx = propagation_grid.dx_fast();
   const RealT dy = propagation_grid.dx_medium();
   const RealT dz = propagation_grid.dx_slow();
@@ -88,11 +89,6 @@ int main(int argc, char** argv) {
   const int nx = propagation_grid.n_fast();
   const int ny = propagation_grid.n_medium();
   const int nz = propagation_grid.n_slow();
-  
-  MultiDimensionalStorage4D variable_storage = 
-    MultiDimensionalStorage4D(nx, ny, nz, nb_variables, nx_padding);
-
-  variable_storage.Allocate();
 
   RealT* pressure_0 = variable_storage.RawDataSlowDimension(variable::PRESSURE_0);
   RealT* pressure_1 = variable_storage.RawDataSlowDimension(variable::PRESSURE_1);
@@ -120,24 +116,10 @@ int main(int argc, char** argv) {
 
         pressure_0[index] = expf( - 0.003 * distance);
         pressure_1[index] = pressure_0[index];
-        //velocity[index] = 1.0;
 	
       }
     }
   }
-
-  // Read velocity from a file.
-  const std::string input_filename = "data/marm2_downsampled_8.xyz";
-  // const std::string input_filename = "data/marmousi_smooth.xyz";
-
-  LOG_INFO << "Reading input file \"" << input_filename << "\"...";
-
-  std::ifstream velocity_file(input_filename.c_str(), std::ifstream::in | std::ifstream::binary);
-  ReadBinaryVariable(velocity_file, nx, nx_padding, ny, nz, 1, velocity);
-
-  LOG_INFO << "Reading input file done.\n";
-
-  variable_storage.Validate();
 
   // Init output events.
   for (auto it = output_events.begin(); it != output_events.end(); ++it)

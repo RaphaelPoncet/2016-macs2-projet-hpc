@@ -1,16 +1,16 @@
 {
-    "variables" : {"velocity" : "./data/marm2_downsampled_8.xyz"},
+    "variables" : {"velocity" : "./data/marmousi_smooth.xyz"},
 
-    "grid" : {"file" : "./data/marm2_downsampled_8.xyz"},
+    "grid" : {"file" : "./data/marmousi_smooth.xyz"},
 
     "output" : [ {"type" : "CheckVariables",
                   "rhythm" : 1000},
                  {"type" : "OutputVariables", 
-                  "rhythm" : 3000, 
+                  "rhythm" : 1000, 
                   "format": "binary",
                   "file" : "./output/foobar"},
                  {"type" : "OutputVariables", 
-                  "rhythm" : 3000, 
+                  "rhythm" : 1000, 
                   "format": "VTK",
                   "file" : "./output/pressure"},
                  {"type" : "OutputReceivers", 
