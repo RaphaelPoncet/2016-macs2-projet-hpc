@@ -32,13 +32,15 @@ namespace variable {
         PRESSURE_0,
         PRESSURE_1,
         LAPLACE_PRESSURE,
+        PRESSURE_REF,
         NB_VARIABLES};
 
   static const char* VARIABLE_NAMES[NB_VARIABLES] = 
-    {"velocity", "pressure_0", "pressure_1", "laplace_pressure"};
+    {"velocity", "pressure_0", "pressure_1", "pressure_ref", "laplace_pressure"};
   
   static const unsigned int VARIABLE_FLAGS[NB_VARIABLES] = 
     {WRITTEN | INITIALIZABLE,
+     WRITTEN | INITIALIZABLE,
      WRITTEN | INITIALIZABLE,
      WRITTEN | INITIALIZABLE,
      WRITTEN | INITIALIZABLE};

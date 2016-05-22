@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
   MathematicalParser math_parser;
   std::vector<OutputEvent> output_events;
 
-  const std::string parameter_filename = "./marmousi2.json";
+  const std::string parameter_filename = "./homogeneous.json";
   LOG_INFO << "Reading parameter file \"" << parameter_filename << "\"...";
 
   std::ifstream parameter_file(parameter_filename.c_str(), std::ifstream::in);
@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
 
   math_parser.PrintConstants();
 
-  const int nb_iter = 001;
+  const int nb_iter = 1000;
 
   // Variables information (hardcoded for now, in variable_definitions.hpp).
   const int nb_variables = variable::NB_VARIABLES;
@@ -90,40 +90,10 @@ int main(int argc, char** argv) {
   const RealT dy = propagation_grid.dx_medium();
   const RealT dz = propagation_grid.dx_slow();
 
-  // const int nx = propagation_grid.n_fast();
-  // const int ny = propagation_grid.n_medium();
-  // const int nz = propagation_grid.n_slow();
-
   RealT* pressure_0 = variable_storage.RawDataSlowDimension(variable::PRESSURE_0);
   RealT* pressure_1 = variable_storage.RawDataSlowDimension(variable::PRESSURE_1);
   RealT* laplace_p = variable_storage.RawDataSlowDimension(variable::LAPLACE_PRESSURE);
   RealT* velocity = variable_storage.RawDataSlowDimension(variable::VELOCITY);
-
-  // const RealT xmid = 0.5 * (propagation_grid.x_fast_min() + propagation_grid.x_fast_max());
-  // const RealT ymid = 0.5 * (propagation_grid.x_medium_min() + propagation_grid.x_medium_max());
-  // const RealT zmid = 0.5 * (propagation_grid.x_slow_min() + propagation_grid.x_slow_max());
-
-  // for (int iz = 0; iz < nz; ++iz) {
-  //   for (int iy = 0; iy < ny; ++iy) {
-  //     for (int ix = 0; ix < nx; ++ix) {
-
-  //       const int nx_pad = nx + nx_padding;
-
-  //       const size_t index = ny * nx_pad * iz + nx_pad * iy + ix;
-
-  //       const RealT x = (RealT)ix * dx;
-  //       const RealT y = (RealT)iy * dy;
-  //       const RealT z = (RealT)iz * dz;
-
-  //       const RealT distance = 
-  //         (x - xmid) * (x - xmid) + (y - ymid) * (y - ymid) + (z - zmid) * (z - zmid);
-
-  //       pressure_0[index] = expf( - 0.003 * distance);
-  //       pressure_1[index] = pressure_0[index];
-	
-  //     }
-  //   }
-  // }
 
   // Init output events.
   for (auto it = output_events.begin(); it != output_events.end(); ++it)
