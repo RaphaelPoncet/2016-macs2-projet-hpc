@@ -38,11 +38,16 @@ public:
   std::string stream_name() const { return m_stream_name; }
   int rhythm() { return m_rhythm; }
   int rhythm() const { return m_rhythm; }
+  std::string var_name() { return m_var_name; }
+  std::string var_name() const { return m_var_name; }
+  std::string formula() { return m_formula; }
+  std::string formula() const { return m_formula; }
   void ParseFromJSON(const picojson::value& v);
   void Validate();
   void Execute(int iter,
-               const MultiDimensionalStorage4D& variable_storage,
-               const RectilinearGrid3D& grid);
+               const RectilinearGrid3D& grid,
+               MathematicalParser* parser_ptr,
+               MultiDimensionalStorage4D* variable_storage_ptr);
   void Create(int nb_iter,
               const MultiDimensionalStorage4D& storage,
               const RectilinearGrid3D& grid);
@@ -56,6 +61,8 @@ private:
   std::ofstream* m_file_ptr;
   LocationOutput* m_location_output_ptr;
   int m_index_slow;
+  std::string m_var_name;
+  std::string m_formula;
 };
 
 void ParseParameterFile(int n_fast_padding,

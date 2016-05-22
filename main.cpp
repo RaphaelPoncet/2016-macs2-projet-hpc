@@ -178,7 +178,7 @@ int main(int argc, char** argv) {
       if (event_happens) {
 
         // LOG_VERBOSE << "Iteration " << iter << ", event " << it->type() << " happens";
-        it->Execute(iter, variable_storage, propagation_grid);
+        it->Execute(iter, propagation_grid, &math_parser, &variable_storage);
 
       }
     }

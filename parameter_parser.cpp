@@ -66,6 +66,17 @@ void OutputEvent::ParseFromJSON(const picojson::value& v) {
   if (o["iz"].is<double>())
       m_index_slow = o["iz"].get<double>();
 
+  if (o["name"].is<std::string>())
+    m_var_name = o["name"].get<std::string>();
+
+  if (o["formula"].is<std::string>()) {
+
+    std::stringstream formula;
+    formula << m_var_name << " = " << o["formula"].get<std::string>();
+    m_formula = formula.str();
+
+  }
+
 }
 
 void OutputEvent::Validate() {
@@ -102,6 +113,8 @@ void OutputEvent::Validate() {
     }
 
   } else if (m_type == "CheckVariables") {
+
+  } else if (m_type == "EvalVariable") {
 
   } else {
 
@@ -142,9 +155,13 @@ void OutputEvent::Create(int nb_iter,
 
   } else if (this->type() == "CheckVariables") {
 
+  } else if (this->type() == "EvalVariable") {
+
   } else {
 
-    assert(0);
+    LOG_ERROR << "Unrecognized event "
+              << "\'" << this->type() << "\'";
+    std::abort();
 
   }
 
@@ -257,6 +274,8 @@ void OutputEvent::Destroy() {
 
   } else if (this->type() == "CheckVariables") {
 
+  } else if (this->type() == "EvalVariable") {
+
   } else {
 
     assert(0);
@@ -266,8 +285,9 @@ void OutputEvent::Destroy() {
 }
 
 void OutputEvent::Execute(int iter,
-                          const MultiDimensionalStorage4D& variable_storage, 
-                          const RectilinearGrid3D& grid) {
+                          const RectilinearGrid3D& grid,
+                          MathematicalParser* parser_ptr,
+                          MultiDimensionalStorage4D* variable_storage_ptr) {
 
   if (this->type() == std::string("OutputVariables")) {
 
@@ -289,7 +309,7 @@ void OutputEvent::Execute(int iter,
       LOG_INFO << "Writing output file \"" << vtk_output_filename << "\"...";
 
       m_file_ptr->open(vtk_output_filename.c_str(), std::ofstream::binary);
-      OutputGridAndData(grid, variable_storage, m_file_ptr);
+      OutputGridAndData(grid, *variable_storage_ptr, m_file_ptr);
 
       LOG_INFO << "Writing output file done.\n";
 
@@ -313,12 +333,12 @@ void OutputEvent::Execute(int iter,
       WriteBinaryVariable(variable::VARIABLE_NAMES[variable::PRESSURE_0],
                           (sizeof(RealT) == 4 ? FLOAT32 : FLOAT64),
                           nb_components,
-                          variable_storage.n_fast(), variable_storage.n_fast_padding(),
-                          variable_storage.n2(), variable_storage.n3(),
+                          variable_storage_ptr->n_fast(), variable_storage_ptr->n_fast_padding(),
+                          variable_storage_ptr->n2(), variable_storage_ptr->n3(),
                           grid.x_fast_min(), grid.x_fast_max(),
                           grid.x_medium_min(), grid.x_medium_max(),
                           grid.x_slow_min(), grid.x_slow_max(),
-                          variable_storage.RawDataSlowDimension(variable::PRESSURE_0),
+                          variable_storage_ptr->RawDataSlowDimension(variable::PRESSURE_0),
                           m_file_ptr);
       
       LOG_INFO << "Writing output file done.\n";
@@ -347,17 +367,41 @@ void OutputEvent::Execute(int iter,
 
     }
     
-    m_location_output_ptr->Write(grid, variable_storage, m_file_ptr);
+    m_location_output_ptr->Write(grid, *variable_storage_ptr, m_file_ptr);
 
   } else if (this->type() == "CheckVariables") {
 
-    variable_storage.Validate();
+    variable_storage_ptr->Validate();
+
+  } else if (this->type() == "EvalVariable") {
+
+    parser_ptr->EvaluateExpression(this->formula(), grid, variable_storage_ptr);
 
   } else {
 
     assert(0);
 
   }
+
+}
+
+static void ParseFormulaFromJSON(picojson::object& o, 
+                                 const std::string& var_name,
+                                 const RectilinearGrid3D& grid,
+                                 MathematicalParser* math_parser_ptr,
+                                 MultiDimensionalStorage4D* storage_ptr) {
+
+  const std::string formula = o["formula"].get<std::string>();
+            
+  LOG_VERBOSE << "Evaluating variable "
+              << "\'" << var_name << "\'"
+              << " with formula "
+              << "\'" << formula << "\'";
+
+  std::stringstream parser_formula;
+  parser_formula << var_name << "=" << formula;
+  
+  math_parser_ptr->EvaluateExpression(parser_formula.str(), grid, storage_ptr);
 
 }
 
@@ -497,6 +541,29 @@ void ParseParameterFile(int n_fast_padding,
 
   math_parser_ptr->SetGridConstants(*grid_ptr);
 
+  const bool has_parameters = o["parameters"].is<picojson::array>();
+
+  if (has_parameters) {
+
+    picojson::array parameters = o["parameters"].get<picojson::array>();
+
+    for (auto i = parameters.begin(); i != parameters.end(); ++i) {
+
+      const std::string formula = i->to_str();
+
+      std::stringstream sstream(formula);
+      std::string constant_name = "";
+      std::getline(sstream, constant_name, '=');
+      std::string constant_formula = "";
+      std::getline(sstream, constant_formula, '=');
+
+      math_parser_ptr->SetExpression(constant_formula);
+      const double constant_value = math_parser_ptr->SafeEval();
+      math_parser_ptr->AddConstant(constant_name, constant_value);
+      
+    }    
+  }
+
   *storage_ptr = MultiDimensionalStorage4D(grid_ptr->n_fast(),
                                            grid_ptr->n_medium(),
                                            grid_ptr->n_slow(),
@@ -566,17 +633,8 @@ void ParseParameterFile(int n_fast_padding,
 
         if (has_formula) {
 
-          const std::string formula = o["formula"].get<std::string>();
-            
-          LOG_VERBOSE << "Reading variable "
-                      << "\'" << var_name << "\'"
-                      << " from formula "
-                      << "\'" << formula << "\'";
-
-          std::stringstream parser_formula;
-          parser_formula << var_name << "=" << formula;
-
-          math_parser_ptr->EvaluateExpression(parser_formula.str(), *grid_ptr, storage_ptr);
+          ParseFormulaFromJSON(o, var_name, *grid_ptr,
+                               math_parser_ptr, storage_ptr);
 
         }
 
@@ -628,8 +686,6 @@ void ParseParameterFile(int n_fast_padding,
     storage_ptr->Validate();
   }
 
-  // assert(0);
-
   const bool has_output = o["output"].is<picojson::array>();
 
   if (has_output) {
@@ -647,10 +703,11 @@ void ParseParameterFile(int n_fast_padding,
                << "type=\'" << event.type() << "\', "
                << "format=\'" << event.format() << "\', "
                << "filename=\'" << event.stream_name() << "\', "
-               << "rhythm=\'" << event.rhythm() << "\'";
+               << "rhythm=\'" << event.rhythm() << "\', "
+               << "var_name=\'" << event.var_name() << "\', "
+               << "formula=\'" << event.formula() << "\'";
 
     }
-
   }
 
 }

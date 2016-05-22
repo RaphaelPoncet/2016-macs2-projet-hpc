@@ -31,6 +31,8 @@ public:
   void EvaluateExpression(const std::string& expression,
                           const RectilinearGrid3D& grid,
                           MultiDimensionalStorage4D* variable_storage_ptr);
+  void SetExpression(const std::string& expression);
+  double SafeEval();
 private:
   mu::Parser m_parser;
 };

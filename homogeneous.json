@@ -1,11 +1,21 @@
 {
-    "init" : {"velocity" : {"formula" : "2000.0"},
-              "pressure_0" : {"formula" : "exp(-0.0006*((x-0.5*(xmin+xmax))^2 + (z-0.5*(zmin+zmax))^2))"},
+    "parameters" : ["xmid=0.5*(xmin+xmax)", 
+                    "zmid=0.5*(zmin+zmax)", 
+                    "lambda=0.0006", 
+                    "Vmin=2000.0",
+                    "Vmax=4000.0"],
+
+    "init" : {"velocity" : {"formula" : "(z < 2000.0 ? Vmin : Vmax)"},
+              "pressure_0" : {"formula" : "exp(-lambda*((x-xmid)^2 + (z-zmid)^2))"},
               "pressure_1" : {"formula" : "pressure_0"}},
 
     "grid" : {"file" : "./data/marm2_downsampled_8.xyz"},
 
-    "output" : [ {"type" : "CheckVariables",
+    "output" : [ {"type" : "EvalVariable", 
+                  "rhythm" : 100, 
+                  "name": "pressure_ref",
+                  "formula" : "pressure_0 - pressure_1"},
+                 {"type" : "CheckVariables",
                   "rhythm" : 200},
                  {"type" : "OutputVariables", 
                   "rhythm" : 200, 

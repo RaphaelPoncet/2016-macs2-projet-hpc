@@ -54,6 +54,16 @@ void MathematicalParser::SetGridConstants(const RectilinearGrid3D& grid) {
   AddConstant("zmin", grid.x_slow_min());
   AddConstant("zmax", grid.x_slow_max());
 
+  // Nyquist spatial frequency.
+  if (0.0 < grid.dx_fast())
+    AddConstant("nyquist_x", 1.0 / (2.0 * grid.dx_fast()));
+
+  if (0.0 < grid.dx_medium())
+    AddConstant("nyquist_y", 1.0 / (2.0 * grid.dx_medium()));
+
+  if (0.0 < grid.dx_slow())
+    AddConstant("nyquist_z", 1.0 / (2.0 * grid.dx_slow()));
+
 }
 
 void MathematicalParser::PrintConstants() {
@@ -124,7 +134,6 @@ void MathematicalParser::EvaluateExpression(const std::string& expression,
   
         std::abort();
       }
-
     }
   }
 
@@ -138,3 +147,29 @@ void MathematicalParser::EvaluateExpression(const std::string& expression,
 
 }
 
+void MathematicalParser::SetExpression(const std::string& expression) {
+
+  m_parser.SetExpr(expression);
+
+}
+ 
+double MathematicalParser::SafeEval() {
+
+  double value = 0.0;
+
+  try {
+
+    value = m_parser.Eval();
+    LOG_ERROR << "value=" << value;        
+        
+  } catch(mu::Parser::exception_type &e) {
+    
+    LOG_ERROR << "In formula "
+              << "\'" << e.GetExpr() << "\'"
+              << ", " << e.GetMsg();
+  
+    std::abort();
+  }
+  
+  return value;
+}
