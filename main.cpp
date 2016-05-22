@@ -33,10 +33,17 @@ static struct timespec timer_start;
 static struct timespec timer_stop;
 std::vector<double> timings_update;
 
+static int Usage(const std::string& exe_name) {
+
+  std::cout << "Usage: " << exe_name << " [parameter file]" << std::endl;
+  return 0;
+
+}
+
 int main(int argc, char** argv) {
 
-  UNUSED(argc);
-  UNUSED(argv);
+  if (argc != 2)
+    return Usage(std::string(argv[0]));
 
   // Initialize logging.
   const bool log_to_file = false;
@@ -56,12 +63,14 @@ int main(int argc, char** argv) {
 
   LOG_INFO << "**** 2D/3D wave propagator in heterogeneous media ****\n";
 
+  char const* const parameter_filename_c = argv[1];
+  const std::string parameter_filename = std::string(parameter_filename_c);
+
   RectilinearGrid3D propagation_grid = RectilinearGrid3D();
   MultiDimensionalStorage4D variable_storage;
   MathematicalParser math_parser;
   std::vector<OutputEvent> output_events;
 
-  const std::string parameter_filename = "./homogeneous.json";
   LOG_INFO << "Reading parameter file \"" << parameter_filename << "\"...";
 
   std::ifstream parameter_file(parameter_filename.c_str(), std::ifstream::in);
@@ -72,7 +81,7 @@ int main(int argc, char** argv) {
 
   math_parser.PrintConstants();
 
-  const int nb_iter = 1000;
+  const int nb_iter = 10000;
 
   // Variables information (hardcoded for now, in variable_definitions.hpp).
   const int nb_variables = variable::NB_VARIABLES;
