@@ -31,8 +31,8 @@ namespace variable {
   enum {VELOCITY,
         PRESSURE_0,
         PRESSURE_1,
-        LAPLACE_PRESSURE,
         PRESSURE_REF,
+        LAPLACE_PRESSURE,
         NB_VARIABLES};
 
   static const char* VARIABLE_NAMES[NB_VARIABLES] = 

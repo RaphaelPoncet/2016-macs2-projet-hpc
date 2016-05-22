@@ -160,7 +160,6 @@ double MathematicalParser::SafeEval() {
   try {
 
     value = m_parser.Eval();
-    LOG_ERROR << "value=" << value;        
         
   } catch(mu::Parser::exception_type &e) {
     

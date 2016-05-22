@@ -131,10 +131,14 @@ int main(int argc, char** argv) {
   sponge_slow_out.close();
 
   const RealT dt = 0.0005;
+  RealT t = 0.0;
 
   // Main time loop. All numerics (except time step computation) is in
   // here.
   for (int iter = 0; iter < nb_iter; ++iter) {
+
+    t = (double)iter * dt;
+    math_parser.AddConstant("t", t);
 
     const int stencil_radius = 1;
 
@@ -145,10 +149,10 @@ int main(int argc, char** argv) {
 
     timer_start = Timer::Now();
 
-    // Apply sponge.
-    ApplySpongeLayer_0(n_fast, n_fast_padding, n_medium, n_slow,
-                       sponge_fast, sponge_medium, sponge_slow, 
-                       pressure_1);
+    // // Apply sponge.
+    // ApplySpongeLayer_0(n_fast, n_fast_padding, n_medium, n_slow,
+    //                    sponge_fast, sponge_medium, sponge_slow, 
+    //                    pressure_1);
 
     ComputeLaplacian_0(n_fast, n_fast_padding, n_medium, n_slow,
                        stencil_radius, dx, dy, dz, 
@@ -159,10 +163,10 @@ int main(int argc, char** argv) {
                           stencil_radius, dt,
                           velocity, laplace_p, pressure_0, pressure_1);
 
-    // Apply sponge.
-    ApplySpongeLayer_0(n_fast, n_fast_padding, n_medium, n_slow,
-                       sponge_fast, sponge_medium, sponge_slow, 
-                       pressure_1);
+    // // Apply sponge.
+    // ApplySpongeLayer_0(n_fast, n_fast_padding, n_medium, n_slow,
+    //                    sponge_fast, sponge_medium, sponge_slow, 
+    //                    pressure_1);
 
     // Exchange pressure arrays.
     std::swap(pressure_0, pressure_1);

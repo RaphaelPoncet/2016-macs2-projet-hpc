@@ -115,6 +115,7 @@ void ComputeLaplacian_0(int n_fast, int n_fast_padding,
                         const RealT* p, RealT* laplace_p) {
   
   UNUSED(dy);
+  assert(stencil_radius == 1);
   
   const int n_fast_pad = n_fast + n_fast_padding;
 
@@ -123,20 +124,24 @@ void ComputeLaplacian_0(int n_fast, int n_fast_padding,
   if (two_dimensional_mode) {
 
     for (int islow = 0; islow < n_slow; ++islow) {
-      if ((islow >= stencil_radius) && (islow < n_slow - stencil_radius)) {
-        for (int ifast = 0; ifast < n_fast; ++ifast) {
-          if ((ifast >= stencil_radius) && (ifast < n_fast - stencil_radius)) {
+      for (int ifast = 0; ifast < n_fast; ++ifast) {
+          
+        const size_t index = n_fast_pad * islow + ifast;
 
-            const size_t index = n_fast_pad * islow + ifast;
+        // Periodical boundary conditions in x.
+        const RealT pressure_po = (ifast < n_fast - 1 ? p[index + 1] : p[index - (n_fast - 1)]); 
+        const RealT pressure_mo = (ifast >= 1 ? p[index - 1] : p[index + (n_fast - 1)]); 
 
-            laplace_p[index] = (p[index + 1] - 2.0 * p[index] + p[index - 1]) / (dx * dx);
-            laplace_p[index] += (p[index + n_fast_pad] - 2.0 * p[index] + p[index - n_fast_pad]) / (dz * dz);
-              
-          }
-        }
+        // // // Periodical boundary conditions in z.
+        const RealT pressure_op = (islow < n_slow - 1 ? p[index + n_fast_pad] : p[index - (n_slow - 1) * n_fast_pad]); 
+        const RealT pressure_om = (islow >= 1 ? p[index - n_fast_pad] : p[index + (n_slow - 1) * n_fast_pad]); 
+
+        laplace_p[index] = (pressure_po - 2.0 * p[index] + pressure_mo) / (dx * dx);
+        laplace_p[index] += (pressure_op - 2.0 * p[index] + pressure_om) / (dz * dz);
+
       }
     }
-
+    
   } else {
 
     LOG_ERROR << "3D wave propagation not implemented";
@@ -155,6 +160,8 @@ void AdvanceWavePressure_0(int n_fast, int n_fast_padding,
                            const RealT* p0, 
                            RealT* p1) {
   
+  assert(stencil_radius == 1);
+
   const int n_fast_pad = n_fast + n_fast_padding;
 
   const bool two_dimensional_mode = (n_medium == 1);
@@ -162,21 +169,18 @@ void AdvanceWavePressure_0(int n_fast, int n_fast_padding,
   if (two_dimensional_mode) {
 
     for (int islow = 0; islow < n_slow; ++islow) {
-      if ((islow >= stencil_radius) && (islow < n_slow - stencil_radius)) {
-        for (int ifast = 0; ifast < n_fast; ++ifast) {
-          if ((ifast >= stencil_radius) && (ifast < n_fast - stencil_radius)) {
+      for (int ifast = 0; ifast < n_fast; ++ifast) {
 
-                const size_t index = n_fast_pad * islow + ifast;
+        const size_t index = n_fast_pad * islow + ifast;
+        UNUSED(velocity);
+        UNUSED(dt);
+        const RealT s = velocity[index] * velocity[index] * dt * dt;
                 
-                const RealT s = velocity[index] * velocity[index] * dt * dt;
-                
-                p1[index] = 2.0 * p0[index] - p1[index] + s * laplace_p[index];;
-              
-          }
-        }
+        p1[index] = 2.0 * p0[index] - p1[index] + s * laplace_p[index];
+
       }
     }
-
+    
   } else {
 
     LOG_ERROR << "3D wave propagation not implemented";

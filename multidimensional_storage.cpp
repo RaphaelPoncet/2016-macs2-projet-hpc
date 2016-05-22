@@ -20,7 +20,7 @@
 // Dummy value for padded areas of storage (for debug).
 const RealT PADDING_FILL = - 3.1415926;
 // Dummy value for areas of storage (for detecting non-properly initialized data).
-const RealT INIT_FILL = 3.1415926;
+const RealT INIT_FILL = 0.0;
 
 #include "common.hpp"
 #include "multidimensional_storage.hpp"
@@ -56,11 +56,11 @@ MultiDimensionalStorage4D::MultiDimensionalStorage4D(int n1, int n2, int n3, int
 void MultiDimensionalStorage4D::Allocate() {
 
   LOG_DEBUG << "Allocating 4D storage with "
-	    << "[n_fast(+padding), n2, n3, n_slow] = "
-	    << "[" << m_n_fast << "(+" << m_n_fast_padding << "), "
-    	    << m_n2 << ", "
-	    << m_n3 << ", "
-	    << m_n_slow << "]...";
+            << "[n_fast(+padding), n2, n3, n_slow] = "
+            << "[" << m_n_fast << "(+" << m_n_fast_padding << "), "
+            << m_n2 << ", "
+            << m_n3 << ", "
+            << m_n_slow << "]...";
 
   const size_t nb_elements = (m_n_fast + m_n_fast_padding) * m_n2 * m_n3 * m_n_slow;
   const size_t size_in_bytes = nb_elements * sizeof(RealT);
@@ -101,7 +101,7 @@ void MultiDimensionalStorage4D::Allocate() {
   }
   
   LOG_DEBUG << "Setting storage done."
-	    << "\n";
+            << "\n";
   
 }
 
