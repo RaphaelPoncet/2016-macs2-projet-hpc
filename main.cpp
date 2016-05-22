@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
   MultiDimensionalStorage4D variable_storage;
   std::vector<OutputEvent> output_events;
 
-  const std::string parameter_filename = "./marmousi.json";
+  const std::string parameter_filename = "./marmousi2.json";
   LOG_INFO << "Reading parameter file \"" << parameter_filename << "\"...";
 
   std::ifstream parameter_file(parameter_filename.c_str(), std::ifstream::in);

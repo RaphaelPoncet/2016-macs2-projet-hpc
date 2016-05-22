@@ -529,23 +529,56 @@ void ParseParameterFile(int n_fast_padding,
 
         index_var = variable_database[var_name];
         RealT* data = storage_ptr->RawDataSlowDimension(index_var);
-        UNUSED(data);
 
         LOG_VERBOSE << "Variable "
                     << "\'" << var_name << "\'"
                     << " found in database with index "
                     << index_var;
 
-        // TODO. Add init from formula.
+        if (!i->second.is<picojson::object>()) {
+
+          LOG_ERROR << "Malformed variable object";
+          std::abort();
+
+        }
+
+        picojson::object o = i->second.get<picojson::object>();
 
         const bool has_filename = 
-          i->second.is<std::string>();
+          o["file"].is<std::string>();
+
+        const bool has_formula = 
+          o["formula"].is<std::string>();
+
+        if (!(has_formula || has_filename)) {
+
+          LOG_ERROR << "Invalid initialization for variable "
+                    << "\'" << var_name << "\'"
+                    << ": expected "
+                    << "\'formula\' or \'file\' field";
+
+          std::abort();
+
+        }
+
+        if (has_formula) {
+
+          const std::string formula = o["formula"].get<std::string>();
+            
+          LOG_VERBOSE << "Reading variable "
+                      << "\'" << var_name << "\'"
+                      << " from formula "
+                      << "\'" << formula << "\'";
+
+        }
 
         if (has_filename) {
 
-          const std::string filename = i->second.get<std::string>();
+          const std::string filename = o["file"].get<std::string>();
             
-          LOG_VERBOSE << "Reading variable from file "
+          LOG_VERBOSE << "Reading variable "
+                      << "\'" << var_name << "\'"
+                      << " from file "
                       << "\'" << filename << "\'";
 
           std::ifstream variable_file(filename, std::ifstream::in | std::ifstream::binary);
