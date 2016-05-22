@@ -4,11 +4,25 @@ CXX := g++
 
 SRC_EXTENSION := cpp
 
+PLOG_DIR := ./external/plog
+PLOG_INCLUDE := ${PLOG_DIR}/include/
+
+PICOJSON_DIR := ./external/picojson
+PICOJSON_INCLUDE := ${PICOJSON_DIR}
+
+MUPARSER_VERSION := 2.2.5
+MUPARSER_DIR := ./external/muparser-${MUPARSER_VERSION}
+MUPARSER_INCLUDE := ${MUPARSER_DIR}/include/
+MUPARSER_LIB := ${MUPARSER_DIR}/lib/
+
+SUBDIRS := ${MUPARSER_DIR}
+LIB_DIR := ${MUPARSER_LIB}
+
 COMPILE_FLAGS = -Wall -Wextra -Werror -std=c++11 -O2 -g
 
-INCLUDES := -I ./external/plog/include -I ./external/picojson/
+INCLUDES := -I ${PLOG_INCLUDE} -I ${PICOJSON_INCLUDE} -I ${MUPARSER_INCLUDE}
 DEFINES := -D RealT=double
-LDFLAGS := -lrt
+LDFLAGS := -lrt -lmuparser
 
 SHELL := /bin/bash
 
@@ -21,9 +35,14 @@ SOURCES := $(shell find ./	-maxdepth 1 -name '*.$(SRC_EXTENSION)' -printf '%T@\t
 
 OBJECTS := $(SOURCES:%.$(SRC_EXTENSION)=%.$(SRC_EXTENSION).o)
 
-$(EXE_NAME): $(OBJECTS) 
+.PHONY: subdirs ${SUBDIRS}
+
+subdirs:
+	$(MAKE) -C ${SUBDIRS}
+
+$(EXE_NAME): $(OBJECTS) subdirs
 	@echo "Linking: $@"
-	$(CXX) $(OBJECTS) $(LDFLAGS) -o $@
+	$(CXX) $(OBJECTS) -L ${LIB_DIR} $(LDFLAGS) -o $@
 
 $(BUILD_PATH)/%.$(SRC_EXTENSION).o: %.$(SRC_EXTENSION)
 	@echo $(SOURCES)
@@ -31,4 +50,5 @@ $(BUILD_PATH)/%.$(SRC_EXTENSION).o: %.$(SRC_EXTENSION)
 	$(CXX) $(DEFINES) $(COMPILE_FLAGS) $(INCLUDES) -c $< -o $@
 
 clean:
-	rm -f $(EXE_NAME) $(OBJECTS)
+	rm -fv $(EXE_NAME) $(OBJECTS)
+	rm -fv ${MUPARSER_DIR}/*.o ${MUPARSER_DIR}/lib/libmuparser*.so*
