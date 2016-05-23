@@ -452,8 +452,6 @@ void WriteBinaryVariable(DataType data_type,
   assert(0 <= n_fast_padding);
   assert(data != NULL);
 
-  LOG_ERROR << "n_fast=" << n_fast << " " << n_medium << " " << n_slow;
-
   if (!*os_ptr) {
 
     LOG_ERROR << "Invalid output stream";

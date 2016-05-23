@@ -34,6 +34,7 @@
 #include "variable_definitions.hpp"
 
 const std::string TMP_BINARY_FILENAME = "./tmp.dat";
+const std::string MAGIC_ITER_STRING = "\%i";
 
 OutputEvent::OutputEvent():
   m_type(""), m_format(""), m_stream_name(""), m_rhythm(0), 
@@ -293,17 +294,24 @@ void OutputEvent::Execute(int iter,
 
     m_file_ptr = new std::ofstream;
 
-    const std::string base_name = m_stream_name;
+    std::string base_name = m_stream_name;
 
-    const std::string extension = 
-      (m_format == std::string("VTK") ? ".vtr" : ".dat");
+    // Look for special patterns in the filename and replace them by
+    // the iteration number.
+    std::string::size_type position = 0;
 
-    std::stringstream sstr_output_filename;
-    sstr_output_filename << base_name;
-    sstr_output_filename << std::setfill('0') << std::setw(5) << iter;
-    sstr_output_filename << extension;
+    std::stringstream iteration_stream;
+    iteration_stream << std::setfill('0') << std::setw(5) << iter; 
+    std::string iter_string = iteration_stream.str();
+
+    while ((position = base_name.find(MAGIC_ITER_STRING, position)) != std::string::npos) {
+
+      base_name.replace(position, MAGIC_ITER_STRING.size(), iter_string);
+      ++position;
+      
+    }
     
-    const std::string output_filename = sstr_output_filename.str();
+    const std::string output_filename = base_name;
       
     LOG_INFO << "Writing output file \"" << output_filename << "\"...";
 

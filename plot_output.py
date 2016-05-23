@@ -112,7 +112,7 @@ with seaborn.axes_style("dark"):
         plt.ylim([nz,0])
 plt.figure()
 
-variable_names_1D_plot = ["pressure_0", "pressure_ref"]
+variable_names_1D_plot = ["pressure_0"]
 
 cnt = 1
 
@@ -120,7 +120,7 @@ for key, value in line_ids.iteritems():
     line_id, color = value
     offset = numpy.power(-1.0, cnt) * (2.0 * amplitude_max) * (cnt / 2)
     for var in variable_names_1D_plot:
-        if var == "pressure_ref":
+        if var == "laplace_pressure":
             color = 'red'
         plt.plot(offset + variables[var][:, line_id], color = color, linewidth = 2, label = var)
         plt.scatter(range(nz), offset + variables[var][:, line_id], color = color, linewidth = 2)
