@@ -67,6 +67,14 @@ void OutputEvent::ParseFromJSON(const picojson::value& v) {
   if (o["rhythm"].is<double>())
     m_rhythm = o["rhythm"].get<double>();
 
+  // Special value
+  if (o["rhythm"].is<std::string>()) {
+   
+    assert(o["rhythm"].get<std::string>() == std::string("end"));
+    m_rhythm = - 1;
+
+  }
+
   if (o["iz"].is<double>())
       m_index_slow = o["iz"].get<double>();
 
@@ -120,6 +128,8 @@ void OutputEvent::Validate() {
 
   } else if (m_type == "EvalVariable") {
 
+  } else if (m_type == "OutputNorm") {
+
   } else {
 
     LOG_ERROR << "Invalid value for output event type: expected "
@@ -160,6 +170,8 @@ void OutputEvent::Create(int nb_iter,
   } else if (this->type() == "CheckVariables") {
 
   } else if (this->type() == "EvalVariable") {
+
+  } else if (this->type() == "OutputNorm") {
 
   } else {
 
@@ -280,6 +292,8 @@ void OutputEvent::Destroy() {
 
   } else if (this->type() == "EvalVariable") {
 
+  } else if (this->type() == "OutputNorm") {
+
   } else {
 
     assert(0);
@@ -350,6 +364,30 @@ void OutputEvent::Execute(int iter,
   } else if (this->type() == "EvalVariable") {
 
     parser_ptr->EvaluateExpression(this->formula(), grid, variable_storage_ptr);
+
+  } else if (this->type() == "OutputNorm") {
+
+    m_file_ptr = new std::ofstream;
+
+    std::string filename = m_stream_name;
+
+    LOG_INFO << "Writing norms of " << this->var_name()
+             << " to file \"" << filename << "\"...";
+
+    m_file_ptr->open(filename.c_str(), std::ofstream::out);
+
+    std::vector<RealT> norms;
+    norms = parser_ptr->ReduceExpression(this->var_name(), grid, variable_storage_ptr);
+
+    *m_file_ptr << "# \"" << this->var_name() << "\" L1 L2 Linf\n";
+    *m_file_ptr << norms.at(0) << " " << norms.at(1) << " " << norms.at(2) << "\n";
+
+    LOG_INFO << "Writing output file done.\n";
+
+    m_file_ptr->flush();
+    m_file_ptr->close();
+    delete m_file_ptr;
+    
 
   } else {
 

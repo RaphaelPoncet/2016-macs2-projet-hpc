@@ -136,6 +136,114 @@ void MathematicalParser::EvaluateExpression(const std::string& expression,
 
 }
 
+std::vector<RealT> MathematicalParser::ReduceExpression(const std::string& expression,
+                                                        const RectilinearGrid3D& grid,
+                                                        MultiDimensionalStorage4D* variable_storage_ptr) {
+
+  std::vector<RealT> result;
+  // L1, L2 and Linfinite norms.
+  result.assign(3, 0.0);
+
+  RealT l1 = 0.0;
+  RealT l2 = 0.0;
+  RealT linf = 0.0;
+
+  const int n_fast = variable_storage_ptr->n_fast();
+  const int n_fast_padding = variable_storage_ptr->n_fast_padding();
+  const int n_fast_padded = n_fast + n_fast_padding;
+  const int n_medium = variable_storage_ptr->n2();
+  const int n_slow = variable_storage_ptr->n3();
+
+  // Temporary buffers to hold parser result.
+  RealT* buffer = (RealT*) malloc(n_fast * sizeof(RealT));
+
+  // Temporary buffer to hold grid coordinates in the fast
+  // direction. We have to copy them because we do not want the parser
+  // to modify them by user input.
+  // RealT* x_grid = (RealT*) malloc(n_fast * sizeof(RealT));
+
+  for (int islow = 0; islow < n_slow; ++islow) {
+    for (int imedium = 0; imedium < n_medium; ++imedium) {
+
+      std::vector<RealT> x_grid = grid.fast_coordinates();
+
+      const size_t index_base = 
+        n_medium * n_fast_padded * islow + n_fast_padded * imedium;
+
+      // Add pointers to variables to the parser.
+      for (int ivar = 0; ivar < variable::NB_VARIABLES; ++ ivar) {
+
+        RealT* data = variable_storage_ptr->RawDataSlowDimension(ivar);
+        m_parser.DefineVar(variable::VARIABLE_NAMES[ivar], &(data[index_base]));
+
+      }
+
+      // Add grid coordinates to the parser.
+      m_parser.DefineVar("x", VectorRawData<RealT>(x_grid));
+      AddConstant("y", grid.medium_coordinates()[imedium]);
+      AddConstant("z", grid.slow_coordinates()[islow]);
+
+      m_parser.SetExpr(expression);
+
+      try {
+
+        m_parser.Eval(buffer, n_fast);
+        
+      } catch(mu::Parser::exception_type &e) {
+    
+        LOG_ERROR << "In formula "
+                  << "\'" << e.GetExpr() << "\'"
+                  << ", " << e.GetMsg();
+  
+        std::abort();
+      }
+
+      for (int i = 0; i < n_fast; ++i) {
+
+        l1 += fabsf(buffer[i]);
+        l2 += buffer[i] * buffer[i];
+        linf = fmax(linf, buffer[i]);
+
+      }
+
+    }
+  }
+
+  if (grid.n_fast() > 1) {
+
+    l1 *= grid.dx_fast();
+    l2 *= grid.dx_fast() * grid.dx_fast();
+
+  }
+
+  if (grid.n_medium() > 1) {
+
+    l1 *= grid.dx_medium();
+    l2 *= grid.dx_medium() * grid.dx_medium();
+
+  }
+
+  if (grid.n_slow() > 1) {
+
+    l1 *= grid.dx_slow();
+    l2 *= grid.dx_slow() * grid.dx_slow();
+
+  }
+
+  free(buffer);
+
+  LOG_INFO << "Norm of "
+           << "\'" << expression << "\' (L1, L2, Linf):"
+           << "(" << l1 << ", " << l2 << ", " << linf << ")";
+
+  result.at(0) = l1;
+  result.at(1) = l2;
+  result.at(2) = linf;
+
+  return result;
+
+}
+
 void MathematicalParser::SetExpression(const std::string& expression) {
 
   m_parser.SetExpr(expression);

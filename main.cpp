@@ -134,7 +134,7 @@ int main(int argc, char** argv) {
   // here.
   for (int iter = 0; iter < timeloop_manager.nb_iter(); ++iter) {
 
-    t = (double)iter * dt;
+    t += dt;
     math_parser.AddConstant("t", t);
 
     const int stencil_radius = 1;
@@ -163,12 +163,11 @@ int main(int argc, char** argv) {
                        sponge_fast, sponge_medium, sponge_slow, 
                        pressure_1);
 
-    // Exchange pressure arrays.
-    std::swap(pressure_0, pressure_1);
-
     for (auto it = output_events.begin(); it != output_events.end(); ++it) {
 
-      const bool event_happens = (iter % it->rhythm() == 0);
+      const bool event_happens = 
+        ((iter % it->rhythm() == 0) && (it->rhythm() >= 0)) ||
+        ((iter == timeloop_manager.nb_iter() - 1) && (it->rhythm() == - 1));
 
       if (event_happens) {
 
@@ -177,6 +176,10 @@ int main(int argc, char** argv) {
 
       }
     }
+
+    // Exchange pressure arrays.
+    std::swap(pressure_0, pressure_1);
+
   }
 
   // Variables cleanup.
