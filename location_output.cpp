@@ -83,6 +83,8 @@ void LocationOutput::Write(const RectilinearGrid3D& propagation_grid,
 
   }
 
+  const DataType data_type = (sizeof(RealT) == 4 ? FLOAT32 : FLOAT64);
+
   const int n_fast = variable_storage.n_fast();
   const int n_fast_padding = variable_storage.n_fast_padding();
   const int n2 = variable_storage.n2();
@@ -92,7 +94,8 @@ void LocationOutput::Write(const RectilinearGrid3D& propagation_grid,
   const RealT* data = variable_storage.RawDataSlowDimension(variable_id);
   assert(data != NULL);
 
-  WriteBinaryVariableSliceSlowDimension(n_fast, n_fast_padding, n2, index_slow,
+  WriteBinaryVariableSliceSlowDimension(data_type,
+                                        n_fast, n_fast_padding, n2, index_slow,
                                         data, os_ptr);
 
 }

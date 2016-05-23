@@ -262,7 +262,7 @@ void OutputEvent::Destroy() {
   
       std::ofstream receivers_vtk_file(output_filename.c_str(), std::ofstream::binary);
   
-      OutputGridAndData(receiver_grid, variable_storage_receivers, &receivers_vtk_file);
+      OutputGridAndData("vtk", receiver_grid, variable_storage_receivers, &receivers_vtk_file);
   
       receivers_vtk_file.close();
   
@@ -295,59 +295,22 @@ void OutputEvent::Execute(int iter,
 
     const std::string base_name = m_stream_name;
 
-    if (m_format == std::string("VTK")) {
+    const std::string extension = 
+      (m_format == std::string("VTK") ? ".vtr" : ".dat");
 
-      const std::string vtk_extension = ".vtr";
-
-      std::stringstream vtk_sstr_output_filename;
-      vtk_sstr_output_filename << base_name;
-      vtk_sstr_output_filename << std::setfill('0') << std::setw(5) << iter;
-      vtk_sstr_output_filename << vtk_extension;
+    std::stringstream sstr_output_filename;
+    sstr_output_filename << base_name;
+    sstr_output_filename << std::setfill('0') << std::setw(5) << iter;
+    sstr_output_filename << extension;
     
-      const std::string vtk_output_filename = vtk_sstr_output_filename.str();
+    const std::string output_filename = sstr_output_filename.str();
       
-      LOG_INFO << "Writing output file \"" << vtk_output_filename << "\"...";
+    LOG_INFO << "Writing output file \"" << output_filename << "\"...";
 
-      m_file_ptr->open(vtk_output_filename.c_str(), std::ofstream::binary);
-      OutputGridAndData(grid, *variable_storage_ptr, m_file_ptr);
+    m_file_ptr->open(output_filename.c_str(), std::ofstream::binary);
+    OutputGridAndData(m_format, grid, *variable_storage_ptr, m_file_ptr);
 
-      LOG_INFO << "Writing output file done.\n";
-
-    } else if (m_format == std::string("binary")) {
-
-      const std::string binary_extension = ".dat";
-
-      std::stringstream binary_sstr_output_filename;
-      binary_sstr_output_filename << base_name;
-      binary_sstr_output_filename << std::setfill('0') << std::setw(5) << iter;
-      binary_sstr_output_filename << binary_extension;
-
-      const std::string binary_output_filename = binary_sstr_output_filename.str();
-
-      LOG_INFO << "Writing output file \"" << binary_output_filename << "\"...";
-    
-      m_file_ptr->open(binary_output_filename, std::ios::out | std::ios::binary);
-
-      const int nb_components = 1;
-
-      WriteBinaryVariable(variable::VARIABLE_NAMES[variable::PRESSURE_0],
-                          (sizeof(RealT) == 4 ? FLOAT32 : FLOAT64),
-                          nb_components,
-                          variable_storage_ptr->n_fast(), variable_storage_ptr->n_fast_padding(),
-                          variable_storage_ptr->n2(), variable_storage_ptr->n3(),
-                          grid.x_fast_min(), grid.x_fast_max(),
-                          grid.x_medium_min(), grid.x_medium_max(),
-                          grid.x_slow_min(), grid.x_slow_max(),
-                          variable_storage_ptr->RawDataSlowDimension(variable::PRESSURE_0),
-                          m_file_ptr);
-      
-      LOG_INFO << "Writing output file done.\n";
-
-    } else {
-
-      assert(0);
-
-    }
+    LOG_INFO << "Writing output file done.\n";
 
     m_file_ptr->flush();
     m_file_ptr->close();

@@ -418,7 +418,8 @@ void WriteBinaryVariableHeader(const std::string& variable_name, DataType data_t
  
 }
 
-void WriteBinaryVariableSliceSlowDimension(int n_fast, int n_fast_padding, 
+void WriteBinaryVariableSliceSlowDimension(DataType data_type,
+                                           int n_fast, int n_fast_padding, 
                                            int n_medium, int islow,
                                            const RealT* data, std::ostream* os_ptr) {
 
@@ -429,21 +430,18 @@ void WriteBinaryVariableSliceSlowDimension(int n_fast, int n_fast_padding,
     const size_t index_base = 
       n_medium * n_fast_padded * islow + n_fast_padded * imedium;
 
-    os_ptr->write(reinterpret_cast<const char*>(&data[index_base]), sizeof(RealT) * n_fast);
+    os_ptr->write(reinterpret_cast<const char*>(&data[index_base]), 
+                  DATATYPE_SIZE[data_type] * n_fast);
 
   }
 
 }
 
 
-void WriteBinaryVariable(const std::string& variable_name,
-                         DataType data_type,
+void WriteBinaryVariable(DataType data_type,
                          int nb_components,
                          int n_fast, int n_fast_padding, 
                          int n_medium, int n_slow,
-                         RealT x_fast_min, RealT x_fast_max,
-                         RealT x_medium_min, RealT x_medium_max,
-                         RealT x_slow_min, RealT x_slow_max,
                          const RealT* data, std::ostream* os_ptr) {
 
   UNUSED(nb_components);
@@ -454,6 +452,8 @@ void WriteBinaryVariable(const std::string& variable_name,
   assert(0 <= n_fast_padding);
   assert(data != NULL);
 
+  LOG_ERROR << "n_fast=" << n_fast << " " << n_medium << " " << n_slow;
+
   if (!*os_ptr) {
 
     LOG_ERROR << "Invalid output stream";
@@ -461,15 +461,8 @@ void WriteBinaryVariable(const std::string& variable_name,
 
   }
 
-  WriteBinaryVariableHeader(variable_name, data_type, nb_components,
-                            n_fast, n_medium, n_slow, 
-                            x_fast_min, x_fast_max,
-                            x_medium_min, x_medium_max,
-                            x_slow_min, x_slow_max,
-                            os_ptr);
-
   for (int islow = 0; islow < n_slow; ++islow)
-    WriteBinaryVariableSliceSlowDimension(n_fast, n_fast_padding, n_medium, islow,
-                                          data, os_ptr);
+    WriteBinaryVariableSliceSlowDimension(data_type,n_fast, n_fast_padding, 
+                                          n_medium, islow, data, os_ptr);
 
 }

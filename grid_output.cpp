@@ -18,23 +18,30 @@
 #include <fstream>
 #include <sstream>
 
+#include "array_binary_io.hpp"
 #include "array_vtk_io.hpp"
 #include "common.hpp"
 #include "multidimensional_storage.hpp"
 #include "rectilinear_grid.hpp"
 #include "variable_definitions.hpp"
 
-void OutputGridAndData(const RectilinearGrid3D& grid, 
+void OutputGridAndData(const std::string& io_format,
+                       const RectilinearGrid3D& grid, 
                        const MultiDimensionalStorage4D& variable_storage,
                        std::ofstream* os_ptr) {
 
+  assert((io_format == std::string("binary")) || (io_format == std::string("VTK")));
+
   const VariableSupport variable_support = variable::VARIABLE_SUPPORT;
-  const VTKDataFormat format = BINARY;
+  // Hardcoded
+  const VTKDataFormat format = VTK_BINARY;
+
+  if (io_format == std::string("VTK")) {
 
   grid.WriteHeaderVTKXml(os_ptr);
   grid.WriteVTKXmlAscii(os_ptr);
 
-  if (format == ASCII) {
+  if (format == VTK_ASCII) {
 
     *os_ptr << "<CellData>\n";
   
@@ -126,7 +133,7 @@ void OutputGridAndData(const RectilinearGrid3D& grid,
 
     *os_ptr << "</PointData>\n";
 
-  } else if (format == BINARY) {
+  } else if (format == VTK_BINARY) {
 
     std::stringstream cell_data_arrays_header;
     std::stringstream point_data_arrays_header;
@@ -236,7 +243,7 @@ void OutputGridAndData(const RectilinearGrid3D& grid,
 
         }
       }
-
+      
     } else if (variable_support == NODE) {
 
       const size_t nb_grid_elements = 
@@ -271,4 +278,59 @@ void OutputGridAndData(const RectilinearGrid3D& grid,
 
   grid.WriteFooterVTKXml(os_ptr);
 
+  } else if (io_format == std::string("binary")) {
+
+    // Write master header.
+    int nb_variables_to_write = 0;
+    for (int ivar = 0; ivar < variable::NB_VARIABLES; ++ivar)
+      if (variable::VARIABLE_FLAGS[ivar] & WRITTEN)
+        nb_variables_to_write += 1;
+
+    std::stringstream master_header_line;
+    master_header_line << "# " << nb_variables_to_write;
+
+    *os_ptr << master_header_line.str() << "\n";
+
+    // Write all headers.
+    for (int ivar = 0; ivar < variable::NB_VARIABLES; ++ivar) {
+
+      if (variable::VARIABLE_FLAGS[ivar] & WRITTEN) {
+
+        const DataType data_type = (sizeof(RealT) == 4 ? FLOAT32 : FLOAT64);
+        const int nb_components = 1;
+        const std::string variable_name = variable::VARIABLE_NAMES[ivar];
+
+        WriteBinaryVariableHeader(variable_name, data_type, nb_components, 
+                                  variable_storage.n_fast(), 
+                                  variable_storage.n2(), variable_storage.n3(),
+                                  grid.x_fast_min(), grid.x_fast_max(),
+                                  grid.x_medium_min(), grid.x_medium_max(),
+                                  grid.x_slow_min(), grid.x_slow_max(), os_ptr);
+        
+      }
+    }
+
+    // Write all data.
+    for (int ivar = 0; ivar < variable::NB_VARIABLES; ++ivar) {
+
+      if (variable::VARIABLE_FLAGS[ivar] & WRITTEN) {
+
+        const DataType data_type = (sizeof(RealT) == 4 ? FLOAT32 : FLOAT64);
+        const int nb_components = 1;
+        const RealT* data = variable_storage.RawDataSlowDimension(ivar);
+
+        WriteBinaryVariable(data_type, nb_components, 
+                            variable_storage.n_fast(), 
+                            variable_storage.n_fast_padding(), 
+                            variable_storage.n2(), variable_storage.n3(),
+                            data, os_ptr);
+        
+      }
+    }
+
+  } else {
+
+    assert(0);
+
+  }
 }

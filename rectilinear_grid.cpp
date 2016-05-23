@@ -155,15 +155,15 @@ void RectilinearGrid3D::WriteVTKXmlAscii(std::ofstream* os_ptr) const {
 
   *os_ptr << "<Coordinates>\n";
   
-  // Not used for ASCII output.
+  // Not used for VTK_ASCII output.
   const size_t data_size_in_bytes = nb_points_fast * sizeof(RealT);
   size_t data_offset_in_bytes = 0;
 
   *os_ptr << "<DataArray ";
-  WriteVTKXmlVariableHeader("x", ASCII, 1, data_size_in_bytes, &data_offset_in_bytes, os_ptr);
+  WriteVTKXmlVariableHeader("x", VTK_ASCII, 1, data_size_in_bytes, &data_offset_in_bytes, os_ptr);
   *os_ptr << ">\n";
 
-  WriteVTKXmlVariable(ASCII, 1, nb_points_fast, 0, 1, 1, 
+  WriteVTKXmlVariable(VTK_ASCII, 1, nb_points_fast, 0, 1, 1, 
                       ConstVectorRawData(m_fast_coordinates), 
                       &data_offset_in_bytes, 
                       os_ptr);
@@ -171,10 +171,10 @@ void RectilinearGrid3D::WriteVTKXmlAscii(std::ofstream* os_ptr) const {
   *os_ptr << "</DataArray>\n";
 
   *os_ptr << "<DataArray ";
-  WriteVTKXmlVariableHeader("y", ASCII, 1, data_size_in_bytes, &data_offset_in_bytes, os_ptr);
+  WriteVTKXmlVariableHeader("y", VTK_ASCII, 1, data_size_in_bytes, &data_offset_in_bytes, os_ptr);
   *os_ptr << ">\n";
 
-  WriteVTKXmlVariable(ASCII, 1, nb_points_medium, 0, 1, 1, 
+  WriteVTKXmlVariable(VTK_ASCII, 1, nb_points_medium, 0, 1, 1, 
                       ConstVectorRawData(m_medium_coordinates), 
                       &data_offset_in_bytes, 
                       os_ptr);
@@ -182,10 +182,10 @@ void RectilinearGrid3D::WriteVTKXmlAscii(std::ofstream* os_ptr) const {
   *os_ptr << "</DataArray>\n";
 
   *os_ptr << "<DataArray ";
-  WriteVTKXmlVariableHeader("z", ASCII, 1, data_size_in_bytes, &data_offset_in_bytes, os_ptr);
+  WriteVTKXmlVariableHeader("z", VTK_ASCII, 1, data_size_in_bytes, &data_offset_in_bytes, os_ptr);
   *os_ptr << ">\n";
 
-  WriteVTKXmlVariable(ASCII, 1, nb_points_slow, 0, 1, 1, 
+  WriteVTKXmlVariable(VTK_ASCII, 1, nb_points_slow, 0, 1, 1, 
                       ConstVectorRawData(m_slow_coordinates), 
                       &data_offset_in_bytes, 
                       os_ptr);

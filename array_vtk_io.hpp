@@ -19,7 +19,7 @@
 #include <iosfwd>
 #include <string>
 
-typedef enum _VTKDataFormat {ASCII, BINARY} VTKDataFormat;
+typedef enum _VTKDataFormat {VTK_ASCII, VTK_BINARY} VTKDataFormat;
 
 void WriteVTKXmlVariableHeader(const std::string& variable_name,
 			       VTKDataFormat format, int nb_components,

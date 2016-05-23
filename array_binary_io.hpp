@@ -53,18 +53,15 @@ void WriteBinaryVariableHeader(const std::string& variable_name,
                                RealT x_slow_max,
                                std::ostream* os_ptr);
 
-void WriteBinaryVariableSliceSlowDimension(int n_fast, int n_fast_padding, 
+void WriteBinaryVariableSliceSlowDimension(DataType data_type,
+                                           int n_fast, int n_fast_padding, 
                                            int n_medium, int islow,
                                            const RealT* data, std::ostream* os_ptr);
 
-void WriteBinaryVariable(const std::string& variable_name,
-                         DataType data_type,
+void WriteBinaryVariable(DataType data_type,
                          int nb_components,
                          int n_fast, int n_fast_padding, 
                          int n_medium, int n_slow,
-                         RealT x_fast_min, RealT x_fast_max,
-                         RealT x_medium_min, RealT x_medium_max,
-                         RealT x_slow_min, RealT x_slow_max,
                          const RealT* data, std::ostream* os_ptr);
 
 #endif // ARRAY_BINARY_IO_HPP

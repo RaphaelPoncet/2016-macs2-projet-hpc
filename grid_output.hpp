@@ -16,11 +16,13 @@
 #define GRID_OUTPUT_HPP
 
 #include <iosfwd>
+#include <string>
 
 class RectilinearGrid3D;
 class MultiDimensionalStorage4D;
 
-void OutputGridAndData(const RectilinearGrid3D& grid, 
+void OutputGridAndData(const std::string& format,
+                       const RectilinearGrid3D& grid, 
                        const MultiDimensionalStorage4D& data,
                        std::ofstream* os_ptr);
 

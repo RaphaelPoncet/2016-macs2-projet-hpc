@@ -29,7 +29,7 @@ void WriteVTKXmlVariableHeader(const std::string& variable_name,
   const std::string data_type_str = (sizeof(RealT) == 4 ? "Float32": "Float64");
   // VTK XML has two binary formats: 'binary' aka base64, and
   // 'appended'. We choose the second one.
-  const std::string format_str = (format == ASCII ? "ascii" : "appended");
+  const std::string format_str = (format == VTK_ASCII ? "ascii" : "appended");
   
   std::stringstream stringstream;
   stringstream << nb_components;
@@ -40,7 +40,7 @@ void WriteVTKXmlVariableHeader(const std::string& variable_name,
 	  << "NumberOfComponents=\"" << nb_components_str << "\" "
 	  << "format=\"" << format_str << "\"";
 
-  if (format == BINARY) {
+  if (format == VTK_BINARY) {
 
     *os_ptr << " offset=\"" << data_offset_in_bytes << "\"";
 
@@ -63,7 +63,7 @@ void WriteVTKXmlVariable(VTKDataFormat format, int nb_components,
 
   if (nb_components == 1) {
 
-    if (format == ASCII) {
+    if (format == VTK_ASCII) {
 
       for (int islow = 0; islow < n_slow; ++islow) {
         for (int imedium = 0; imedium < n_medium; ++imedium) {
@@ -77,7 +77,7 @@ void WriteVTKXmlVariable(VTKDataFormat format, int nb_components,
         }
       }
 
-    } else if (format == BINARY) {
+    } else if (format == VTK_BINARY) {
       
       const size_t data_size_in_bytes = n_slow * n_medium * n_fast * sizeof(RealT);
 
