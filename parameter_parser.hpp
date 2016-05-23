@@ -26,6 +26,7 @@ class RectilinearGrid3D;
 class LocationOutput;
 class MultiDimensionalStorage4D;
 class MathematicalParser;
+class TimeloopManager;
 
 class OutputEvent {
 public:
@@ -70,6 +71,7 @@ void ParseParameterFile(int n_fast_padding,
                         RectilinearGrid3D* grid_ptr,
                         MultiDimensionalStorage4D* storage_ptr,
                         MathematicalParser* math_parser_ptr,
-                        std::vector<OutputEvent>* output_events_ptr);
+                        std::vector<OutputEvent>* output_events_ptr,
+                        TimeloopManager* timeloop_manager_ptr);
 
 #endif // PARAMETER_PARSER_HPP

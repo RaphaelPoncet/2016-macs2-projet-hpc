@@ -5,14 +5,17 @@
 
     "grid" : {"file" : "./data/marm2_downsampled_8.xyz"},
 
+    "timeloop" : {"dt": ".1*CFL",
+                  "niter": 10000},
+
     "output" : [ {"type" : "CheckVariables",
-                  "rhythm" : 1000},
+                  "rhythm" : 100},
                  {"type" : "OutputVariables", 
                   "rhythm" : 1000, 
                   "format": "binary",
                   "file" : "./output/binary_out_%i.dat"},
                  {"type" : "OutputVariables", 
-                  "rhythm" : 1000, 
+                  "rhythm" : 100, 
                   "format": "VTK",
                   "file" : "./output/vtk_out_%i.vtr"},
                  {"type" : "OutputReceivers", 

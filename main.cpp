@@ -26,6 +26,7 @@
 #include "parameter_parser.hpp"
 #include "rectilinear_grid.hpp"
 #include "timer.hpp"
+#include "timeloop_manager.hpp"
 #include "variable_definitions.hpp"
 #include "wave_propagation.hpp"
 
@@ -70,18 +71,20 @@ int main(int argc, char** argv) {
   MultiDimensionalStorage4D variable_storage;
   MathematicalParser math_parser;
   std::vector<OutputEvent> output_events;
+  TimeloopManager timeloop_manager;
 
   LOG_INFO << "Reading parameter file \"" << parameter_filename << "\"...";
 
   std::ifstream parameter_file(parameter_filename.c_str(), std::ifstream::in);
   const int nx_padding = 17;
   ParseParameterFile(nx_padding, &parameter_file, &propagation_grid, 
-                     &variable_storage, &math_parser, &output_events);
+                     &variable_storage, &math_parser, &output_events,
+                     &timeloop_manager);
   parameter_file.close();
 
   math_parser.PrintConstants();
 
-  const int nb_iter = 10000;
+  const int nb_iter = timeloop_manager.nb_iter();
 
   // Variables information (hardcoded for now, in variable_definitions.hpp).
   const int nb_variables = variable::NB_VARIABLES;
@@ -130,12 +133,12 @@ int main(int argc, char** argv) {
   DumpSpongeArray(propagation_grid.n_slow(), sponge_slow, &sponge_slow_out);
   sponge_slow_out.close();
 
-  const RealT dt = 0.0005;
+  const RealT dt = timeloop_manager.dt();
   RealT t = 0.0;
 
   // Main time loop. All numerics (except time step computation) is in
   // here.
-  for (int iter = 0; iter < nb_iter; ++iter) {
+  for (int iter = 0; iter < timeloop_manager.nb_iter(); ++iter) {
 
     t = (double)iter * dt;
     math_parser.AddConstant("t", t);

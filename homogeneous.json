@@ -10,6 +10,9 @@
 
     "grid" : {"file" : "./data/marm2_downsampled_8.xyz"},
 
+    "timeloop" : {"dt": ".99*CFL",
+                  "niter": 10000},
+
     "output" : [ {"type" : "EvalVariable", 
                   "rhythm" : 100, 
                   "name": "pressure_ref",

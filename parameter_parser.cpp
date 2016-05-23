@@ -17,6 +17,7 @@
 #include <cmath>
 #include <fstream>
 #include <iostream>
+#include <limits>
 #include <map>
 #include <sstream>
 #include <streambuf>
@@ -31,6 +32,7 @@
 #include "mathematical_parser.hpp"
 #include "multidimensional_storage.hpp"
 #include "rectilinear_grid.hpp"
+#include "timeloop_manager.hpp"
 #include "variable_definitions.hpp"
 
 const std::string TMP_BINARY_FILENAME = "./tmp.dat";
@@ -480,7 +482,8 @@ void ParseParameterFile(int n_fast_padding,
                         RectilinearGrid3D* grid_ptr,
                         MultiDimensionalStorage4D* storage_ptr,
                         MathematicalParser* math_parser_ptr,
-                        std::vector<OutputEvent>* output_events_ptr) {
+                        std::vector<OutputEvent>* output_events_ptr,
+                        TimeloopManager* timeloop_manager_ptr) {
 
   std::string json_string;
 
@@ -652,7 +655,122 @@ void ParseParameterFile(int n_fast_padding,
 
     }
 
-    // assert(0);
+    const bool has_timeloop = o["timeloop"].is<picojson::object>();
+    
+    if (has_timeloop) {
+
+      picojson::object v = o["timeloop"].get<picojson::object>();
+
+      const bool has_niter = v["niter"].is<double>();
+      const bool has_tfinal = v["tfinal"].is<double>();
+
+      // Exactly 1 of the above options must be input.
+      const bool correct_input =
+        ((has_niter || has_tfinal) && !(has_niter && has_tfinal));
+
+      if (!correct_input) {
+
+        LOG_ERROR << "In \'timeloop\', one and only one option among "
+                  << "\'niter\' and \'tfinal\' must be set";
+        std::abort();
+
+      }
+
+      const bool has_dt = 
+        (v["dt"].is<double>() || v["dt"].is<std::string>());
+
+      if (!has_dt) {
+
+        LOG_ERROR << "In \'timeloop\', missing mandatory "
+                  << "\'dt\' (timestep) value";
+        std::abort();
+
+      }
+
+      // CFL condition estimation should be put out of this function.
+      RealT maximum_velocity = std::numeric_limits<RealT>::min();
+      
+      const RealT* velocity = storage_ptr->RawDataSlowDimension(variable::VELOCITY);
+
+      const int n3 = storage_ptr->n3();
+      const int n2 = storage_ptr->n2();
+      const int n_fast = storage_ptr->n_fast();
+      const int n_fast_pad = n_fast + storage_ptr->n_fast_padding();
+
+      for (int i3 = 0; i3 < n3; ++i3) {
+        for (int i2 = 0; i2 < n2; ++i2) {
+          for (int ifast = 0; ifast < n_fast; ++ifast) {
+
+            const size_t index = 
+              n2 * n_fast_pad * i3 + n_fast_pad * i2 + ifast;
+
+            maximum_velocity = fmax(maximum_velocity, velocity[index]);
+
+          }
+        }
+      }
+
+      RealT min_grid_size = std::numeric_limits<RealT>::max();
+
+      if (grid_ptr->n_fast() > 1)
+        min_grid_size = fmin(min_grid_size, grid_ptr->dx_fast());
+
+      if (grid_ptr->n_medium() > 1)
+        min_grid_size = fmin(min_grid_size, grid_ptr->dx_medium());
+
+      if (grid_ptr->n_slow() > 1)
+        min_grid_size = fmin(min_grid_size, grid_ptr->dx_slow());
+
+      assert(0.0 < min_grid_size);
+      assert(0.0 < maximum_velocity);
+      
+      const RealT cfl_stability = 0.5 * sqrt(2.0) * min_grid_size / maximum_velocity;
+
+      LOG_INFO << "Maximum velocity:" << maximum_velocity 
+               << ", minimum grid size: " << min_grid_size
+               << ", CFL:" << cfl_stability;
+      
+      math_parser_ptr->AddConstant("CFL", cfl_stability);
+
+      RealT dt = 0.0;
+
+      if (v["dt"].is<double>()) {
+
+        dt = v["dt"].get<double>();
+
+      } else if (v["dt"].is<std::string>()) {
+
+        math_parser_ptr->SetExpression(v["dt"].get<std::string>());
+        dt = math_parser_ptr->SafeEval();
+      
+      }
+
+      RealT final_time = 0.0;
+      int nb_iter = 0;
+
+      if (has_niter) {
+
+        nb_iter = int(v["niter"].get<double>());
+        final_time = nb_iter * dt;
+
+      }
+
+      if (has_tfinal) {
+
+        final_time = v["tfinal"].get<double>();
+        assert(0.0 < dt);
+        nb_iter = ceil(final_time / dt);
+
+      }
+
+      *timeloop_manager_ptr = TimeloopManager(dt, final_time, nb_iter);
+      
+      LOG_VERBOSE << "Timeloop will be executed with "
+                  << "nb_iter=" << timeloop_manager_ptr->nb_iter() << ", "
+                  << "final_time=" << timeloop_manager_ptr->final_time() << ", "
+                  << "dt=" << timeloop_manager_ptr->dt();
+
+    }
 
     storage_ptr->Validate();
   }
