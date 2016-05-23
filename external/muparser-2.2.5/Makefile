@@ -106,26 +106,26 @@ EXAMPLE1_OBJECTS =  \
 CXXC = $(BK_DEPS) $(CXX)
 DEBUG_BUILD_POSTFIX = 
 #DEBUG_BUILD_POSTFIX = d
-#__muParser_lib___depname = \
-#	$(top_builddir)/lib/$(LIBPREFIX)muparser$(DEBUG_BUILD_POSTFIX)$(LIBEXT)
-#__install_muParser_lib___depname = install_muParser_lib
-#__uninstall_muParser_lib___depname = uninstall_muParser_lib
-#__install_muParser_lib_headers___depname = \
-#	install_muParser_lib_headers
-#__uninstall_muParser_lib_headers___depname = \
-#	uninstall_muParser_lib_headers
+__muParser_lib___depname = \
+	$(top_builddir)/lib/$(LIBPREFIX)muparser$(DEBUG_BUILD_POSTFIX)$(LIBEXT)
+__install_muParser_lib___depname = install_muParser_lib
+__uninstall_muParser_lib___depname = uninstall_muParser_lib
+__install_muParser_lib_headers___depname = \
+	install_muParser_lib_headers
+__uninstall_muParser_lib_headers___depname = \
+	uninstall_muParser_lib_headers
 COND_SHARED_1___muParser_dll___depname = \
 	$(top_builddir)/lib/$(DLLPREFIX)muparser$(DEBUG_BUILD_POSTFIX)$(__muParser_dll___targetsuf3)
-__muParser_dll___depname = $(COND_SHARED_1___muParser_dll___depname)
-__install_muParser_dll___depname = install_muParser_dll
-__uninstall_muParser_dll___depname = uninstall_muParser_dll
+#__muParser_dll___depname = $(COND_SHARED_1___muParser_dll___depname)
+#__install_muParser_dll___depname = install_muParser_dll
+#__uninstall_muParser_dll___depname = uninstall_muParser_dll
 COND_PLATFORM_MACOSX_1___muParser_dll___macinstnamecmd = -install_name \
 	$(libdir)/$(DLLPREFIX)muparser$(DEBUG_BUILD_POSTFIX)$(__muParser_dll___targetsuf2)
 #__muParser_dll___macinstnamecmd = $(COND_PLATFORM_MACOSX_1___muParser_dll___macinstnamecmd)
-__install_muParser_dll_headers___depname = \
-	install_muParser_dll_headers
-__uninstall_muParser_dll_headers___depname = \
-	uninstall_muParser_dll_headers
+#__install_muParser_dll_headers___depname = \
+#	install_muParser_dll_headers
+#__uninstall_muParser_dll_headers___depname = \
+#	uninstall_muParser_dll_headers
 COND_PLATFORM_OS2_1___muParser_dll___importlib = -import \
 	$(top_builddir)/lib/$(LIBPREFIX)muparser$(DEBUG_BUILD_POSTFIX).$(DLLIMP_SUFFIX)
 #__muParser_dll___importlib = $(COND_PLATFORM_OS2_1___muParser_dll___importlib)
@@ -200,10 +200,10 @@ __example1___mac_setfilecmd = @true
 #__example1___mac_setfilecmd = \
 #	$(SETFILE) -t APPL \
 #	$(top_builddir)/samples/example1/example1$(EXEEXT)
-#____SHARED = 
-____SHARED = -DMUPARSER_DLL
-#____SHARED_0 = 
-____SHARED_0 = -DMUPARSERLIB_EXPORTS
+____SHARED = 
+#____SHARED = -DMUPARSER_DLL
+____SHARED_0 = 
+#____SHARED_0 = -DMUPARSERLIB_EXPORTS
 ____DEBUG = -DNDEBUG
 #____DEBUG = 
 
@@ -233,61 +233,61 @@ distclean: clean
 	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile
 	rm -f build/autoconf/muparser.pc
 
-#$(top_builddir)/lib/$(LIBPREFIX)muparser$(DEBUG_BUILD_POSTFIX)$(LIBEXT): $(MUPARSER_LIB_OBJECTS)
-#	rm -f $@
-#	$(AR) $(AROPTIONS) $@ $(MUPARSER_LIB_OBJECTS)
-#	$(RANLIB) $@
+$(top_builddir)/lib/$(LIBPREFIX)muparser$(DEBUG_BUILD_POSTFIX)$(LIBEXT): $(MUPARSER_LIB_OBJECTS)
+	rm -f $@
+	$(AR) $(AROPTIONS) $@ $(MUPARSER_LIB_OBJECTS)
+	$(RANLIB) $@
 
-#install_muParser_lib: $(__muParser_lib___depname)
-#	$(INSTALL_DIR) $(DESTDIR)$(libdir)
-#	$(INSTALL_DATA) $(top_builddir)/lib/$(LIBPREFIX)muparser$(DEBUG_BUILD_POSTFIX)$(LIBEXT) $(DESTDIR)$(libdir)
-
-#uninstall_muParser_lib: 
-#	rm -f $(DESTDIR)$(libdir)/$(LIBPREFIX)muparser$(DEBUG_BUILD_POSTFIX)$(LIBEXT)
-
-#install_muParser_lib_headers: 
-#	$(INSTALL_DIR) $(DESTDIR)$(prefix)
-#	for f in $(MUPARSER_LIB_HEADERS); do \
-#	if test ! -d $(DESTDIR)$(prefix)/`dirname $$f` ; then \
-#	$(INSTALL_DIR) $(DESTDIR)$(prefix)/`dirname $$f`; \
-#	fi; \
-#	$(INSTALL_DATA) $(srcdir)/$$f $(DESTDIR)$(prefix)/$$f; \
-#	done
-
-#uninstall_muParser_lib_headers: 
-#	for f in $(MUPARSER_LIB_HEADERS); do \
-#	rm -f $(DESTDIR)$(prefix)/$$f; \
-#	done
-
-$(top_builddir)/lib/$(DLLPREFIX)muparser$(DEBUG_BUILD_POSTFIX)$(__muParser_dll___targetsuf3): $(MUPARSER_DLL_OBJECTS)
-	$(SHARED_LD_CXX) $@ $(MUPARSER_DLL_OBJECTS)   $(__muParser_dll___macinstnamecmd) $(__muParser_dll___importlib) $(__muParser_dll___soname_flags) $(__muParser_dll___macver) $(LDFLAGS)  $(LIBS)
-	
-	$(__muParser_dll___so_symlinks_cmd)
-
-install_muParser_dll: $(__muParser_dll___depname)
+install_muParser_lib: $(__muParser_lib___depname)
 	$(INSTALL_DIR) $(DESTDIR)$(libdir)
-	$(INSTALL_DATA) $(top_builddir)/lib/$(LIBPREFIX)muparser$(DEBUG_BUILD_POSTFIX).$(DLLIMP_SUFFIX) $(DESTDIR)$(libdir)
-	$(INSTALL_PROGRAM) $(top_builddir)/lib/$(DLLPREFIX)muparser$(DEBUG_BUILD_POSTFIX)$(__muParser_dll___targetsuf3) $(DESTDIR)$(libdir)
-	(cd $(DESTDIR)$(libdir) ; $(__muParser_dll___so_symlinks_inst_cmd))
+	$(INSTALL_DATA) $(top_builddir)/lib/$(LIBPREFIX)muparser$(DEBUG_BUILD_POSTFIX)$(LIBEXT) $(DESTDIR)$(libdir)
 
-uninstall_muParser_dll: 
-	rm -f $(DESTDIR)$(libdir)/$(LIBPREFIX)muparser$(DEBUG_BUILD_POSTFIX).$(DLLIMP_SUFFIX)
-	rm -f $(DESTDIR)$(libdir)/$(DLLPREFIX)muparser$(DEBUG_BUILD_POSTFIX)$(__muParser_dll___targetsuf3)
-	(cd $(DESTDIR)$(libdir) ; $(__muParser_dll___so_symlinks_uninst_cmd))
+uninstall_muParser_lib: 
+	rm -f $(DESTDIR)$(libdir)/$(LIBPREFIX)muparser$(DEBUG_BUILD_POSTFIX)$(LIBEXT)
 
-install_muParser_dll_headers: 
+install_muParser_lib_headers: 
 	$(INSTALL_DIR) $(DESTDIR)$(prefix)
-	for f in $(MUPARSER_DLL_HEADERS); do \
+	for f in $(MUPARSER_LIB_HEADERS); do \
 	if test ! -d $(DESTDIR)$(prefix)/`dirname $$f` ; then \
 	$(INSTALL_DIR) $(DESTDIR)$(prefix)/`dirname $$f`; \
 	fi; \
 	$(INSTALL_DATA) $(srcdir)/$$f $(DESTDIR)$(prefix)/$$f; \
 	done
 
-uninstall_muParser_dll_headers: 
-	for f in $(MUPARSER_DLL_HEADERS); do \
+uninstall_muParser_lib_headers: 
+	for f in $(MUPARSER_LIB_HEADERS); do \
 	rm -f $(DESTDIR)$(prefix)/$$f; \
 	done
+
+#$(top_builddir)/lib/$(DLLPREFIX)muparser$(DEBUG_BUILD_POSTFIX)$(__muParser_dll___targetsuf3): $(MUPARSER_DLL_OBJECTS)
+#	$(SHARED_LD_CXX) $@ $(MUPARSER_DLL_OBJECTS)   $(__muParser_dll___macinstnamecmd) $(__muParser_dll___importlib) $(__muParser_dll___soname_flags) $(__muParser_dll___macver) $(LDFLAGS)  $(LIBS)
+#	
+#	$(__muParser_dll___so_symlinks_cmd)
+
+#install_muParser_dll: $(__muParser_dll___depname)
+#	$(INSTALL_DIR) $(DESTDIR)$(libdir)
+#	$(INSTALL_DATA) $(top_builddir)/lib/$(LIBPREFIX)muparser$(DEBUG_BUILD_POSTFIX).$(DLLIMP_SUFFIX) $(DESTDIR)$(libdir)
+#	$(INSTALL_PROGRAM) $(top_builddir)/lib/$(DLLPREFIX)muparser$(DEBUG_BUILD_POSTFIX)$(__muParser_dll___targetsuf3) $(DESTDIR)$(libdir)
+#	(cd $(DESTDIR)$(libdir) ; $(__muParser_dll___so_symlinks_inst_cmd))
+
+#uninstall_muParser_dll: 
+#	rm -f $(DESTDIR)$(libdir)/$(LIBPREFIX)muparser$(DEBUG_BUILD_POSTFIX).$(DLLIMP_SUFFIX)
+#	rm -f $(DESTDIR)$(libdir)/$(DLLPREFIX)muparser$(DEBUG_BUILD_POSTFIX)$(__muParser_dll___targetsuf3)
+#	(cd $(DESTDIR)$(libdir) ; $(__muParser_dll___so_symlinks_uninst_cmd))
+
+#install_muParser_dll_headers: 
+#	$(INSTALL_DIR) $(DESTDIR)$(prefix)
+#	for f in $(MUPARSER_DLL_HEADERS); do \
+#	if test ! -d $(DESTDIR)$(prefix)/`dirname $$f` ; then \
+#	$(INSTALL_DIR) $(DESTDIR)$(prefix)/`dirname $$f`; \
+#	fi; \
+#	$(INSTALL_DATA) $(srcdir)/$$f $(DESTDIR)$(prefix)/$$f; \
+#	done
+
+#uninstall_muParser_dll_headers: 
+#	for f in $(MUPARSER_DLL_HEADERS); do \
+#	rm -f $(DESTDIR)$(prefix)/$$f; \
+#	done
 
 $(top_builddir)/samples/example1/example1$(EXEEXT): $(EXAMPLE1_OBJECTS) $(__muParser_lib___depname)
 	$(CXX) -o $@ $(EXAMPLE1_OBJECTS) -L$(top_builddir)/lib   -L$(srcdir)/lib $(LDFLAGS)  -lmuparser$(DEBUG_BUILD_POSTFIX) $(LIBS)
