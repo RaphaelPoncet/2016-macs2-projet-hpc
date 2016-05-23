@@ -1,17 +1,25 @@
 {
     "parameters" : ["x0=0.2*(xmin+xmax)", 
-                    "z0=0.2*(zmin+zmax)", 
-                    "lambda=0.0006", 
-                    "V0=2000.0"],
+                    "z0=0.5*(zmin+zmax)", 
+                    "lambda=100.0", 
+                    "V0=0.1"],
 
     "init" : {"velocity" : {"formula" : "V0"},
-              "pressure_0" : {"formula" : "exp(-lambda*((x-x0)^2))"},
+              "pressure_0" : {"formula" : "exp(-lambda*((x-x0)^2+(z-z0)^2))"},
               "pressure_1" : {"formula" : "pressure_0"}},
 
-    "grid" : {"file" : "./data/marm2_downsampled_8.xyz"},
+    "grid" : {"nx" : 300,
+              "ny" : 1,
+              "nz" : 300,
+              "xmin" : 0.0,
+              "xmax" : 10.0,
+              "ymin" : 0.0,
+              "ymax" : 0.0,
+              "zmin" : 0.0,
+              "zmax" : 10.0},
 
     "timeloop" : {"dt": ".99*CFL",
-                  "niter": 10000},
+                  "niter": 1001},
 
     "output" : [ {"type" : "EvalVariable", 
                   "rhythm" : 100, 

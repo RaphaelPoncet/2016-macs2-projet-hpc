@@ -22,55 +22,5 @@
 
 namespace Timer {
 
-  struct timespec Now() {
-
-    struct timespec temp;
-    clock_gettime(CLOCK_MONOTONIC_RAW, &temp);
-
-    return temp;
-
-  }
-
-  double DiffTime(const struct timespec& start, const struct timespec& end) {
-    
-    struct timespec temp;
-
-    if ((end.tv_nsec - start.tv_nsec) < 0) {
-
-      temp.tv_sec = end.tv_sec-start.tv_sec - 1;
-      temp.tv_nsec = 1000000000+end.tv_nsec-start.tv_nsec;
-
-    } else {
-
-      temp.tv_sec = end.tv_sec-start.tv_sec;
-      temp.tv_nsec = end.tv_nsec-start.tv_nsec;
-
-    }
-
-    const double time_in_ms = 1.0e3 * temp.tv_sec + 1.0e-6 * temp.tv_nsec;
-
-    return time_in_ms;
-
-  }
-
-  void PrintTimings(const std::vector<RealT>& timings, 
-                    const std::string& kernel_name, 
-                    std::ostream* os_ptr) {
-
-    if (!timings.empty()) {
-
-      const double mean = std::accumulate(timings.begin(), timings.end(), 0.0);
-  
-      *os_ptr << std::setprecision(10) << kernel_name << " : "
-              << "min=" 
-              << *std::min_element(timings.begin(), timings.end()) << "ms, "
-              << "mean=" 
-              << mean / timings.size() << "ms, "
-              << "max=" 
-              << *std::max_element(timings.begin(), timings.end()) << "ms\n";
-
-    }
-  
-  }
 
 }

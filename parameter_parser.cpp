@@ -385,7 +385,52 @@ static void ParseGridFromJSON(picojson::object& v_grid,
   UNUSED(grid_ptr);
 
   const bool has_file = v_grid["file"].is<std::string>();
-  assert(has_file);
+
+  const bool has_nx = v_grid["nx"].is<double>();
+  const bool has_ny = v_grid["ny"].is<double>();
+  const bool has_nz = v_grid["nz"].is<double>();
+
+  const bool has_xmin = v_grid["xmin"].is<double>();
+  const bool has_xmax = v_grid["xmax"].is<double>();
+
+  const bool has_ymin = v_grid["ymin"].is<double>();
+  const bool has_ymax = v_grid["ymax"].is<double>();
+
+  const bool has_zmin = v_grid["zmin"].is<double>();
+  const bool has_zmax = v_grid["zmax"].is<double>();
+
+  const bool has_explicit = 
+    (has_nx && has_ny && has_nz &&
+     has_xmin && has_xmax && has_ymin && has_ymax && has_zmin && has_zmax);
+
+  assert(has_file || has_explicit);
+
+  int n_fast = - 1;
+  int n_medium = - 1;
+  int n_slow = - 1;
+  RealT x_fast_min = 0.0;
+  RealT x_fast_max = 0.0;
+  RealT x_medium_min = 0.0;
+  RealT x_medium_max = 0.0;
+  RealT x_slow_min = 0.0;
+  RealT x_slow_max = 0.0;
+
+  if (has_explicit) {
+
+    n_fast = int(v_grid["nx"].get<double>());
+    n_medium = int(v_grid["ny"].get<double>());
+    n_slow = int(v_grid["nz"].get<double>());
+
+    x_fast_min = v_grid["xmin"].get<double>();
+    x_fast_max = v_grid["xmax"].get<double>();
+
+    x_medium_min = v_grid["ymin"].get<double>();
+    x_medium_max = v_grid["ymax"].get<double>();
+
+    x_slow_min = v_grid["zmin"].get<double>();
+    x_slow_max = v_grid["zmax"].get<double>();
+
+  }
 
   if (has_file) {
     
@@ -403,15 +448,6 @@ static void ParseGridFromJSON(picojson::object& v_grid,
     std::string dummy_name = "";
     DataType dummy_datatype = NONE;
     int dummy_nb_components = - 1;
-    int n_fast = - 1;
-    int n_medium = - 1;
-    int n_slow = - 1;
-    RealT x_fast_min = 0.0;
-    RealT x_fast_max = 0.0;
-    RealT x_medium_min = 0.0;
-    RealT x_medium_max = 0.0;
-    RealT x_slow_min = 0.0;
-    RealT x_slow_max = 0.0;
 
     ReadBinaryVariableHeader(&tmp_binary_file,
                              &dummy_name, 
@@ -427,53 +463,53 @@ static void ParseGridFromJSON(picojson::object& v_grid,
                              &x_slow_min,
                              &x_slow_max);
 
-    // Initialize grid from geometry informations. 
-    
-    // Depending on variable support (cell or node), grid extent
-    // and size will change a little.
-    //
-    // It is merely a matter of convenience for visualization: by
-    // default, Paraview outputs cell variables with no interpolation,
-    // and node variables with interpolation.
-
-    const VariableSupport variable_support = variable::VARIABLE_SUPPORT;
-
-    // The number of nodes is the number of cells + 1, except if the
-    // number of nodes is 1, when the number of cells is also 1.
-    const int n_fast_grid = 
-      (variable_support == CELL ? (n_fast == 1 ? n_fast : n_fast + 1) : n_fast);
-    const int n_medium_grid = 
-      (variable_support == CELL ? (n_medium == 1 ? n_medium : n_medium + 1) : n_medium);
-    const int n_slow_grid = 
-      (variable_support == CELL ? (n_slow == 1 ? n_slow : n_slow + 1) : n_slow);
-    
-    assert(0 < n_fast);
-    const RealT dx_fast = (x_fast_max - x_fast_min) / (RealT)n_fast;
-
-    assert(0 < n_medium);
-    const RealT dx_medium = (x_medium_max - x_medium_min) / (RealT)n_medium;
-
-    assert(0 < n_slow);
-    const RealT dx_slow = (x_slow_max - x_slow_min) / (RealT)n_slow;
-
-    const RealT x_fast_min_grid = 
-      (variable_support == CELL ? x_fast_min - 0.5 * dx_fast: x_fast_min);
-    const RealT x_fast_max_grid = 
-      (variable_support == CELL ? x_fast_max + 0.5 * dx_fast: x_fast_max);
-    const RealT x_medium_min_grid = 
-      (variable_support == CELL ? x_medium_min - 0.5 * dx_medium: x_medium_min);
-    const RealT x_medium_max_grid = 
-      (variable_support == CELL ? x_medium_max + 0.5 * dx_medium: x_medium_max);
-    const RealT x_slow_min_grid = 
-      (variable_support == CELL ? x_slow_min - 0.5 * dx_slow: x_slow_min);
-    const RealT x_slow_max_grid = 
-      (variable_support == CELL ? x_slow_max + 0.5 * dx_slow: x_slow_max);
-
-    *grid_ptr = RectilinearGrid3D(x_fast_min_grid, x_fast_max_grid, n_fast_grid, 
-                                  x_medium_min_grid, x_medium_max_grid, n_medium_grid, 
-                                  x_slow_min_grid, x_slow_max_grid, n_slow_grid);
-    
   }
+  
+  // Initialize grid from geometry informations. 
+    
+  // Depending on variable support (cell or node), grid extent
+  // and size will change a little.
+  //
+  // It is merely a matter of convenience for visualization: by
+  // default, Paraview outputs cell variables with no interpolation,
+  // and node variables with interpolation.
+
+  const VariableSupport variable_support = variable::VARIABLE_SUPPORT;
+
+  // The number of nodes is the number of cells + 1, except if the
+  // number of nodes is 1, when the number of cells is also 1.
+  const int n_fast_grid = 
+    (variable_support == CELL ? (n_fast == 1 ? n_fast : n_fast + 1) : n_fast);
+  const int n_medium_grid = 
+    (variable_support == CELL ? (n_medium == 1 ? n_medium : n_medium + 1) : n_medium);
+  const int n_slow_grid = 
+    (variable_support == CELL ? (n_slow == 1 ? n_slow : n_slow + 1) : n_slow);
+    
+  assert(0 < n_fast);
+  const RealT dx_fast = (x_fast_max - x_fast_min) / (RealT)n_fast;
+
+  assert(0 < n_medium);
+  const RealT dx_medium = (x_medium_max - x_medium_min) / (RealT)n_medium;
+
+  assert(0 < n_slow);
+  const RealT dx_slow = (x_slow_max - x_slow_min) / (RealT)n_slow;
+
+  const RealT x_fast_min_grid = 
+    (variable_support == CELL ? x_fast_min - 0.5 * dx_fast: x_fast_min);
+  const RealT x_fast_max_grid = 
+    (variable_support == CELL ? x_fast_max + 0.5 * dx_fast: x_fast_max);
+  const RealT x_medium_min_grid = 
+    (variable_support == CELL ? x_medium_min - 0.5 * dx_medium: x_medium_min);
+  const RealT x_medium_max_grid = 
+    (variable_support == CELL ? x_medium_max + 0.5 * dx_medium: x_medium_max);
+  const RealT x_slow_min_grid = 
+    (variable_support == CELL ? x_slow_min - 0.5 * dx_slow: x_slow_min);
+  const RealT x_slow_max_grid = 
+    (variable_support == CELL ? x_slow_max + 0.5 * dx_slow: x_slow_max);
+
+  *grid_ptr = RectilinearGrid3D(x_fast_min_grid, x_fast_max_grid, n_fast_grid, 
+                                x_medium_min_grid, x_medium_max_grid, n_medium_grid, 
+                                x_slow_min_grid, x_slow_max_grid, n_slow_grid);
 
 }
 

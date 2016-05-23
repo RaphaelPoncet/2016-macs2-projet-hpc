@@ -24,9 +24,6 @@
 #include "timer.hpp"
 #include "variable_definitions.hpp"
 
-static struct timespec timer_start;
-static struct timespec timer_stop;
-
 MathematicalParser::MathematicalParser():
   m_parser() {}
 
@@ -86,8 +83,6 @@ void MathematicalParser::EvaluateExpression(const std::string& expression,
   const int n_medium = variable_storage_ptr->n2();
   const int n_slow = variable_storage_ptr->n3();
 
-  timer_start = Timer::Now();
-
   // Temporary buffer to hold parser result.
   RealT* buffer = (RealT*) malloc(n_fast * sizeof(RealT));
 
@@ -137,13 +132,7 @@ void MathematicalParser::EvaluateExpression(const std::string& expression,
     }
   }
 
-  // free(x_grid);
   free(buffer);
-
-  timer_stop = Timer::Now();
-
-  LOG_ERROR << "Elapsed parsing time:" 
-            << Timer::DiffTime(timer_start, timer_stop) << "ms";
 
 }
 

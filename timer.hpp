@@ -18,13 +18,5 @@
 
 namespace Timer {
 
-  struct timespec Now();
-
-  double DiffTime(const struct timespec& start, 
-                  const struct timespec& end);
-
-  void PrintTimings(const std::vector<RealT>& timings, 
-                    const std::string& kernel_name, 
-                    std::ostream* os_ptr);
 
 }

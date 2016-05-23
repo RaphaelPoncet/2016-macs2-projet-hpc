@@ -30,10 +30,6 @@
 #include "variable_definitions.hpp"
 #include "wave_propagation.hpp"
 
-static struct timespec timer_start;
-static struct timespec timer_stop;
-std::vector<double> timings_update;
-
 static int Usage(const std::string& exe_name) {
 
   std::cout << "Usage: " << exe_name << " [parameter file]" << std::endl;
@@ -150,12 +146,10 @@ int main(int argc, char** argv) {
     const int n_medium = variable_storage.n2();
     const int n_slow = variable_storage.n3();
 
-    timer_start = Timer::Now();
-
-    // // Apply sponge.
-    // ApplySpongeLayer_0(n_fast, n_fast_padding, n_medium, n_slow,
-    //                    sponge_fast, sponge_medium, sponge_slow, 
-    //                    pressure_1);
+    // Apply sponge.
+    ApplySpongeLayer_0(n_fast, n_fast_padding, n_medium, n_slow,
+                       sponge_fast, sponge_medium, sponge_slow, 
+                       pressure_1);
 
     ComputeLaplacian_0(n_fast, n_fast_padding, n_medium, n_slow,
                        stencil_radius, dx, dy, dz, 
@@ -166,17 +160,13 @@ int main(int argc, char** argv) {
                           stencil_radius, dt,
                           velocity, laplace_p, pressure_0, pressure_1);
 
-    // // Apply sponge.
-    // ApplySpongeLayer_0(n_fast, n_fast_padding, n_medium, n_slow,
-    //                    sponge_fast, sponge_medium, sponge_slow, 
-    //                    pressure_1);
+    // Apply sponge.
+    ApplySpongeLayer_0(n_fast, n_fast_padding, n_medium, n_slow,
+                       sponge_fast, sponge_medium, sponge_slow, 
+                       pressure_1);
 
     // Exchange pressure arrays.
     std::swap(pressure_0, pressure_1);
-
-    timer_stop = Timer::Now();
-
-    timings_update.push_back(Timer::DiffTime(timer_start, timer_stop));
 
     for (auto it = output_events.begin(); it != output_events.end(); ++it) {
 
@@ -201,7 +191,5 @@ int main(int argc, char** argv) {
   for (auto it = output_events.begin(); it != output_events.end(); ++it)
     it->Destroy();
 
-  Timer::PrintTimings(timings_update, "WavePropagation", &std::cerr);
- 
   return 0;
 }
