@@ -29,6 +29,7 @@
 #include "timeloop_manager.hpp"
 #include "variable_definitions.hpp"
 #include "wave_propagation.hpp"
+#include "wave_solver_options.hpp"
 
 static int Usage(const std::string& exe_name) {
 
@@ -63,19 +64,22 @@ int main(int argc, char** argv) {
   char const* const parameter_filename_c = argv[1];
   const std::string parameter_filename = std::string(parameter_filename_c);
 
-  RectilinearGrid3D propagation_grid = RectilinearGrid3D();
+  RectilinearGrid3D propagation_grid;
   MultiDimensionalStorage4D variable_storage;
   MathematicalParser math_parser;
   std::vector<OutputEvent> output_events;
   TimeloopManager timeloop_manager;
+  WaveSolverOptions wave_solver_options = WaveSolverOptions();;
 
   LOG_INFO << "Reading parameter file \"" << parameter_filename << "\"...";
 
   std::ifstream parameter_file(parameter_filename.c_str(), std::ifstream::in);
   const int nx_padding = 17;
+
   ParseParameterFile(nx_padding, &parameter_file, &propagation_grid, 
                      &variable_storage, &math_parser, &output_events,
-                     &timeloop_manager);
+                     &timeloop_manager, &wave_solver_options);
+
   parameter_file.close();
 
   math_parser.PrintConstants();
@@ -107,26 +111,20 @@ int main(int argc, char** argv) {
   for (auto it = output_events.begin(); it != output_events.end(); ++it)
     it->Create(nb_iter, variable_storage, propagation_grid);
 
-  // Init sponge layers.
-  const int sponge_width = 40;
-  RealT* sponge_fast = (RealT*) malloc(propagation_grid.n_fast() * sizeof(RealT));
-  RealT* sponge_medium = (RealT*) malloc(propagation_grid.n_medium() * sizeof(RealT));
-  RealT* sponge_slow = (RealT*) malloc(propagation_grid.n_slow() * sizeof(RealT));
-
-  InitSpongeArray(sponge_width, propagation_grid.n_fast(), sponge_fast);
-  InitSpongeArray(sponge_width, propagation_grid.n_medium(), sponge_medium);
-  InitSpongeArray(sponge_width, propagation_grid.n_slow(), sponge_slow);
+  RealT* sponge_fast = VectorRawData<RealT>(wave_solver_options.sponge_fast());
+  RealT* sponge_medium = VectorRawData<RealT>(wave_solver_options.sponge_medium());
+  RealT* sponge_slow = VectorRawData<RealT>(wave_solver_options.sponge_slow());
 
   std::ofstream sponge_fast_out("sponge_fast.txt", std::ofstream::out);
-  DumpSpongeArray(propagation_grid.n_fast(), sponge_fast, &sponge_fast_out);
-  sponge_fast_out.close();
-
   std::ofstream sponge_medium_out("sponge_medium.txt", std::ofstream::out);
-  DumpSpongeArray(propagation_grid.n_medium(), sponge_medium, &sponge_medium_out);
-  sponge_medium_out.close();
-
   std::ofstream sponge_slow_out("sponge_slow.txt", std::ofstream::out);
-  DumpSpongeArray(propagation_grid.n_slow(), sponge_slow, &sponge_slow_out);
+
+  wave_solver_options.DumpAllSponges(&sponge_fast_out,
+                                     &sponge_medium_out,
+                                     &sponge_slow_out);
+
+  sponge_fast_out.close();
+  sponge_medium_out.close();
   sponge_slow_out.close();
 
   const RealT dt = timeloop_manager.dt();
@@ -180,10 +178,6 @@ int main(int argc, char** argv) {
       }
     }
   }
-
-  free(sponge_fast);
-  free(sponge_medium);
-  free(sponge_slow);
 
   // Variables cleanup.
   variable_storage.DeAllocate();

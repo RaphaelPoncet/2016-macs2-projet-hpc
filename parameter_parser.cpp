@@ -34,6 +34,7 @@
 #include "rectilinear_grid.hpp"
 #include "timeloop_manager.hpp"
 #include "variable_definitions.hpp"
+#include "wave_solver_options.hpp"
 
 const std::string TMP_BINARY_FILENAME = "./tmp.dat";
 const std::string MAGIC_ITER_STRING = "\%i";
@@ -519,7 +520,8 @@ void ParseParameterFile(int n_fast_padding,
                         MultiDimensionalStorage4D* storage_ptr,
                         MathematicalParser* math_parser_ptr,
                         std::vector<OutputEvent>* output_events_ptr,
-                        TimeloopManager* timeloop_manager_ptr) {
+                        TimeloopManager* timeloop_manager_ptr,
+                        WaveSolverOptions* wave_solver_options_ptr) {
 
   std::string json_string;
 
@@ -834,5 +836,45 @@ void ParseParameterFile(int n_fast_padding,
 
     }
   }
+
+  const bool has_solver_options = o["waveprop"].is<picojson::object>();
+
+  if (has_solver_options) {
+
+    picojson::object o_solver = o["waveprop"].get<picojson::object>();
+
+    const bool has_sponge = o_solver["sponge"].is<picojson::object>();
+
+    if (has_sponge) {
+
+      picojson::object o_sponge = o_solver["sponge"].get<picojson::object>();
+
+      RealT slope = 0.0;
+      RealT base_value = 1.0;
+      int width = 0;
+
+      const bool has_slope = o_sponge["slope"].is<double>();
+
+      if (has_slope)
+        slope = o_sponge["slope"].get<double>();
+
+      const bool has_width = o_sponge["width"].is<double>();
+
+      if (has_width)
+        width = int(o_sponge["width"].get<double>());
+    
+      const bool has_base_value = o_sponge["base"].is<double>();
+
+      if (has_base_value)
+        base_value = o_sponge["base"].get<double>();
+
+      // Should use a copy constructor.
+      wave_solver_options_ptr->Set(width, base_value, slope, *grid_ptr);
+
+    }
+  }
+
+  wave_solver_options_ptr->InitSponge(*grid_ptr);
+  wave_solver_options_ptr->SetSponge();
 
 }

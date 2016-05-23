@@ -18,67 +18,6 @@
 #include "common.hpp"
 #include "wave_propagation.hpp"
 
-static void DumpArrayAscii(int n, RealT* sponge_array, std::ostream* os_ptr) {
-
-  assert(0 < n);
-  assert(sponge_array != NULL);
-
-  if (!*os_ptr) {
-
-    LOG_ERROR << "Invalid output stream";
-    std::abort();
-
-  }
-
-  for (int i = 0; i < n; ++i)
-    *os_ptr << sponge_array[i] << "\n";
-
-}
-
-void InitSpongeArray(int sponge_width, int n, RealT* out) {
-
-  assert(0 < sponge_width);
-  assert(0 < n);
-  assert(out != NULL);
-
-  // We implement the method of Cerjan et al. (1985): we multiply the
-  // wave amplitudes by a smooth factor.
-
-  for (int i = 0; i < n; ++i)
-    out[i] = 1.0;
-
-  if (sponge_width < n - sponge_width) {
-
-    for (int i = 0; i < sponge_width; ++i) {
-     
-      const RealT x = (RealT)((sponge_width - i) * 20 / sponge_width);
-      out[i] = expf(- 0.015 * x * x);
-
-    }
-
-    for (int i = n - sponge_width; i < n; ++i) {
-     
-      const RealT x = (RealT)((n - sponge_width - i) * 20 / sponge_width);
-      out[i] = expf(- 0.015 * x * x);
-
-    }
-
-  } else {
-
-    // The array is too short to support a sponge. Do not attenuate
-    // waves in this case.
-    LOG_INFO << "Will not initalise sponge layer: "
-             << "sponge_width ("
-             << sponge_width << ") larger than half length (" << n << ")";
-
-  }
-}
-
-void DumpSpongeArray(int n, RealT* sponge_array, std::ostream* os_ptr) {
-
-  DumpArrayAscii(n, sponge_array, os_ptr);
-
-}
 
 // Basic absorbing boundary conditions.
 void ApplySpongeLayer_0(int n_fast, int n_fast_padding, 
@@ -94,18 +33,18 @@ void ApplySpongeLayer_0(int n_fast, int n_fast_padding,
   for (int islow = 0; islow < n_slow; ++islow) {
     for (int imedium = 0; imedium < n_medium; ++imedium) {
       for (int ifast = 0; ifast < n_fast; ++ifast) {
-          
+        
         const size_t index = 
           n_medium * n_fast_pad * islow + n_fast_pad * imedium + ifast;
-
+        
         const RealT scaling = sponge_slow[islow] * sponge_medium[imedium] * sponge_fast[ifast];
         // const RealT scaling = 1.0;
 
         data[index] *= scaling;
 
-        }
       }
     }
+  }
 }
 
 void ComputeLaplacian_0(int n_fast, int n_fast_padding, 
@@ -187,5 +126,4 @@ void AdvanceWavePressure_0(int n_fast, int n_fast_padding,
     std::abort();
 
   }
-
 }

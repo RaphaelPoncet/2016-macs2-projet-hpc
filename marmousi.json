@@ -10,6 +10,9 @@
               "pressure_0" : {"formula" : "exp(-lambda*((x-x0)^2+(z-z0)^2))"},
               "pressure_1" : {"formula" : "pressure_0"}},
 
+    "timeloop" : {"dt": ".1*CFL",
+                  "niter": 10000},
+
     "output" : [ {"type" : "CheckVariables",
                   "rhythm" : 1000},
                  {"type" : "OutputVariables", 
@@ -19,7 +22,7 @@
                  {"type" : "OutputVariables", 
                   "rhythm" : 1000, 
                   "format": "VTK",
-                  "file" : "./output/vtk_out_%i.dat"},
+                  "file" : "./output/vtk_out_%i.vtr"},
                  {"type" : "OutputReceivers", 
                   "rhythm" : 10, 
                   "format": "binary",

@@ -19,10 +19,6 @@
 
 #include "common.hpp"
 
-void InitSpongeArray(int sponge_width, int n, RealT* out);
-
-void DumpSpongeArray(int n, RealT* sponge_array, std::ostream* os_ptr);
-
 // Baseline non optimized kernel.
 void ApplySpongeLayer_0(int n_fast, int n_fast_padding, 
                         int n_medium, int n_slow,

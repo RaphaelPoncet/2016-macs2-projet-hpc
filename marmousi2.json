@@ -1,6 +1,6 @@
 {
-    "parameters" : ["x0=0.2*(xmin+xmax)", 
-                    "z0=0.2*(zmin+zmax)", 
+    "parameters" : ["x0=0.5*(xmin+xmax)", 
+                    "z0=0.1*(zmin+zmax)", 
                     "lambda=0.003"],
 
     "init" : {"velocity" : {"file" : "./data/marm2_downsampled_8.xyz"},
@@ -9,7 +9,7 @@
 
     "grid" : {"file" : "./data/marm2_downsampled_8.xyz"},
 
-    "timeloop" : {"dt": ".1*CFL",
+    "timeloop" : {"dt": ".9*CFL",
                   "niter": 10000},
 
     "output" : [ {"type" : "CheckVariables",
@@ -19,13 +19,17 @@
                   "format": "binary",
                   "file" : "./output/binary_out_%i.dat"},
                  {"type" : "OutputVariables", 
-                  "rhythm" : 100, 
+                  "rhythm" : 200, 
                   "format": "VTK",
                   "file" : "./output/vtk_out_%i.vtr"},
                  {"type" : "OutputReceivers", 
                   "rhythm" : 10, 
                   "format": "binary",
                   "iz" : 100,
-                  "file" : "./output/receivers.dat"}]
+                  "file" : "./output/receivers.dat"}],
+
+    "waveprop" : {"sponge" : {"slope" : 0.015,
+                              "width" : 20,
+                              "base" : 0.9}}
 
 }

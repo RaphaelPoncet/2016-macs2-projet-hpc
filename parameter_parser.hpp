@@ -27,6 +27,7 @@ class LocationOutput;
 class MultiDimensionalStorage4D;
 class MathematicalParser;
 class TimeloopManager;
+class WaveSolverOptions;
 
 class OutputEvent {
 public:
@@ -72,6 +73,7 @@ void ParseParameterFile(int n_fast_padding,
                         MultiDimensionalStorage4D* storage_ptr,
                         MathematicalParser* math_parser_ptr,
                         std::vector<OutputEvent>* output_events_ptr,
-                        TimeloopManager* timeloop_manager_ptr);
+                        TimeloopManager* timeloop_manager_ptr,
+                        WaveSolverOptions* wave_solver_options_ptr);
 
 #endif // PARAMETER_PARSER_HPP
