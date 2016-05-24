@@ -22,16 +22,16 @@
 typedef enum _VTKDataFormat {VTK_ASCII, VTK_BINARY} VTKDataFormat;
 
 void WriteVTKXmlVariableHeader(const std::string& variable_name,
-			       VTKDataFormat format, int nb_components,
-			       size_t data_size_in_bytes,
-			       size_t* data_offset_in_bytes_ptr,
-			       std::ostream* os_ptr);
+                               VTKDataFormat format, int nb_components,
+                               size_t data_size_in_bytes,
+                               size_t* data_offset_in_bytes_ptr,
+                               std::ostream* os_ptr);
 
 void WriteVTKXmlVariable(VTKDataFormat format, int nb_components,
-			 int n_fast, int n_fast_padding, 
-			 int n_medium, int n_slow, 
-			 const RealT* data,
-			 size_t* grid_data_offset_in_bytes_ptr,
-			 std::ostream* os_ptr);
+                         int n_fast, int n_fast_padding, 
+                         int n_medium, int n_slow, 
+                         const RealT* data,
+                         size_t* grid_data_offset_in_bytes_ptr,
+                         std::ostream* os_ptr);
 
 #endif // ARRAY_VTK_IO_HPP

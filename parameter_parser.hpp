@@ -36,6 +36,8 @@ public:
   std::string type() const { return m_type; }
   std::string format() { return m_format; }
   std::string format() const { return m_format; }
+  std::string ascii_or_binary() { return m_ascii_or_binary; }
+  std::string ascii_or_binary() const { return m_ascii_or_binary; }
   std::string stream_name() { return m_stream_name; }
   std::string stream_name() const { return m_stream_name; }
   int rhythm() { return m_rhythm; }
@@ -57,6 +59,7 @@ public:
 private:
   std::string m_type;
   std::string m_format;
+  std::string m_ascii_or_binary;
   std::string m_stream_name;
   int m_rhythm;
   std::ostream* m_output_stream_ptr;

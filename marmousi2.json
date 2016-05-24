@@ -16,7 +16,7 @@
                   "rhythm" : 100},
                  {"type" : "OutputVariables", 
                   "rhythm" : 1000, 
-                  "format": "binary",
+                  "format": "gridded",
                   "file" : "./output/binary_out_%i.dat"},
                  {"type" : "OutputVariables", 
                   "rhythm" : 200, 
@@ -24,7 +24,7 @@
                   "file" : "./output/vtk_out_%i.vtr"},
                  {"type" : "OutputReceivers", 
                   "rhythm" : 10, 
-                  "format": "binary",
+                  "format": "gridded",
                   "iz" : 100,
                   "file" : "./output/receivers.dat"}],
 

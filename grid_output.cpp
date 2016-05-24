@@ -26,17 +26,22 @@
 #include "variable_definitions.hpp"
 
 void OutputGridAndData(const std::string& io_format,
+                       const std::string& ascii_or_binary,
                        const RectilinearGrid3D& grid, 
                        const MultiDimensionalStorage4D& variable_storage,
                        std::ofstream* os_ptr) {
 
-  assert((io_format == std::string("binary")) || (io_format == std::string("VTK")));
+  assert((io_format == std::string("gridded")) || (io_format == std::string("VTK")));
+  assert((ascii_or_binary == std::string("ascii")) || (ascii_or_binary == std::string("binary")));
 
   const VariableSupport variable_support = variable::VARIABLE_SUPPORT;
-  // Hardcoded
-  const VTKDataFormat format = VTK_BINARY;
 
   if (io_format == std::string("VTK")) {
+
+  const VTKDataFormat format = 
+    (ascii_or_binary == std::string("ascii") ? VTK_ASCII : VTK_BINARY);
+
+  assert((format == VTK_BINARY) || (format == VTK_ASCII));
 
   grid.WriteHeaderVTKXml(os_ptr);
   grid.WriteVTKXmlAscii(os_ptr);
@@ -278,7 +283,10 @@ void OutputGridAndData(const std::string& io_format,
 
   grid.WriteFooterVTKXml(os_ptr);
 
-  } else if (io_format == std::string("binary")) {
+  } else if (io_format == std::string("gridded")) {
+    
+    const GriddedDataFormat gridded_format = 
+      (ascii_or_binary == std::string("ascii") ? GRIDDED_ASCII : GRIDDED_BINARY);
 
     // Write master header.
     int nb_variables_to_write = 0;
@@ -300,7 +308,8 @@ void OutputGridAndData(const std::string& io_format,
         const int nb_components = 1;
         const std::string variable_name = variable::VARIABLE_NAMES[ivar];
 
-        WriteBinaryVariableHeader(variable_name, data_type, nb_components, 
+        WriteBinaryVariableHeader(variable_name, data_type, gridded_format,
+                                  nb_components, 
                                   variable_storage.n_fast(), 
                                   variable_storage.n2(), variable_storage.n3(),
                                   grid.x_fast_min(), grid.x_fast_max(),
@@ -319,7 +328,9 @@ void OutputGridAndData(const std::string& io_format,
         const int nb_components = 1;
         const RealT* data = variable_storage.RawDataSlowDimension(ivar);
 
-        WriteBinaryVariable(data_type, nb_components, 
+        WriteBinaryVariable(data_type, 
+                            gridded_format,
+                            nb_components, 
                             variable_storage.n_fast(), 
                             variable_storage.n_fast_padding(), 
                             variable_storage.n2(), variable_storage.n3(),

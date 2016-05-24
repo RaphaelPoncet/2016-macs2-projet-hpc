@@ -20,6 +20,8 @@
 
 #include "common.hpp"
 
+typedef enum _GriddedDataFormat {GRIDDED_ASCII, GRIDDED_BINARY} GriddedDataFormat;
+
 void ReadBinaryVariableHeader(std::istream* is_ptr, 
                               std::string* name_ptr, 
                               DataType* data_type_ptr,
@@ -41,6 +43,7 @@ void ReadBinaryVariable(std::istream& input_stream,
 
 void WriteBinaryVariableHeader(const std::string& variable_name, 
                                DataType data_type, 
+                               GriddedDataFormat gridded_format,
                                int nb_components, 
                                int n_fast, 
                                int n_medium, 
@@ -54,11 +57,13 @@ void WriteBinaryVariableHeader(const std::string& variable_name,
                                std::ostream* os_ptr);
 
 void WriteBinaryVariableSliceSlowDimension(DataType data_type,
+                                           GriddedDataFormat gridded_format,
                                            int n_fast, int n_fast_padding, 
                                            int n_medium, int islow,
                                            const RealT* data, std::ostream* os_ptr);
 
 void WriteBinaryVariable(DataType data_type,
+                         GriddedDataFormat gridded_format,
                          int nb_components,
                          int n_fast, int n_fast_padding, 
                          int n_medium, int n_slow,

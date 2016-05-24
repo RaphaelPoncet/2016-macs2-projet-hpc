@@ -22,6 +22,7 @@ class RectilinearGrid3D;
 class MultiDimensionalStorage4D;
 
 void OutputGridAndData(const std::string& format,
+                       const std::string& ascii_or_binary,
                        const RectilinearGrid3D& grid, 
                        const MultiDimensionalStorage4D& data,
                        std::ofstream* os_ptr);

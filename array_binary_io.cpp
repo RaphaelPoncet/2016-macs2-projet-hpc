@@ -397,12 +397,15 @@ void ReadBinaryVariable(std::istream& input_stream,
 }
 
 void WriteBinaryVariableHeader(const std::string& variable_name, DataType data_type, 
+                               GriddedDataFormat gridded_format,
                                int nb_components, 
                                int n_fast, int n_medium, int n_slow, 
                                RealT x_fast_min, RealT x_fast_max,
                                RealT x_medium_min, RealT x_medium_max,
                                RealT x_slow_min, RealT x_slow_max,
                                std::ostream* os_ptr) {
+
+  UNUSED(gridded_format);
   
   *os_ptr << HEADER_MAGIC_CHAR << " " 
           << variable_name << " "
@@ -419,26 +422,43 @@ void WriteBinaryVariableHeader(const std::string& variable_name, DataType data_t
 }
 
 void WriteBinaryVariableSliceSlowDimension(DataType data_type,
+                                           GriddedDataFormat gridded_format,
                                            int n_fast, int n_fast_padding, 
                                            int n_medium, int islow,
                                            const RealT* data, std::ostream* os_ptr) {
 
   const int n_fast_padded = n_fast + n_fast_padding;
 
-  for (int imedium = 0; imedium < n_medium; ++imedium) {
+  if (gridded_format == GRIDDED_BINARY) {
 
-    const size_t index_base = 
-      n_medium * n_fast_padded * islow + n_fast_padded * imedium;
+    for (int imedium = 0; imedium < n_medium; ++imedium) {
 
-    os_ptr->write(reinterpret_cast<const char*>(&data[index_base]), 
-                  DATATYPE_SIZE[data_type] * n_fast);
+      const size_t index_base = 
+        n_medium * n_fast_padded * islow + n_fast_padded * imedium;
 
+      os_ptr->write(reinterpret_cast<const char*>(&data[index_base]), 
+                    DATATYPE_SIZE[data_type] * n_fast);
+
+    }
+
+  } else {
+
+    for (int imedium = 0; imedium < n_medium; ++imedium) {
+      for (int ifast = 0; ifast < n_fast; ++ifast) {
+
+        const size_t index_base = 
+          n_medium * n_fast_padded * islow + n_fast_padded * imedium;
+
+        *os_ptr << data[index_base] << "\n";
+
+      }
+    }
   }
-
 }
 
 
 void WriteBinaryVariable(DataType data_type,
+                         GriddedDataFormat gridded_format,
                          int nb_components,
                          int n_fast, int n_fast_padding, 
                          int n_medium, int n_slow,
@@ -460,7 +480,8 @@ void WriteBinaryVariable(DataType data_type,
   }
 
   for (int islow = 0; islow < n_slow; ++islow)
-    WriteBinaryVariableSliceSlowDimension(data_type,n_fast, n_fast_padding, 
+    WriteBinaryVariableSliceSlowDimension(data_type, gridded_format, 
+                                          n_fast, n_fast_padding, 
                                           n_medium, islow, data, os_ptr);
 
 }

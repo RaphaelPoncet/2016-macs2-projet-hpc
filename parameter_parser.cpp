@@ -40,7 +40,7 @@ const std::string TMP_BINARY_FILENAME = "./tmp.dat";
 const std::string MAGIC_ITER_STRING = "\%i";
 
 OutputEvent::OutputEvent():
-  m_type(""), m_format(""), m_stream_name(""), m_rhythm(0), 
+  m_type(""), m_format(""), m_ascii_or_binary("binary"), m_stream_name(""), m_rhythm(0), 
   m_output_stream_ptr(NULL), m_file_ptr(NULL), m_index_slow(-1) {};
 
 void OutputEvent::ParseFromJSON(const picojson::value& v) {
@@ -60,6 +60,9 @@ void OutputEvent::ParseFromJSON(const picojson::value& v) {
   
   if (o["format"].is<std::string>())
     m_format = o["format"].get<std::string>();
+
+  if (o["io"].is<std::string>())
+    m_ascii_or_binary = o["io"].get<std::string>();
 
   if (o["file"].is<std::string>())
     m_stream_name = o["file"].get<std::string>();
@@ -96,29 +99,72 @@ void OutputEvent::Validate() {
   // Type is in a white list.
   if (m_type == "OutputVariables") {
 
-    if (m_format == "binary" || m_format == "VTK") {
+    if (m_format == "gridded" || m_format == "VTK") {
 
     } else {
 
       LOG_ERROR << "Invalid value for output event type: expected "
-                << "\'VTK\'"
-                << "or \'binary\'"
+                << "\'VTK\' "
+                << "or \'gridded\'"
                 << ", got \'" << m_format << "\'";
 
       std::abort();
 
     }
 
+    if (m_format == "gridded") {
+
+      if (m_ascii_or_binary == "ascii" || m_ascii_or_binary == "binary") {
+
+      } else {
+
+        LOG_ERROR << "Invalid value for output event io: expected "
+                  << "\'ascii\'"
+                  << "or \'binary\'"
+                  << ", got \'" << m_ascii_or_binary << "\'";
+
+        std::abort();
+
+      }
+    }
+
+    if (m_format == "VTK") {
+
+      if (m_ascii_or_binary == "binary") {
+
+      } else {
+
+        LOG_ERROR << "Invalid value for output event io: "
+                  << "\'ascii\' is currently unsupported for VTK output";
+
+        std::abort();
+
+      }
+
+    }
+
   } else if (m_type == "OutputReceivers") {
 
-    if (m_format == "binary" || m_format == "VTK") {
+    if (m_format == "gridded" || m_format == "VTK") {
 
     } else {
 
       LOG_ERROR << "Invalid value for output event type: expected "
                 << "\'VTK\'"
-                << "or \'binary\'"
+                << "or \'gridded\'"
                 << ", got \'" << m_format << "\'";
+
+      std::abort();
+
+    }
+
+    if (m_ascii_or_binary == "binary") {
+
+    } else {
+
+      LOG_ERROR << "Invalid value for output event io: expected "
+                << "\'binary\'"
+                << ", got \'" << m_ascii_or_binary << "\'";
 
       std::abort();
 
@@ -158,7 +204,7 @@ void OutputEvent::Create(int nb_iter,
     // needed.
 
     const std::string filename = 
-      (m_format != "binary" ? TMP_BINARY_FILENAME : m_stream_name);
+      (m_format != "gridded" ? TMP_BINARY_FILENAME : m_stream_name);
 
     m_file_ptr->open(filename, std::ios::out | std::ios::binary);
 
@@ -197,7 +243,7 @@ void OutputEvent::Destroy() {
 
     // Convert the receiver file, if needed.
     
-    assert(m_format == "binary" || m_format == "VTK");
+    assert(m_format == "gridded" || m_format == "VTK");
 
     if (m_format == "VTK") {
 
@@ -278,7 +324,7 @@ void OutputEvent::Destroy() {
   
       std::ofstream receivers_vtk_file(output_filename.c_str(), std::ofstream::binary);
   
-      OutputGridAndData("vtk", receiver_grid, variable_storage_receivers, &receivers_vtk_file);
+      OutputGridAndData("VTK", "binary", receiver_grid, variable_storage_receivers, &receivers_vtk_file);
   
       receivers_vtk_file.close();
   
@@ -333,7 +379,7 @@ void OutputEvent::Execute(int iter,
     LOG_INFO << "Writing output file \"" << output_filename << "\"...";
 
     m_file_ptr->open(output_filename.c_str(), std::ofstream::binary);
-    OutputGridAndData(m_format, grid, *variable_storage_ptr, m_file_ptr);
+    OutputGridAndData(m_format, m_ascii_or_binary, grid, *variable_storage_ptr, m_file_ptr);
 
     LOG_INFO << "Writing output file done.\n";
 
@@ -354,7 +400,7 @@ void OutputEvent::Execute(int iter,
       std::abort();
 
     }
-    
+
     m_location_output_ptr->Write(grid, *variable_storage_ptr, m_file_ptr);
 
   } else if (this->type() == "CheckVariables") {
@@ -867,6 +913,7 @@ void ParseParameterFile(int n_fast_padding,
       LOG_INFO << "Found output event: "
                << "type=\'" << event.type() << "\', "
                << "format=\'" << event.format() << "\', "
+               << "ascii/binary=\'" << event.ascii_or_binary() << "\', "
                << "filename=\'" << event.stream_name() << "\', "
                << "rhythm=\'" << event.rhythm() << "\', "
                << "var_name=\'" << event.var_name() << "\', "

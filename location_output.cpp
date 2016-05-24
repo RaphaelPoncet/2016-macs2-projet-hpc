@@ -58,6 +58,7 @@ void LocationOutput::WriteHeader(const RectilinearGrid3D& propagation_grid,
   // the grid is just a convention (because the thirs variable for
   // LocationOutput is time).
   WriteBinaryVariableHeader(variable_name, data_type, 
+                            GRIDDED_BINARY,
                             nb_components, 
                             propagation_grid.n_fast(), 
                             propagation_grid.n_medium(), 
@@ -95,6 +96,7 @@ void LocationOutput::Write(const RectilinearGrid3D& propagation_grid,
   assert(data != NULL);
 
   WriteBinaryVariableSliceSlowDimension(data_type,
+                                        GRIDDED_BINARY,
                                         n_fast, n_fast_padding, n2, index_slow,
                                         data, os_ptr);
 
