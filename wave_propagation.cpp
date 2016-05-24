@@ -38,7 +38,6 @@ void ApplySpongeLayer_0(int n_fast, int n_fast_padding,
           n_medium * n_fast_pad * islow + n_fast_pad * imedium + ifast;
         
         const RealT scaling = sponge_slow[islow] * sponge_medium[imedium] * sponge_fast[ifast];
-        // const RealT scaling = 1.0;
 
         data[index] *= scaling;
 
@@ -67,11 +66,9 @@ void ComputeLaplacian_0(int n_fast, int n_fast_padding,
           
         const size_t index = n_fast_pad * islow + ifast;
 
-        // Periodical boundary conditions in x.
         const RealT pressure_po = (ifast < n_fast - 1 ? p[index + 1] : p[index - (n_fast - 1)]); 
         const RealT pressure_mo = (ifast >= 1 ? p[index - 1] : p[index + (n_fast - 1)]); 
 
-        // // // Periodical boundary conditions in z.
         const RealT pressure_op = (islow < n_slow - 1 ? p[index + n_fast_pad] : p[index - (n_slow - 1) * n_fast_pad]); 
         const RealT pressure_om = (islow >= 1 ? p[index - n_fast_pad] : p[index + (n_slow - 1) * n_fast_pad]); 
 
