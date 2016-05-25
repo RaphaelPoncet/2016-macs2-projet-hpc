@@ -125,22 +125,36 @@ formulas, but one can also initialize them from a file (see
 
 * the `pressure_0` variable is defined as a gaussian, centered on `z0`.
 
-* the `pressure_1` variable is defined as equal to `pressue_0`
+* the `pressure_1` variable is defined as equal to `pressure_0`
 
-    "grid" : {"nx" : 100,
-              "ny" : 1,
-              "nz" : 200,
-              "xmin" : 0.0,
-              "xmax" : 10.0,
-              "ymin" : 0.0,
-              "ymax" : 0.0,
-              "zmin" : 0.0,
-              "zmax" : 10.0},
+        "grid" : {"nx" : 100,
+                  "ny" : 1,
+                  "nz" : 200,
+                  "xmin" : 0.0,
+                  "xmax" : 10.0,
+                  "ymin" : 0.0,
+                  "ymax" : 0.0,
+                  "zmin" : 0.0,
+                  "zmax" : 10.0},
 
-The `grid` section defines the geometry of the computational grid.
+The `grid` section defines the geometry of the computational grid. We
+simply define the dimensions of the grid `nx`, `ny` and `nz`, and its
+extents in the 3 dimensions `xmin`, `xmax` and so on. *Important*: for
+a 2D grid, `ny` *must be set to 1* (e.g. in 2D, the dimensions are x and
+z, not x and y).
 
     "timeloop" : {"dt": ".99*CFL",
                   "tfinal": 10.0},
+
+The `timeloop` section relates to the main loop parameters. First, we
+must specify the timestep `dt`. It is the user responsibility to use a
+timestep small enough so that the scheme is stable. Fortunately, there
+is a special variable, `CFL`, which gives the Courant-Friedrichs-Levy
+stability condition. Any number smaller than `CFL` should result in a
+stable scheme. Here, we take the timestep to be 99% of the CFL number.
+Then, we must specify the maximum simulation time. Alternatively,
+*instead of* `tfinal`, one can specify `niter`, the maximum number of
+iterations. *Exactly one* of `tfinal`, `niter` must be set.
 
     "output" : [ {"type" : "EvalVariable", 
                   "rhythm" : "end", 
