@@ -1,0 +1,49 @@
+{
+    "parameters" : ["x0=0.5*(xmin+xmax)", 
+                    "z0=0.5*(zmin+zmax)", 
+                    "lambda=100.0", 
+                    "V0=0.1"],
+
+    "init" : {"velocity" : {"formula" : "V0"},
+              "pressure_0" : {"formula" : "exp(-lambda*((z-z0)^2))"},
+              "pressure_1" : {"formula" : "pressure_0"}},
+
+    "grid" : {"nx" : 100,
+              "ny" : 1,
+              "nz" : 200,
+              "xmin" : 0.0,
+              "xmax" : 10.0,
+              "ymin" : 0.0,
+              "ymax" : 0.0,
+              "zmin" : 0.0,
+              "zmax" : 10.0},
+
+    "timeloop" : {"dt": ".99*CFL",
+                  "tfinal": 10.0},
+
+    "output" : [ {"type" : "EvalVariable", 
+                  "rhythm" : "end", 
+                  "name": "pressure_ref",
+                  "formula" : "0.5*(exp(-lambda*((z-z0-t*V0)^2)) + exp(-lambda*((z-z0+t*V0)^2)))"},
+                 {"type" : "CheckVariables",
+                  "rhythm" : 100},
+                 {"type" : "OutputVariables", 
+                  "rhythm" : "end", 
+                  "format": "binary",
+                  "file" : "./output/out_variables_%i.dat"},
+                 {"type" : "OutputVariables", 
+                  "rhythm" : 10, 
+                  "format": "VTK",
+                  "file" : "./output/out_variables_%i.vtr"},
+                 {"type" : "OutputReceivers", 
+                  "rhythm" : 10, 
+                  "format": "binary",
+                  "iz" : 200,
+                  "file" : "./output/receivers.dat"},
+                 {"type" : "OutputNorm",
+                  "rhythm" : "end",
+                  "name" : "pressure_0 - pressure_ref",
+                  "file" : "output/norm.txt"}
+                 ]
+
+}
