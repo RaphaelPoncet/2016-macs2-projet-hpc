@@ -64,32 +64,35 @@ print "amplitude_max=", amplitude_max
 
 rcv_ids = {'rcv1': (nx / 2, 'blue'),
            'rcv2': (nx / 4, 'red'),
-           'rcv3': (3 * nx / 5, 'green'),
+           # 'rcv3': (3 * nx / 5, 'green'),
            # 'rcv4': (1200, 'orange'),
            # 'rcv5': (800, 'purple'),
        }
 
-plt.figure()
 with seaborn.axes_style("dark"):
+
+    fig, (ax1, ax2) = plt.subplots(1, 2)
+
     cmap = 'gray'
-    plt.imshow(data, cmap = cmap, interpolation = 'none', aspect = 'auto', vmin = - 0.1 * amplitude_max, vmax = 0.1 * amplitude_max)
+    ax1.imshow(data, cmap = cmap, interpolation = 'none', aspect = 'auto', vmin = - 0.04 * amplitude_max, vmax = 0.04 * amplitude_max)
 
-for key, value in rcv_ids.iteritems():
-    rcv_id, color = value
-    plt.plot([rcv_id, rcv_id], [0.0, nz], color = color, linewidth = 2)
-plt.xlim([0,nx])
-plt.ylim([nz,0])
-plt.figure()
+    for key, value in rcv_ids.iteritems():
+        rcv_id, color = value
+        ax1.plot([rcv_id, rcv_id], [0.0, nz], color = color, linewidth = 2)
+    ax1.set_xlim([0,nx])
+    ax1.set_ylim([nz,0])
 
-cnt = 1
+    cnt = 1
 
-for key, value in rcv_ids.iteritems():
-    rcv_id, color = value
-    offset = numpy.power(-1.0, cnt) * (2.0 * amplitude_max) * (cnt / 2)
-    print offset
-    plt.plot(offset + data[:, rcv_id], color = color, linewidth = 2, label = key)
-    cnt += 1
-plt.legend()
+    for key, value in rcv_ids.iteritems():
+        rcv_id, color = value
+        offset = numpy.power(-1.0, cnt) * (2.0 * amplitude_max) * (cnt / 2)
+        ax2.plot(offset + data[:, rcv_id], color = color, linewidth = 2, label = key)
+        cnt += 1
+    plt.legend()
+
+# fig.set_size_inches(8, 4)
+# fig.savefig('./test.png', dpi=100)
 
 plt.show()
 

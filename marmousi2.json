@@ -29,7 +29,7 @@
                   "file" : "./output/receivers.dat"}],
 
     "waveprop" : {"sponge" : {"slope" : 0.015,
-                              "width" : 0,
-                              "base" : 0.9}}
+                              "width" : 40,
+                              "base" : 0.87}}
 
 }

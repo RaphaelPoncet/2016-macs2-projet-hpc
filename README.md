@@ -89,6 +89,83 @@ comes with 4 examples of configuration files:
     The above image represent a snapshot of pressure waves propagating
     through the model. Below, we repesent a *shot gather*, e.g. the
     recording of pressure time series on an array of receivers.
-    
+
+    ![Marmousi 2 shot gather](./images/marmousi2_shot.png)
+
 ## How to use the parameter file
+
+### Looking at an example
+
+Let us look in detail at the `convergence.json` parameter file.
+
+
+    "parameters" : ["x0=0.5*(xmin+xmax)", 
+                    "z0=0.5*(zmin+zmax)", 
+                    "lambda=100.0", 
+                    "V0=0.1"],
+
+The *parameters* field define a few parameters that can be used
+subsequently in the remainder of the file.
+
+    "init" : {"velocity" : {"formula" : "V0"},
+              "pressure_0" : {"formula" : "exp(-lambda*((z-z0)^2))"},
+              "pressure_1" : {"formula" : "pressure_0"}},
+
+The *init* field defines initialization of grid variables. The grid
+variables are `pressure_0` and `pressure_1` (the acoustic pressure at
+2 successive time steps) , `velocity` (the velocity in the grid, which
+is a coefficient of the equation), `laplace_p` (storing the pressure
+derivatives) and `pressure_ref` (helpful for storing analytical
+formulas). In this case, all variables are deined using mathematical
+formulas, but one can also initialize them from a file (see
+`marmousi.json` or `marmousi2.json`).
+
+* for the velocity, we define it as a constant, `V0`, which has been
+  defined in the `parameters` section.
+
+* the `pressure_0` variable is defined as a gaussian, centered on `z0`.
+
+* the `pressure_1` variable is defined as equal to `pressue_0`
+
+    "grid" : {"nx" : 100,
+              "ny" : 1,
+              "nz" : 200,
+              "xmin" : 0.0,
+              "xmax" : 10.0,
+              "ymin" : 0.0,
+              "ymax" : 0.0,
+              "zmin" : 0.0,
+              "zmax" : 10.0},
+
+The `grid` section defines the geometry of the computational grid.
+
+    "timeloop" : {"dt": ".99*CFL",
+                  "tfinal": 10.0},
+
+    "output" : [ {"type" : "EvalVariable", 
+                  "rhythm" : "end", 
+                  "name": "pressure_ref",
+                  "formula" : "0.5*(exp(-lambda*((z-z0-t*V0)^2)) + exp(-lambda*((z-z0+t*V0)^2)))"},
+                 {"type" : "CheckVariables",
+                  "rhythm" : 100},
+                 {"type" : "OutputVariables", 
+                  "rhythm" : "end", 
+                  "format": "gridded",
+                  "file" : "./output/out_variables_%i.dat"},
+                 {"type" : "OutputVariables", 
+                  "rhythm" : 10, 
+                  "format": "VTK",
+                  "file" : "./output/out_variables_%i.vtr"},
+                 {"type" : "OutputReceivers", 
+                  "rhythm" : 10, 
+                  "format": "gridded",
+                  "iz" : 200,
+                  "file" : "./output/receivers.dat"},
+                 {"type" : "OutputNorm",
+                  "rhythm" : "end",
+                  "name" : "pressure_0 - pressure_ref",
+                  "file" : "output/norm.txt"}
+                 ]
+
+
 

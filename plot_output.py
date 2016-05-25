@@ -100,7 +100,6 @@ line_ids = {'line1': (nx / 2, 'blue'),
 
 with seaborn.axes_style("dark"):
 
-
     fig, (ax1, ax2) = plt.subplots(1, 2)
 
     cmap = 'gray'
@@ -131,8 +130,8 @@ with seaborn.axes_style("dark"):
     plt.legend()
 
 
-fig.set_size_inches(8, 4)
-fig.savefig('./test.png', dpi=100)
+# fig.set_size_inches(8, 4)
+# fig.savefig('./test.png', dpi=100)
 
 plt.show()
 
