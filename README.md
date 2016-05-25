@@ -116,7 +116,7 @@ variables are `pressure_0` and `pressure_1` (the acoustic pressure at
 2 successive time steps) , `velocity` (the velocity in the grid, which
 is a coefficient of the equation), `laplace_p` (storing the pressure
 derivatives) and `pressure_ref` (helpful for storing analytical
-formulas). In this case, all variables are deined using mathematical
+formulas). In this case, all variables are defined using mathematical
 formulas, but one can also initialize them from a file (see
 `marmousi.json` or `marmousi2.json`).
 
