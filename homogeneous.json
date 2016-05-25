@@ -30,7 +30,7 @@
                  {"type" : "OutputVariables", 
                   "rhythm" : "end", 
                   "format": "gridded",
-                  "io" : "ascii",
+                  "io" : "binary",
                   "file" : "./output/out_variables_%i.dat"},
                  {"type" : "OutputVariables", 
                   "rhythm" : 100, 
