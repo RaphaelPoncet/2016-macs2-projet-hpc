@@ -181,5 +181,10 @@ iterations. *Exactly one* of `tfinal`, `niter` must be set.
                   "file" : "output/norm.txt"}
                  ]
 
+In that parameter file, the output section is very big, and consists
+in 6 different outputs. Let us break it down.
 
-
+     {"type" : "EvalVariable", 
+      "rhythm" : "end", 
+      "name": "pressure_ref",
+      "formula" : "0.5*(exp(-lambda*((z-z0-t*V0)^2)) + exp(-lambda*((z-z0+t*V0)^2)))"}
