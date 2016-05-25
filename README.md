@@ -1,10 +1,12 @@
-# Explict PDE engine for wave propagation
+# Explicit PDE engine for wave propagation
 
 ## Summary
 This code solves the acoustic wave equation for heterogeneous
 media (e.g. variable characteristic wave speed):
 
-It solves the above equations on cartesian grid, using a classical
+![Acoustic wave equation](./images/wave-eq.png)
+
+on a cartesian grid, using a classical
 second order centered finite differences in time and space.
 
 It is open source (Apache 2 license).
@@ -67,19 +69,26 @@ The executable is named `wave.exe`. To execute the code, you need to provide a *
 This file is in [json](http://www.json.org) format. The repository
 comes with 4 examples of configuration files:
 
-* convergence.json : propagation on a 1D plane wave in a homognenous
+* `convergence.json` : propagation on a 1D plane wave in a homognenous
   medium. This file demonstrates the simplest way to study the convergence of the numerical scheme.
 
-* homogeneous.json : propagation of a gaussian bump in an homogeneous medium.
+* `homogeneous.json` : propagation of a gaussian bump in an homogeneous medium.
 
     ![Pressure at final time](./images/radial_homogeneous.png)
 
-* marmousi.json : propagation of a gaussian bump in the original
+* `marmousi.json` : propagation of a gaussian bump in the original
   Marmousi model that mimics a geologically realistic velocity model
   of the earth subsurface
 
-* marmousi2.json: propagation of a gaussian bump in the Marmousi 2
+* `marmousi2.json` : propagation of a gaussian bump in the Marmousi 2
   velocity model (an extension of the original Marmousi model)
 
+    ![Marmousi 2 pressure snapshot](./images/marmousi2.png)
+
+
+    The above image represent a snapshot of pressure waves propagating
+    through the model. Below, we repesent a *shot gather*, e.g. the
+    recording of pressure time series on an array of receivers.
+    
 ## How to use the parameter file
 
