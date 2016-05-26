@@ -5,13 +5,13 @@
                     "V0=0.1",
                     "V1=0.2"],
 
-    "init" : {"velocity" : {"formula" : "(z < z0 ? V0 : V1)"},
+    "init" : {"velocity" : {"formula" : "V0"},
               "pressure_0" : {"formula" : "exp(-lambda*((x-x0)^2+(z-z0)^2))"},
               "pressure_1" : {"formula" : "pressure_0"}},
 
-    "grid" : {"nx" : 1000,
+    "grid" : {"nx" : 500,
               "ny" : 1,
-              "nz" : 1000,
+              "nz" : 500,
               "xmin" : 0.0,
               "xmax" : 10.0,
               "ymin" : 0.0,
@@ -20,7 +20,7 @@
               "zmax" : 10.0},
 
     "timeloop" : {"dt": ".99*CFL",
-                  "niter": 1000},
+                  "niter": 700},
 
     "output" : [ {"type" : "CheckVariables",
                   "rhythm" : "end"},
@@ -30,7 +30,7 @@
                   "io" : "binary",
                   "file" : "./output/homogeneous_out_%i.dat"},
                  {"type" : "OutputVariables", 
-                  "rhythm" : 200, 
+                  "rhythm" : 100, 
                   "format": "VTK",
                   "io": "binary",
                   "file" : "./output/homogeneous_out_%i.vtr"},
@@ -40,6 +40,10 @@
                   "io" : "binary",
                   "iz" : 200,
                   "file" : "./output/homogeneous_receivers.dat"}
-                 ]
+                 ],
+
+    "waveprop" : {"sponge" : {"slope" : 0.007,
+                              "width" : 100,
+                              "base" : 0.97}}
 
 }

@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
   LOG_INFO << "Reading parameter file \"" << parameter_filename << "\"...";
 
   std::ifstream parameter_file(parameter_filename.c_str(), std::ifstream::in);
-  const int nx_padding = 17;
+  const int nx_padding = 0;
 
   ParseParameterFile(nx_padding, &parameter_file, &propagation_grid, 
                      &variable_storage, &math_parser, &output_events,

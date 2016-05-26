@@ -9,27 +9,27 @@
 
     "grid" : {"file" : "./data/marm2_downsampled_8.xyz"},
 
-    "timeloop" : {"dt": ".9*CFL",
-                  "niter": 10000},
+    "timeloop" : {"dt": ".99*CFL",
+                  "niter": 1500},
 
     "output" : [ {"type" : "CheckVariables",
-                  "rhythm" : 100},
+                  "rhythm" : 1000},
                  {"type" : "OutputVariables", 
-                  "rhythm" : 1000, 
+                  "rhythm" : "end", 
                   "format": "gridded",
-                  "file" : "./output/binary_out_%i.dat"},
+                  "file" : "./output/marmousi2_out_%i.dat"},
                  {"type" : "OutputVariables", 
-                  "rhythm" : 200, 
+                  "rhythm" : 300, 
                   "format": "VTK",
-                  "file" : "./output/vtk_out_%i.vtr"},
+                  "file" : "./output/marmousi2_out_%i.vtr"},
                  {"type" : "OutputReceivers", 
-                  "rhythm" : 10, 
+                  "rhythm" : 5, 
                   "format": "gridded",
-                  "iz" : 100,
-                  "file" : "./output/receivers.dat"}],
+                  "iz" : 200,
+                  "file" : "./output/marmousi2_receivers.dat"}],
 
     "waveprop" : {"sponge" : {"slope" : 0.015,
-                              "width" : 40,
-                              "base" : 0.87}}
+                              "width" : 60,
+                              "base" : 0.95}}
 
 }

@@ -7,7 +7,7 @@ import optparse
 import os
 import sys
 
-import seaborn
+#import seaborn
 
 HEADER_DETECT = '#'
 
@@ -89,7 +89,7 @@ for i in range(nb_variables):
     print "Adding variable " + str(variable_names[i]) + " to data"
     variables[variable_names[i]] = data[i,:,:]
 
-variable_name_to_plot = "pressure_0"
+variable_name_to_plot = "pressure_1"
 
 amplitude_max = max(numpy.amax(variables[variable_name_to_plot]), - numpy.amin(variables[variable_name_to_plot]))
 
@@ -98,36 +98,36 @@ print "amplitude_max=", amplitude_max
 line_ids = {'line1': (nx / 2, 'blue'),
            'line2': (nx / 4, 'orange')}
 
-with seaborn.axes_style("dark"):
+#with seaborn.axes_style("dark"):
 
-    fig, (ax1, ax2) = plt.subplots(1, 2)
+fig, (ax1, ax2) = plt.subplots(1, 2)
 
-    cmap = 'gray'
-    aspect_ratio = ((zmax - zmin) * nx) / ((xmax - xmin) * nz)
-    ax1.imshow(variables[variable_name_to_plot], cmap = cmap, vmin = - 0.1 * amplitude_max, vmax = 0.1 * amplitude_max, aspect = aspect_ratio)
+cmap = 'gray'
+aspect_ratio = ((zmax - zmin) * nx) / ((xmax - xmin) * nz)
+ax1.imshow(variables[variable_name_to_plot], cmap = cmap, vmin = - 0.1 * amplitude_max, vmax = 0.1 * amplitude_max, aspect = aspect_ratio)
 
-    for key, value in line_ids.iteritems():
-        line_id, color = value
-        ax1.plot([line_id, line_id], [0.0, nz], color = color, linewidth = 2)
-        ax1.set_xlim([0,nx])
-        ax1.set_ylim([nz,0])
-        ax1.set_title("Snapshot of pressure at final time")
-    variable_names_1D_plot = ["pressure_0"]
+for key, value in line_ids.iteritems():
+    line_id, color = value
+    ax1.plot([line_id, line_id], [0.0, nz], color = color, linewidth = 2)
+    ax1.set_xlim([0,nx])
+    ax1.set_ylim([nz,0])
+    ax1.set_title("Snapshot of pressure at final time")
+variable_names_1D_plot = ["pressure_1", "pressure_ref"]
 
-    cnt = 1
+cnt = 1
 
-    for key, value in line_ids.iteritems():
-        line_id, color = value
-        offset = numpy.power(-1.0, cnt) * (2.0 * amplitude_max) * (cnt / 2)
-        for var in variable_names_1D_plot:
-            if var == "pressure_ref":
-                color = 'red'
-            ax2.plot(offset + variables[var][:, line_id], color = color, linewidth = 1, label = var)
-            ax2.scatter(range(nz), offset + variables[var][:, line_id], color = color, linewidth = 1)
+for key, value in line_ids.iteritems():
+    line_id, color = value
+    offset = numpy.power(-1.0, cnt) * (2.0 * amplitude_max) * (cnt / 2)
+    for var in variable_names_1D_plot:
+        if var == "pressure_ref":
+            color = 'red'
+        ax2.plot(offset + variables[var][:, line_id], color = color, linewidth = 1, label = var)
+        ax2.scatter(range(nz), offset + variables[var][:, line_id], color = color, linewidth = 1)
 
-        cnt += 1
-    ax2.set_title("Snapshot of pressure at final time on 2 extracted lines")
-    plt.legend()
+    cnt += 1
+ax2.set_title("Snapshot of pressure at final time on 2 extracted lines")
+plt.legend()
 
 
 # fig.set_size_inches(8, 4)
