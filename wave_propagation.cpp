@@ -108,8 +108,6 @@ void AdvanceWavePressure_0(int n_fast, int n_fast_padding,
       for (int ifast = 0; ifast < n_fast; ++ifast) {
 
         const size_t index = n_fast_pad * islow + ifast;
-        UNUSED(velocity);
-        UNUSED(dt);
         const RealT s = velocity[index] * velocity[index] * dt * dt;
                 
         p1[index] = 2.0 * p0[index] - p1[index] + s * laplace_p[index];
