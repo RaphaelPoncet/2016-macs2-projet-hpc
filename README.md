@@ -122,13 +122,16 @@ formulas, but one can also initialize them from a file (see
 * for the velocity, we define it as a constant, `V0`, which has been
   defined in the `parameters` section.
 
-* the `pressure_0` variable is defined as a gaussian, centered on `z0`.
+* the `pressure_0` variable is defined as a 1D gaussian (e.g. a plane
+  wave), centered on `z0`:
+
+
 
 * the `pressure_1` variable is defined as equal to `pressure_0`
 
-        "grid" : {"nx" : 100,
+        "grid" : {"nx" : 20,
                   "ny" : 1,
-                  "nz" : 200,
+                  "nz" : 500,
                   "xmin" : 0.0,
                   "xmax" : 10.0,
                   "ymin" : 0.0,
@@ -143,7 +146,7 @@ a 2D grid, `ny` *must be set to 1* (e.g. in 2D, the dimensions are x and
 z, not x and y).
 
     "timeloop" : {"dt": ".99*CFL",
-                  "tfinal": 10.0},
+                  "tfinal": 20.0},
 
 The `timeloop` section relates to the main loop parameters. First, we
 must specify the timestep `dt`. It is the user responsibility to use a
@@ -155,35 +158,39 @@ Then, we must specify the maximum simulation time. Alternatively,
 *instead of* `tfinal`, one can specify `niter`, the maximum number of
 iterations. *Exactly one* of `tfinal`, `niter` must be set.
 
-    "output" : [ {"type" : "EvalVariable", 
-                  "rhythm" : "end", 
-                  "name": "pressure_ref",
-                  "formula" : "0.5*(exp(-lambda*((z-z0-t*V0)^2)) + exp(-lambda*((z-z0+t*V0)^2)))"},
-                 {"type" : "CheckVariables",
-                  "rhythm" : 100},
-                 {"type" : "OutputVariables", 
-                  "rhythm" : "end", 
-                  "format": "gridded",
-                  "file" : "./output/out_variables_%i.dat"},
-                 {"type" : "OutputVariables", 
-                  "rhythm" : 10, 
-                  "format": "VTK",
-                  "file" : "./output/out_variables_%i.vtr"},
-                 {"type" : "OutputReceivers", 
-                  "rhythm" : 10, 
-                  "format": "gridded",
-                  "iz" : 200,
-                  "file" : "./output/receivers.dat"},
-                 {"type" : "OutputNorm",
-                  "rhythm" : "end",
-                  "name" : "pressure_0 - pressure_ref",
-                  "file" : "output/norm.txt"}
+     "output" : [ {"type" : "EvalVariable", 
+                   "rhythm" : 10, 
+                   "name": "pressure_ref",
+                   "formula" : "0.5*(exp(-lambda*((z-z0-t*V0)^2)) + exp(-lambda*((z-z0+t*V0)^2)))"},
+                  {"type" : "CheckVariables",
+                   "rhythm" : 200},
+                  {"type" : "OutputVariables", 
+                   "rhythm" : "end", 
+                   "format": "gridded",
+                   "file" : "./output/convergence_out_%i.dat"},
+                  {"type" : "OutputVariables", 
+                   "rhythm" : 100, 
+                   "format": "VTK",
+                   "file" : "./output/convergence_out_%i.vtr"},
+                  {"type" : "OutputNorm",
+                   "rhythm" : "end",
+                   "name" : "pressure_1 - pressure_ref",
+                   "file" : "output/norm.txt"}
                  ]
 
 In that parameter file, the output section is very big, and consists
-in 6 different outputs. Let us break it down.
+in 5 different outputs. Let us break it down.
 
-     {"type" : "EvalVariable", 
-      "rhythm" : "end", 
-      "name": "pressure_ref",
-      "formula" : "0.5*(exp(-lambda*((z-z0-t*V0)^2)) + exp(-lambda*((z-z0+t*V0)^2)))"}
+    {"type" : "EvalVariable", 
+     "rhythm" : 10, 
+     "name": "pressure_ref",
+     "formula" : "0.5*(exp(-lambda*((z-z0-t*V0)^2)) + exp(-lambda*((z-z0+t*V0)^2)))"}
+
+The `EvalVariable` output type applies the mathematical formula
+`formula` to the variable `name`. Here, for instance, we apply to
+pressure `pressure_ref` the formula
+
+    ![Analytical solution](./images/formula1.png)
+
+So what we are doing is putting in `pressure_ref` the analytical solution
+of the wave equation with our 1D initial data.
