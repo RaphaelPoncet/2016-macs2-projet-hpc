@@ -31,6 +31,11 @@
 #include "wave_propagation.hpp"
 #include "wave_solver_options.hpp"
 
+struct timespec timer_start;
+struct timespec timer_stop;
+
+std::vector<RealT> timings_numerics;
+
 static int Usage(const std::string& exe_name) {
 
   std::cout << "Usage: " << exe_name << " [parameter file]" << std::endl;
@@ -144,6 +149,8 @@ int main(int argc, char** argv) {
     const int n_medium = variable_storage.n2();
     const int n_slow = variable_storage.n3();
 
+    timer_start = Timer::Now();
+
     // Apply sponge.
     ApplySpongeLayer_0(n_fast, n_fast_padding, n_medium, n_slow,
                        sponge_fast, sponge_medium, sponge_slow, 
@@ -162,6 +169,10 @@ int main(int argc, char** argv) {
     ApplySpongeLayer_0(n_fast, n_fast_padding, n_medium, n_slow,
                        sponge_fast, sponge_medium, sponge_slow, 
                        pressure_1);
+
+    timer_stop = Timer::Now();
+    
+    timings_numerics.push_back(Timer::DiffTime(timer_start, timer_stop));
 
     for (auto it = output_events.begin(); it != output_events.end(); ++it) {
 
@@ -186,6 +197,23 @@ int main(int argc, char** argv) {
 
   for (auto it = output_events.begin(); it != output_events.end(); ++it)
     it->Destroy();
+
+  const RealT minimum_time = 
+    *std::min_element(timings_numerics.begin(), timings_numerics.end());
+  assert(0.0 < minimum_time);
+
+  const size_t nb_grid_points = 
+    propagation_grid.n_fast() * propagation_grid.n_medium() * propagation_grid.n_slow();
+
+  LOG_INFO << "****************************************";
+  std::cout << "\n";
+  Timer::PrintTimings(timings_numerics, "            Wave propagation", &std::cout);
+  std::cout << "            Wave propagation : " 
+            << std::scientific << (RealT)nb_grid_points / (minimum_time * 1.0e-3)
+            << " grid updates per second";
+  std::cout << "\n";
+  std::cout << "\n";
+  LOG_INFO << "****************************************";
 
   return 0;
 }

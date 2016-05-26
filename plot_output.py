@@ -47,10 +47,10 @@ parser = optparse.OptionParser(usage="usage: %prog filename")
 if len(args) != 1:
     parser.error("wrong number of arguments")
 
-receiver_filename = args[0]
-receiver_file = open(receiver_filename, 'rb')
+out_filename = args[0]
+out_file = open(out_filename, 'rb')
 
-lines = receiver_file.read().split("\n")
+lines = out_file.read().split("\n")
 
 nb_variables = ParseVariableBinaryMasterHeader(lines[0])
 print "Found " + str(nb_variables) + " variables in file"
@@ -64,7 +64,7 @@ for i in range(nb_variables):
 
 print variable_names
     
-receiver_file.close()
+out_file.close()
 
 temp_filename = "tmp.binary"
 
