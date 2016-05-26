@@ -207,3 +207,34 @@ The `CheckVariables` event does just compute some internal checks, and
 prints the minimum and maximum values of all variables. It can help
 detect a problem (variables that blow up for instance).
 
+    {"type" : "OutputVariables", 
+     "rhythm" : "end", 
+     "format": "gridded",
+     "io": "binary",
+     "file" : "./output/convergence_out_%i.dat"},
+    {"type" : "OutputVariables", 
+     "rhythm" : 100, 
+     "format": "VTK",
+     "file" : "./output/convergence_out_%i.vtr"},
+
+The `OutputVariables` event outputs the grid variables in a file, for
+post proessing and visualisation. Currently, `pressure_1`,
+`pressure_ref` and `velocity` are written. Two formats are supported:
+`VTK` and `gridded`. The VTK format outputs files that can be read
+using Paraview. The gridded format is the one that the Python scripts
+`read_receiver.py` and `plot_output.py` understand. The gridded format
+has two flavors: `binary` and `ascii`. *The python scripts work only
+with the* `binary` *flavor*. The `ascii` flavor can be used if you
+want to write your own post-processing scripts, since it is very easy
+to read.
+
+     {"type" : "OutputNorm",
+      "rhythm" : "end",
+      "name" : "pressure_1 - pressure_ref",
+      "file" : "output/norm.txt"}
+
+Finally, the `OutputNorm` event compute the L1, L2 and L infinity
+norms of the `name` expression, and write it on the command line *and*
+to the `file` text file. So here, we compute the norm of the
+difference between our pressure and the analytical solution. Hence we
+are computing the error of the scheme on our grid.
