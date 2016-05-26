@@ -56,13 +56,10 @@ The main steps are:
   library, compile the library by hand:
 
         cd ./external/muparser-2.2.5/
-        ./configure --enable-shared = no
+        ./configure --enable-shared=no
         make
         cd ../../
-
-* create the output directory
-
-        mkdir output
+	make wave.exe
 
 ### Execution
 
