@@ -60,6 +60,10 @@ The main steps are:
         make
         cd ../../
 
+* create the output directory
+
+        mkdir output
+
 ### Execution
 
 The executable is named `wave.exe`. To execute the code, you need to provide a *parameter file*:
@@ -67,7 +71,7 @@ The executable is named `wave.exe`. To execute the code, you need to provide a *
     ./wave.exe param_file.json
 
 This file is in [json](http://www.json.org) format. The repository
-comes with 4 examples of configuration files:
+comes with 3 examples of configuration files:
 
 * `convergence.json` : propagation on a 1D plane wave in a homognenous
   medium. This file demonstrates the simplest way to study the convergence of the numerical scheme.
@@ -76,15 +80,10 @@ comes with 4 examples of configuration files:
 
     ![Pressure at final time](./images/radial_homogeneous.png)
 
-* `marmousi.json` : propagation of a gaussian bump in the original
-  Marmousi model that mimics a geologically realistic velocity model
-  of the earth subsurface
-
 * `marmousi2.json` : propagation of a gaussian bump in the Marmousi 2
   velocity model (an extension of the original Marmousi model)
 
     ![Marmousi 2 pressure snapshot](./images/marmousi2.png)
-
 
     The above image represent a snapshot of pressure waves propagating
     through the model. Below, we repesent a *shot gather*, e.g. the
