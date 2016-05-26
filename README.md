@@ -123,9 +123,9 @@ formulas, but one can also initialize them from a file (see
   defined in the `parameters` section.
 
 * the `pressure_0` variable is defined as a 1D gaussian (e.g. a plane
-  wave), centered on `z0`:
+  wave), centered on `z0`, e.g. it will be evaluated as:
 
-
+![Analytical](./images/init.png)
 
 * the `pressure_1` variable is defined as equal to `pressure_0`
 
@@ -179,7 +179,12 @@ iterations. *Exactly one* of `tfinal`, `niter` must be set.
                  ]
 
 In that parameter file, the output section is very big, and consists
-in 5 different outputs. Let us break it down.
+in 5 different outputs. Let us break it down. First, notice that every
+event as a `rhythm`, which is an integer: if it is then, the event
+will be executed every 10 timesteps, if it is 100, every 100
+timesteps, and so on. Alternatively, instead of an integer, a special
+keyword `end` can be used. In that case, the event will execute *only*
+at the last iteration.
 
     {"type" : "EvalVariable", 
      "rhythm" : 10, 
@@ -190,7 +195,15 @@ The `EvalVariable` output type applies the mathematical formula
 `formula` to the variable `name`. Here, for instance, we apply to
 pressure `pressure_ref` the formula
 
-    ![Analytical solution](./images/formula1.png)
+![Analytical](./images/analytical.png)
 
 So what we are doing is putting in `pressure_ref` the analytical solution
 of the wave equation with our 1D initial data.
+
+    {"type" : "CheckVariables",
+     "rhythm" : 200},
+
+The `CheckVariables` event does just compute some internal checks, and
+prints the minimum and maximum values of all variables. It can help
+detect a problem (variables that blow up for instance).
+
