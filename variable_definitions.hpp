@@ -39,11 +39,11 @@ namespace variable {
     {"velocity", "pressure_0", "pressure_1", "pressure_ref", "laplace_pressure"};
   
   static const unsigned int VARIABLE_FLAGS[NB_VARIABLES] = 
-    {!WRITTEN | INITIALIZABLE,
-     !WRITTEN | INITIALIZABLE,
+    {WRITTEN | INITIALIZABLE,
      WRITTEN | INITIALIZABLE,
-     !WRITTEN | INITIALIZABLE,
-     !WRITTEN | INITIALIZABLE};
+     WRITTEN | INITIALIZABLE,
+     WRITTEN | INITIALIZABLE,
+     WRITTEN | INITIALIZABLE};
     
 }
 

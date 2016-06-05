@@ -80,8 +80,59 @@ void ComputeLaplacian_0(int n_fast, int n_fast_padding,
     
   } else {
 
-    LOG_ERROR << "3D wave propagation not implemented";
-    std::abort();
+    const size_t n_fast_medium = n_fast_pad * n_medium;
+
+    // for (int islow = 1; islow < n_slow - 1; ++islow) {
+    //   for (int imedium = 1; imedium < n_medium - 1; ++imedium) {
+    //     for (int ifast = 1; ifast < n_fast - 1; ++ifast) {
+          
+    //       const size_t index = n_fast_medium * islow + n_fast_pad * imedium + ifast;
+          
+    //       const RealT pressure_poo = p[index + 1];
+    //       const RealT pressure_moo = p[index - 1];
+
+    //       const RealT pressure_opo = p[index + n_fast_pad];
+    //       const RealT pressure_omo = p[index - n_fast_pad];
+
+    //       const RealT pressure_oop = p[index + n_fast_medium];
+    //       const RealT pressure_oom = p[index - n_fast_medium];
+
+    //       UNUSED(pressure_poo);
+    //       UNUSED(pressure_moo);
+    //       UNUSED(pressure_opo);
+    //       UNUSED(pressure_omo);
+    //       UNUSED(pressure_oop);
+    //       UNUSED(pressure_oom);
+    //       laplace_p[index] = (pressure_poo - 2.0 * p[index] + pressure_moo) / (dx * dx);
+    //       laplace_p[index] += (pressure_opo - 2.0 * p[index] + pressure_omo) / (dz * dz);
+    //       laplace_p[index] += (pressure_oop - 2.0 * p[index] + pressure_oom) / (dy * dy);
+    //       // laplace_p[index] = 0.0;
+    //     }
+    //   }
+    // }
+
+    for (int islow = 0; islow < n_slow; ++islow) {
+      for (int imedium = 0; imedium < n_medium; ++imedium) {
+        for (int ifast = 0; ifast < n_fast; ++ifast) {
+          
+          const size_t index = n_medium * n_fast_pad * islow + n_fast_pad * imedium + ifast;
+
+          const RealT pressure_poo = (ifast < n_fast - 1 ? p[index + 1] : p[index - (n_fast - 1)]); 
+          const RealT pressure_moo = (ifast >= 1 ? p[index - 1] : p[index + (n_fast - 1)]); 
+
+          const RealT pressure_opo = (islow < n_slow - 1 ? p[index + n_fast_pad] : p[index - (n_slow - 1) * n_fast_pad]); 
+          const RealT pressure_omo = (islow >= 1 ? p[index - n_fast_pad] : p[index + (n_slow - 1) * n_fast_pad]); 
+
+          const RealT pressure_oop = (islow < n_slow - 1 ? p[index + n_fast_medium] : p[index - (n_slow - 1) * n_fast_medium]); 
+          const RealT pressure_oom = (islow >= 1 ? p[index - n_fast_medium] : p[index + (n_slow - 1) * n_fast_medium]); 
+
+          laplace_p[index] = (pressure_poo - 2.0 * p[index] + pressure_moo) / (dx * dx);
+          laplace_p[index] += (pressure_opo - 2.0 * p[index] + pressure_omo) / (dz * dz);
+          laplace_p[index] += (pressure_oop - 2.0 * p[index] + pressure_oom) / (dy * dy);
+
+        }
+      }
+    }
 
   }
 
@@ -117,8 +168,18 @@ void AdvanceWavePressure_0(int n_fast, int n_fast_padding,
     
   } else {
 
-    LOG_ERROR << "3D wave propagation not implemented";
-    std::abort();
+    for (int islow = 0; islow < n_slow; ++islow) {
+      for (int imedium = 0; imedium < n_medium; ++imedium) {
+        for (int ifast = 0; ifast < n_fast; ++ifast) {
+          
+          const size_t index = n_medium * n_fast_pad * islow + n_fast_pad * imedium + ifast;
+          const RealT s = velocity[index] * velocity[index] * dt * dt;
+          
+          p1[index] = 2.0 * p0[index] - p1[index] + s * laplace_p[index];
+
+        }
+      }
+    }
 
   }
 }

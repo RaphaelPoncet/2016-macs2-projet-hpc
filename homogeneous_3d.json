@@ -1,0 +1,55 @@
+{
+    "parameters" : ["x0=0.5*(xmin+xmax)",
+                    "y0=0.5*(ymin+ymax)",
+                    "z0=0.5*(zmin+zmax)", 
+                    "lambda=10.0", 
+                    "V0=0.1",
+                    "V1=0.2"],
+
+    "init" : {"velocity" : {"formula" : "V0"},
+              "pressure_0" : {"formula" : "exp(-lambda*((x-x0)^2+(y-y0)^2+(z-z0)^2))"},
+              "pressure_1" : {"formula" : "pressure_0"}},
+
+    "grid" : {"nx" : 100,
+              "ny" : 100,
+              "nz" : 100,
+              "xmin" : 0.0,
+              "xmax" : 10.0,
+              "ymin" : 0.0,
+              "ymax" : 10.0,
+              "zmin" : 0.0,
+              "zmax" : 10.0},
+
+    "timeloop" : {"dt": ".5*CFL",
+                  "niter": 300},
+
+    "output" : [ {"type" : "CheckVariables",
+                  "rhythm" : "end"},
+                 {"type" : "OutputVariables", 
+                  "rhythm" : "end", 
+                  "format": "gridded",
+                  "io" : "binary",
+                  "file" : "./output/homogeneous_out_%i.dat"},
+                 {"type" : "OutputVariables", 
+                  "rhythm" : "end", 
+                  "format": "gridded",
+                  "io" : "ascii",
+                  "file" : "./output/homogeneous_out_%i.txt"},
+                 {"type" : "OutputVariables", 
+                  "rhythm" : 10, 
+                  "format": "VTK",
+                  "io": "binary",
+                  "file" : "./output/homogeneous_out_%i.vtr"},
+                 {"type" : "OutputReceivers", 
+                  "rhythm" : 10, 
+                  "format" : "gridded",
+                  "io" : "binary",
+                  "iz" : 20,
+                  "file" : "./output/homogeneous_receivers.dat"}
+                 ],
+
+    "waveprop" : {"sponge" : {"slope" : 0.007,
+                              "width" : 100,
+                              "base" : 0.97}}
+
+}
