@@ -18,8 +18,9 @@
 #include <iosfwd>
 #include <string>
 
+#include "multidimensional_storage.hpp"
+
 class RectilinearGrid3D;
-class MultiDimensionalStorage4D;
 
 void OutputGridAndData(const std::string& format,
                        const std::string& ascii_or_binary,

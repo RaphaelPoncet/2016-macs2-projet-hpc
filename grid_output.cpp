@@ -36,6 +36,11 @@ void OutputGridAndData(const std::string& io_format,
 
   const VariableSupport variable_support = variable::VARIABLE_SUPPORT;
 
+  assert(variable_storage.dimensions().size() == 4);
+  const size_t storage_n_fast = variable_storage.dimensions().at(0);
+  const size_t storage_n2 = variable_storage.dimensions().at(1);
+  const size_t storage_n3 = variable_storage.dimensions().at(2);
+
   if (io_format == std::string("VTK")) {
 
   const VTKDataFormat format = 
@@ -62,7 +67,7 @@ void OutputGridAndData(const std::string& io_format,
       const size_t nb_grid_elements = n_slow * n_medium * n_fast;
 
       const size_t nb_elements_storage_3d = 
-        variable_storage.n3() * variable_storage.n2() * variable_storage.n_fast();
+        storage_n3 * storage_n2 * storage_n_fast;
 
       assert(nb_elements_storage_3d == nb_grid_elements);
 
@@ -83,8 +88,8 @@ void OutputGridAndData(const std::string& io_format,
           *os_ptr << ">\n";
 
           WriteVTKXmlVariable(format, nb_components, 
-                              variable_storage.n_fast(), variable_storage.n_fast_padding(),
-                              variable_storage.n2(), variable_storage.n3(), 
+                              storage_n_fast, variable_storage.padding_fast(),
+                              storage_n2, storage_n3, 
                               data, &grid_data_offset_in_bytes, os_ptr);
 
           *os_ptr << "</DataArray>\n";
@@ -103,7 +108,7 @@ void OutputGridAndData(const std::string& io_format,
         grid.n_slow() * grid.n_medium() * grid.n_fast();
 
       const size_t nb_elements_storage_3d = 
-        variable_storage.n_fast() * variable_storage.n2() * variable_storage.n3();
+        storage_n3 * storage_n2 * storage_n_fast;
 
       assert(nb_elements_storage_3d == nb_grid_elements);
 
@@ -126,8 +131,8 @@ void OutputGridAndData(const std::string& io_format,
           *os_ptr << ">\n";
 
           WriteVTKXmlVariable(format, nb_components, 
-                              variable_storage.n_fast(), variable_storage.n_fast_padding(),
-                              variable_storage.n2(), variable_storage.n3(), 
+                              storage_n_fast, variable_storage.padding_fast(),
+                              storage_n2, storage_n3, 
                               data, &grid_data_offset_in_bytes, os_ptr);
 
           *os_ptr << "</DataArray>\n";
@@ -167,7 +172,7 @@ void OutputGridAndData(const std::string& io_format,
           const size_t nb_grid_elements = n_slow * n_medium * n_fast;
 
           const size_t nb_elements_storage_3d = 
-            variable_storage.n3() * variable_storage.n2() * variable_storage.n_fast();
+            storage_n3 * storage_n2 * storage_n_fast;
 
           assert(nb_elements_storage_3d == nb_grid_elements);
 
@@ -185,16 +190,16 @@ void OutputGridAndData(const std::string& io_format,
             grid.n_slow() * grid.n_medium() * grid.n_fast();
 
           const size_t nb_elements_storage_3d = 
-            variable_storage.n_fast() * variable_storage.n2() * variable_storage.n3();
+            storage_n3 * storage_n2 * storage_n_fast;
 
           if (nb_elements_storage_3d != nb_grid_elements) {
 
             LOG_ERROR << "Incompatible grid and storage sizes: "
                       << "grid size = (" 
                       << grid.n_fast() << ", " << grid.n_medium() << ", " << grid.n_slow() << ")  vs "
-                      << "storage size = (" << variable_storage.n_fast() << ", " 
-                      << variable_storage.n2() << ", " 
-                      << variable_storage.n3() << ")";
+                      << "storage size = (" << storage_n_fast << ", " 
+                      << storage_n2 << ", " 
+                      << storage_n3 << ")";
             std::abort();
 
           }
@@ -242,8 +247,8 @@ void OutputGridAndData(const std::string& io_format,
         if (variable::VARIABLE_FLAGS[ivar] & WRITTEN) {
 
           WriteVTKXmlVariable(format, nb_components, 
-                              variable_storage.n_fast(), variable_storage.n_fast_padding(),
-                              variable_storage.n2(), variable_storage.n3(), 
+                              storage_n_fast, variable_storage.padding_fast(),
+                              storage_n2, storage_n3, 
                               data, &grid_data_offset_in_bytes, os_ptr);
 
         }
@@ -255,7 +260,7 @@ void OutputGridAndData(const std::string& io_format,
         grid.n_slow() * grid.n_medium() * grid.n_fast();
 
       const size_t nb_elements_storage_3d = 
-        variable_storage.n_fast() * variable_storage.n2() * variable_storage.n3();
+            storage_n3 * storage_n2 * storage_n_fast;
 
       assert(nb_elements_storage_3d == nb_grid_elements);
 
@@ -269,8 +274,8 @@ void OutputGridAndData(const std::string& io_format,
         if (variable::VARIABLE_FLAGS[ivar] & WRITTEN) {
 
           WriteVTKXmlVariable(format, nb_components, 
-                              variable_storage.n_fast(), variable_storage.n_fast_padding(),
-                              variable_storage.n2(), variable_storage.n3(), 
+                              storage_n_fast, variable_storage.padding_fast(),
+                              storage_n2, storage_n3, 
                               data, &grid_data_offset_in_bytes, os_ptr);
 
         }
@@ -310,8 +315,8 @@ void OutputGridAndData(const std::string& io_format,
 
         WriteBinaryVariableHeader(variable_name, data_type, gridded_format,
                                   nb_components, 
-                                  variable_storage.n_fast(), 
-                                  variable_storage.n2(), variable_storage.n3(),
+                                  storage_n_fast, 
+                                  storage_n2, storage_n3,
                                   grid.x_fast_min(), grid.x_fast_max(),
                                   grid.x_medium_min(), grid.x_medium_max(),
                                   grid.x_slow_min(), grid.x_slow_max(), os_ptr);
@@ -331,9 +336,9 @@ void OutputGridAndData(const std::string& io_format,
         WriteBinaryVariable(data_type, 
                             gridded_format,
                             nb_components, 
-                            variable_storage.n_fast(), 
-                            variable_storage.n_fast_padding(), 
-                            variable_storage.n2(), variable_storage.n3(),
+                            storage_n_fast, 
+                            variable_storage.padding_fast(), 
+                            storage_n2, storage_n3,
                             data, os_ptr);
         
       }

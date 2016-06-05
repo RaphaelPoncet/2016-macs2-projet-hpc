@@ -208,7 +208,7 @@ void OutputEvent::Create(int nb_iter,
 
     m_file_ptr->open(filename, std::ios::out | std::ios::binary);
 
-    m_location_output_ptr = new LocationOutput(m_index_slow);
+    m_location_output_ptr = new LocationOutput(m_index_slow, grid);
     assert(0 < m_rhythm);
     const int nb_outputs = std::ceil((RealT)nb_iter / (RealT)m_rhythm);
     m_location_output_ptr->WriteHeader(grid, nb_outputs, m_file_ptr);
@@ -293,10 +293,12 @@ void OutputEvent::Destroy() {
                           x_slow_min, x_slow_max, n_slow);
 
       const int n_fast_padding = 0;
+      const std::array<size_t, 4> storage_dimensions = 
+        {(size_t)n_fast, (size_t)n_medium, (size_t)n_slow, (size_t)variable::NB_VARIABLES};
 
       MultiDimensionalStorage4D variable_storage_receivers = 
-        MultiDimensionalStorage4D(n_fast, n_medium, n_slow, variable::NB_VARIABLES, n_fast_padding);
-      
+        MultiDimensionalStorage4D(storage_dimensions, n_fast_padding);
+
       variable_storage_receivers.Allocate();
 
       RealT* data = variable_storage_receivers.RawDataSlowDimension(variable::PRESSURE_0);
@@ -458,7 +460,7 @@ static void ParseFormulaFromJSON(picojson::object& o,
 
   std::stringstream parser_formula;
   parser_formula << var_name << "=" << formula;
-  
+
   math_parser_ptr->EvaluateExpression(parser_formula.str(), grid, storage_ptr);
 
 }
@@ -660,11 +662,11 @@ void ParseParameterFile(int n_fast_padding,
     }    
   }
 
-  *storage_ptr = MultiDimensionalStorage4D(grid_ptr->n_fast(),
-                                           grid_ptr->n_medium(),
-                                           grid_ptr->n_slow(),
-                                           variable::NB_VARIABLES,
-                                           n_fast_padding);
+  const std::array<size_t, 4> storage_dimensions =
+    {(size_t)grid_ptr->n_fast(), (size_t)grid_ptr->n_medium(), 
+     (size_t)grid_ptr->n_slow(), (size_t)variable::NB_VARIABLES};
+
+  *storage_ptr = MultiDimensionalStorage4D(storage_dimensions, n_fast_padding);
 
   storage_ptr->Allocate();
 
@@ -694,6 +696,7 @@ void ParseParameterFile(int n_fast_padding,
       if (var_found_in_database) {
 
         index_var = variable_database[var_name];
+
         RealT* data = storage_ptr->RawDataSlowDimension(index_var);
 
         LOG_VERBOSE << "Variable "
@@ -728,7 +731,7 @@ void ParseParameterFile(int n_fast_padding,
         }
 
         if (has_formula) {
-
+          
           ParseFormulaFromJSON(o, var_name, *grid_ptr,
                                math_parser_ptr, storage_ptr);
 
@@ -754,11 +757,13 @@ void ParseParameterFile(int n_fast_padding,
 
           const int nb_components = 1;
 
+          assert(storage_ptr->dimensions().size() == 4);
+
           ReadBinaryVariable(variable_file, 
-                             storage_ptr->n_fast(),
-                             storage_ptr->n_fast_padding(),
-                             storage_ptr->n2(),
-                             storage_ptr->n3(),
+                             storage_ptr->dimensions().at(0),
+                             storage_ptr->padding_fast(),
+                             storage_ptr->dimensions().at(1),
+                             storage_ptr->dimensions().at(2),
                              nb_components, data);
 
           variable_file.close();
@@ -814,10 +819,12 @@ void ParseParameterFile(int n_fast_padding,
       
       const RealT* velocity = storage_ptr->RawDataSlowDimension(variable::VELOCITY);
 
-      const int n3 = storage_ptr->n3();
-      const int n2 = storage_ptr->n2();
-      const int n_fast = storage_ptr->n_fast();
-      const int n_fast_pad = n_fast + storage_ptr->n_fast_padding();
+      assert(storage_ptr->dimensions().size() == 4);
+
+      const int n3 = storage_ptr->dimensions().at(2);
+      const int n2 = storage_ptr->dimensions().at(1);
+      const int n_fast = storage_ptr->dimensions().at(0);
+      const int n_fast_pad = n_fast + storage_ptr->padding_fast();
 
       for (int i3 = 0; i3 < n3; ++i3) {
         for (int i2 = 0; i2 < n2; ++i2) {

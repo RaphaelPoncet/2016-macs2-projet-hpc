@@ -18,12 +18,13 @@
 #include <fstream>
 #include <iosfwd>
 
-class MultiDimensionalStorage4D;
+#include "multidimensional_storage.hpp"
+
 class RectilinearGrid3D;
 
 class LocationOutput {
 public:
-  LocationOutput(int index_slow);
+LocationOutput(int index_slow, const RectilinearGrid3D& grid);
   void WriteHeader(const RectilinearGrid3D& propagation_grid, 
                    int nb_timesteps, std::ostream* os_ptr);
   void Write(const RectilinearGrid3D& propagation_grid, 

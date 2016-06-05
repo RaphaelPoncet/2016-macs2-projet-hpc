@@ -89,7 +89,7 @@ for i in range(nb_variables):
     print "Adding variable " + str(variable_names[i]) + " to data"
     variables[variable_names[i]] = data[i,:,:]
 
-variable_name_to_plot = "pressure_1"
+variable_name_to_plot = "pressure_0"
 
 amplitude_max = max(numpy.amax(variables[variable_name_to_plot]), - numpy.amin(variables[variable_name_to_plot]))
 
@@ -112,7 +112,7 @@ for key, value in line_ids.iteritems():
     ax1.set_xlim([0,nx])
     ax1.set_ylim([nz,0])
     ax1.set_title("Snapshot of pressure at final time")
-variable_names_1D_plot = ["pressure_1", "pressure_ref"]
+variable_names_1D_plot = ["pressure_0", "pressure_ref"]
 
 cnt = 1
 

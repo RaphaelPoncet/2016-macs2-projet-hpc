@@ -79,14 +79,8 @@ int main(int argc, char** argv) {
   LOG_INFO << "Reading parameter file \"" << parameter_filename << "\"...";
 
   std::ifstream parameter_file(parameter_filename.c_str(), std::ifstream::in);
-  const int nx_padding = 12;
+  const int nx_padding = 10;
 
-  std::array<size_t, 3> dims = {100, 100, 100};
-  MultiDimensionalStorage<RealT, 3> var2(dims, nx_padding);
-
-  var2.Allocate();
-
-  assert(0);
   ParseParameterFile(nx_padding, &parameter_file, &propagation_grid, 
                      &variable_storage, &math_parser, &output_events,
                      &timeloop_manager, &wave_solver_options);
@@ -150,10 +144,10 @@ int main(int argc, char** argv) {
 
     const int stencil_radius = 1;
 
-    const int n_fast = variable_storage.n_fast();
-    const int n_fast_padding = variable_storage.n_fast_padding();
-    const int n_medium = variable_storage.n2();
-    const int n_slow = variable_storage.n3();
+    const int n_fast = variable_storage.dimensions().at(0);
+    const int n_fast_padding = variable_storage.padding_fast();
+    const int n_medium = variable_storage.dimensions().at(1);
+    const int n_slow = variable_storage.dimensions().at(2);
 
     timer_start = Timer::Now();
 
