@@ -25,16 +25,24 @@
 #include "rectilinear_grid.hpp"
 #include "variable_definitions.hpp"
 
-static void ValidateIndex(int i) {
+static void ValidateIndex(int i, const RectilinearGrid3D& grid) {
 
-  assert(0 <= i);
+  if ((i < 0) || (i >= grid.n_slow())) {
+
+    LOG_ERROR << "Invalid index " << i
+              << " for LocationOutput, must be between 0 and "
+              << grid.n_slow() << " (grid slow dimension)";
+
+    std::abort();
+
+  }
 
 }
 
-LocationOutput::LocationOutput(int index_slow):
+LocationOutput::LocationOutput(int index_slow, const RectilinearGrid3D& grid):
   m_index_slow(index_slow) {
 
-  ValidateIndex(m_index_slow);
+  ValidateIndex(m_index_slow, grid);
 
 }
 
@@ -85,16 +93,18 @@ void LocationOutput::Write(const RectilinearGrid3D& propagation_grid,
   }
 
   const DataType data_type = (sizeof(RealT) == 4 ? FLOAT32 : FLOAT64);
+  
+  assert(variable_storage.dimensions().size() == 4);
 
-  const int n_fast = variable_storage.n_fast();
-  const int n_fast_padding = variable_storage.n_fast_padding();
-  const int n2 = variable_storage.n2();
+  const int n_fast = variable_storage.dimensions().at(0);
+  const int n_fast_padding = variable_storage.padding_fast();
+  const int n2 = variable_storage.dimensions().at(1);
   const int index_slow = m_index_slow;
   
   const int variable_id = variable::PRESSURE_0;
   const RealT* data = variable_storage.RawDataSlowDimension(variable_id);
   assert(data != NULL);
-
+  
   WriteBinaryVariableSliceSlowDimension(data_type,
                                         GRIDDED_BINARY,
                                         n_fast, n_fast_padding, n2, index_slow,

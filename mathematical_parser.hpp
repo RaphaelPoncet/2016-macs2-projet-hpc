@@ -19,8 +19,9 @@
 
 #include "muParser.h"
 
+#include "multidimensional_storage.hpp"
+
 class RectilinearGrid3D;
-class MultiDimensionalStorage4D;
 
 class MathematicalParser {
 public:

@@ -18,7 +18,7 @@ MUPARSER_LIB := ${MUPARSER_DIR}/lib/
 SUBDIRS := ${MUPARSER_DIR}
 LIB_DIR := ${MUPARSER_LIB}
 
-COMPILE_FLAGS = -Wall -Wextra -std=c++11 -O2 -g
+COMPILE_FLAGS = -Wall -Wextra -std=c++11 -O2 -g -Werror
 
 INCLUDES := -I ${PLOG_INCLUDE} -I ${PICOJSON_INCLUDE} -I ${MUPARSER_INCLUDE}
 DEFINES := -D RealT=double

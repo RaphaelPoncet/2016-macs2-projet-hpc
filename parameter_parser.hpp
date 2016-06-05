@@ -21,10 +21,10 @@
 #include "picojson.h"
 
 #include "common.hpp"
+#include "multidimensional_storage.hpp"
 
 class RectilinearGrid3D;
 class LocationOutput;
-class MultiDimensionalStorage4D;
 class MathematicalParser;
 class TimeloopManager;
 class WaveSolverOptions;

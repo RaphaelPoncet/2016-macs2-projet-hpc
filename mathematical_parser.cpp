@@ -77,14 +77,16 @@ void MathematicalParser::EvaluateExpression(const std::string& expression,
                                             const RectilinearGrid3D& grid,
                                             MultiDimensionalStorage4D* variable_storage_ptr) {
 
-  const int n_fast = variable_storage_ptr->n_fast();
-  const int n_fast_padding = variable_storage_ptr->n_fast_padding();
+  assert(variable_storage_ptr->dimensions().size() == 4);
+
+  const int n_fast = variable_storage_ptr->dimensions().at(0);
+  const int n_fast_padding = variable_storage_ptr->padding_fast();
   const int n_fast_padded = n_fast + n_fast_padding;
-  const int n_medium = variable_storage_ptr->n2();
-  const int n_slow = variable_storage_ptr->n3();
+  const int n_medium = variable_storage_ptr->dimensions().at(1);
+  const int n_slow = variable_storage_ptr->dimensions().at(2);
 
   // Temporary buffer to hold parser result.
-  RealT* buffer = (RealT*) malloc(n_fast * sizeof(RealT));
+  std::vector<RealT> buffer(n_fast, 0.0);
 
   // Temporary buffer to hold grid coordinates in the fast
   // direction. We have to copy them because we do not want the parser
@@ -98,7 +100,7 @@ void MathematicalParser::EvaluateExpression(const std::string& expression,
 
       const size_t index_base = 
         n_medium * n_fast_padded * islow + n_fast_padded * imedium;
-
+      
       // for (int ifast = 0; ifast < n_fast; ++ifast) 
       //   x_grid[ifast] = grid.fast_coordinates()[ifast];
 
@@ -119,7 +121,7 @@ void MathematicalParser::EvaluateExpression(const std::string& expression,
 
       try {
 
-        m_parser.Eval(buffer, n_fast);
+        m_parser.Eval(VectorRawData<RealT>(buffer), n_fast);
         
       } catch(mu::Parser::exception_type &e) {
     
@@ -131,9 +133,6 @@ void MathematicalParser::EvaluateExpression(const std::string& expression,
       }
     }
   }
-
-  free(buffer);
-
 }
 
 std::vector<RealT> MathematicalParser::ReduceExpression(const std::string& expression,
@@ -148,11 +147,11 @@ std::vector<RealT> MathematicalParser::ReduceExpression(const std::string& expre
   RealT l2 = 0.0;
   RealT linf = 0.0;
 
-  const int n_fast = variable_storage_ptr->n_fast();
-  const int n_fast_padding = variable_storage_ptr->n_fast_padding();
+  const int n_fast = variable_storage_ptr->dimensions().at(0);
+  const int n_fast_padding = variable_storage_ptr->padding_fast();
   const int n_fast_padded = n_fast + n_fast_padding;
-  const int n_medium = variable_storage_ptr->n2();
-  const int n_slow = variable_storage_ptr->n3();
+  const int n_medium = variable_storage_ptr->dimensions().at(1);
+  const int n_slow = variable_storage_ptr->dimensions().at(2);
 
   // Temporary buffers to hold parser result.
   RealT* buffer = (RealT*) malloc(n_fast * sizeof(RealT));
