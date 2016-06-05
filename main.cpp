@@ -79,8 +79,14 @@ int main(int argc, char** argv) {
   LOG_INFO << "Reading parameter file \"" << parameter_filename << "\"...";
 
   std::ifstream parameter_file(parameter_filename.c_str(), std::ifstream::in);
-  const int nx_padding = 0;
+  const int nx_padding = 12;
 
+  std::array<size_t, 3> dims = {100, 100, 100};
+  MultiDimensionalStorage<RealT, 3> var2(dims, nx_padding);
+
+  var2.Allocate();
+
+  assert(0);
   ParseParameterFile(nx_padding, &parameter_file, &propagation_grid, 
                      &variable_storage, &math_parser, &output_events,
                      &timeloop_manager, &wave_solver_options);

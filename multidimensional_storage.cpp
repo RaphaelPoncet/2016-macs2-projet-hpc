@@ -12,15 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <array>
 #include <cassert>
 #include <cmath>
 #include <limits>
 #include <memory>
-
-// Dummy value for padded areas of storage (for debug).
-const RealT PADDING_FILL = - 3.1415926;
-// Dummy value for areas of storage (for detecting non-properly initialized data).
-const RealT INIT_FILL = 0.0;
 
 #include "common.hpp"
 #include "multidimensional_storage.hpp"
