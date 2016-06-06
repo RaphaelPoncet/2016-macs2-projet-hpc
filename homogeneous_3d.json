@@ -20,7 +20,7 @@
               "zmin" : 0.0,
               "zmax" : 10.0},
 
-    "timeloop" : {"dt": ".5*CFL",
+    "timeloop" : {"dt": ".99*CFL",
                   "niter": 300},
 
     "output" : [ {"type" : "CheckVariables",
@@ -29,23 +29,23 @@
                   "rhythm" : "end", 
                   "format": "gridded",
                   "io" : "binary",
-                  "file" : "./output/homogeneous_out_%i.dat"},
+                  "file" : "./output/homogeneous_3d_out_%i.dat"},
                  {"type" : "OutputVariables", 
                   "rhythm" : "end", 
                   "format": "gridded",
                   "io" : "ascii",
-                  "file" : "./output/homogeneous_out_%i.txt"},
+                  "file" : "./output/homogeneous_3d_out_%i.txt"},
                  {"type" : "OutputVariables", 
                   "rhythm" : 10, 
                   "format": "VTK",
                   "io": "binary",
-                  "file" : "./output/homogeneous_out_%i.vtr"},
+                  "file" : "./output/homogeneous_3d_out_%i.vtr"},
                  {"type" : "OutputReceivers", 
                   "rhythm" : 10, 
                   "format" : "gridded",
                   "io" : "binary",
                   "iz" : 20,
-                  "file" : "./output/homogeneous_receivers.dat"}
+                  "file" : "./output/homogeneous_3d_receivers.dat"}
                  ],
 
     "waveprop" : {"sponge" : {"slope" : 0.007,

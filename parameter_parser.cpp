@@ -839,24 +839,22 @@ void ParseParameterFile(int n_fast_padding,
         }
       }
 
-      RealT min_grid_size = std::numeric_limits<RealT>::max();
-
-      if (grid_ptr->n_fast() > 1)
-        min_grid_size = fmin(min_grid_size, grid_ptr->dx_fast());
-
-      if (grid_ptr->n_medium() > 1)
-        min_grid_size = fmin(min_grid_size, grid_ptr->dx_medium());
-
-      if (grid_ptr->n_slow() > 1)
-        min_grid_size = fmin(min_grid_size, grid_ptr->dx_slow());
-
-      assert(0.0 < min_grid_size);
       assert(0.0 < maximum_velocity);
       
-      const RealT cfl_stability = 0.5 * sqrt(2.0) * min_grid_size / maximum_velocity;
+      RealT h_square = 0.0;
+
+      if (grid_ptr->n_fast() > 1)
+        h_square += 1.0 / (grid_ptr->dx_fast() * grid_ptr->dx_fast());
+
+      if (grid_ptr->n_medium() > 1)
+        h_square += 1.0 / (grid_ptr->dx_medium() * grid_ptr->dx_medium());
+
+      if (grid_ptr->n_fast() > 1)
+        h_square += 1.0 / (grid_ptr->dx_slow() * grid_ptr->dx_slow());
+
+      const RealT cfl_stability = 1.0 / (sqrtf(h_square) * maximum_velocity);
 
       LOG_INFO << "Maximum velocity:" << maximum_velocity 
-               << ", minimum grid size: " << min_grid_size
                << ", CFL:" << cfl_stability;
       
       math_parser_ptr->AddConstant("CFL", cfl_stability);
