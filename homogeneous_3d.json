@@ -36,7 +36,7 @@
                   "io" : "ascii",
                   "file" : "./output/homogeneous_3d_out_%i.txt"},
                  {"type" : "OutputVariables", 
-                  "rhythm" : 10, 
+                  "rhythm" : 100, 
                   "format": "VTK",
                   "io": "binary",
                   "file" : "./output/homogeneous_3d_out_%i.vtr"},
