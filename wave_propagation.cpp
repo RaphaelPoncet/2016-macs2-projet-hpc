@@ -52,8 +52,9 @@ void ComputeLaplacian_0(int n_fast, int n_fast_padding,
                         RealT dx, RealT dy, RealT dz, 
                         const RealT* p, RealT* laplace_p) {
   
-  UNUSED(dy);
   assert(stencil_radius == 1);
+
+  const RealT two = 2.0;
   
   const int n_fast_pad = n_fast + n_fast_padding;
 
@@ -72,8 +73,8 @@ void ComputeLaplacian_0(int n_fast, int n_fast_padding,
         const RealT pressure_op = (islow < n_slow - 1 ? p[index + n_fast_pad] : p[index - (n_slow - 1) * n_fast_pad]); 
         const RealT pressure_om = (islow >= 1 ? p[index - n_fast_pad] : p[index + (n_slow - 1) * n_fast_pad]); 
 
-        laplace_p[index] = (pressure_po - 2.0 * p[index] + pressure_mo) / (dx * dx);
-        laplace_p[index] += (pressure_op - 2.0 * p[index] + pressure_om) / (dz * dz);
+        laplace_p[index] = (pressure_po - two * p[index] + pressure_mo) / (dx * dx);
+        laplace_p[index] += (pressure_op - two * p[index] + pressure_om) / (dz * dz);
 
       }
     }
@@ -81,35 +82,6 @@ void ComputeLaplacian_0(int n_fast, int n_fast_padding,
   } else {
 
     const size_t n_fast_medium = n_fast_pad * n_medium;
-
-    // for (int islow = 1; islow < n_slow - 1; ++islow) {
-    //   for (int imedium = 1; imedium < n_medium - 1; ++imedium) {
-    //     for (int ifast = 1; ifast < n_fast - 1; ++ifast) {
-          
-    //       const size_t index = n_fast_medium * islow + n_fast_pad * imedium + ifast;
-          
-    //       const RealT pressure_poo = p[index + 1];
-    //       const RealT pressure_moo = p[index - 1];
-
-    //       const RealT pressure_opo = p[index + n_fast_pad];
-    //       const RealT pressure_omo = p[index - n_fast_pad];
-
-    //       const RealT pressure_oop = p[index + n_fast_medium];
-    //       const RealT pressure_oom = p[index - n_fast_medium];
-
-    //       UNUSED(pressure_poo);
-    //       UNUSED(pressure_moo);
-    //       UNUSED(pressure_opo);
-    //       UNUSED(pressure_omo);
-    //       UNUSED(pressure_oop);
-    //       UNUSED(pressure_oom);
-    //       laplace_p[index] = (pressure_poo - 2.0 * p[index] + pressure_moo) / (dx * dx);
-    //       laplace_p[index] += (pressure_opo - 2.0 * p[index] + pressure_omo) / (dz * dz);
-    //       laplace_p[index] += (pressure_oop - 2.0 * p[index] + pressure_oom) / (dy * dy);
-    //       // laplace_p[index] = 0.0;
-    //     }
-    //   }
-    // }
 
     for (int islow = 0; islow < n_slow; ++islow) {
       for (int imedium = 0; imedium < n_medium; ++imedium) {
@@ -126,9 +98,9 @@ void ComputeLaplacian_0(int n_fast, int n_fast_padding,
           const RealT pressure_oop = (islow < n_slow - 1 ? p[index + n_fast_medium] : p[index - (n_slow - 1) * n_fast_medium]); 
           const RealT pressure_oom = (islow >= 1 ? p[index - n_fast_medium] : p[index + (n_slow - 1) * n_fast_medium]); 
 
-          laplace_p[index] = (pressure_poo - 2.0 * p[index] + pressure_moo) / (dx * dx);
-          laplace_p[index] += (pressure_opo - 2.0 * p[index] + pressure_omo) / (dz * dz);
-          laplace_p[index] += (pressure_oop - 2.0 * p[index] + pressure_oom) / (dy * dy);
+          laplace_p[index] = (pressure_poo - two * p[index] + pressure_moo) / (dx * dx);
+          laplace_p[index] += (pressure_opo - two * p[index] + pressure_omo) / (dz * dz);
+          laplace_p[index] += (pressure_oop - two * p[index] + pressure_oom) / (dy * dy);
 
         }
       }
@@ -148,6 +120,8 @@ void AdvanceWavePressure_0(int n_fast, int n_fast_padding,
                            RealT* p1) {
   
   assert(stencil_radius == 1);
+  
+  const RealT two = 2.0;
 
   const int n_fast_pad = n_fast + n_fast_padding;
 
@@ -161,7 +135,7 @@ void AdvanceWavePressure_0(int n_fast, int n_fast_padding,
         const size_t index = n_fast_pad * islow + ifast;
         const RealT s = velocity[index] * velocity[index] * dt * dt;
                 
-        p1[index] = 2.0 * p0[index] - p1[index] + s * laplace_p[index];
+        p1[index] = two * p0[index] - p1[index] + s * laplace_p[index];
 
       }
     }
@@ -175,7 +149,7 @@ void AdvanceWavePressure_0(int n_fast, int n_fast_padding,
           const size_t index = n_medium * n_fast_pad * islow + n_fast_pad * imedium + ifast;
           const RealT s = velocity[index] * velocity[index] * dt * dt;
           
-          p1[index] = 2.0 * p0[index] - p1[index] + s * laplace_p[index];
+          p1[index] = two * p0[index] - p1[index] + s * laplace_p[index];
 
         }
       }

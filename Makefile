@@ -21,8 +21,11 @@ LIB_DIR := ${MUPARSER_LIB}
 COMPILE_FLAGS = -Wall -Wextra -std=c++11 -O2 -g #-Werror
 
 INCLUDES := -I ${PLOG_INCLUDE} -I ${PICOJSON_INCLUDE} -I ${MUPARSER_INCLUDE}
-DEFINES := -D RealT=double
 LDFLAGS := -lrt -lmuparser
+
+# Modify the 2 lines below if you want to switch between float and double.
+DEFINES := -D RealT=double
+MUPARSER_DEFINES := -D MUP_BASETYPE=double
 
 SHELL := /bin/bash
 
@@ -38,7 +41,8 @@ OBJECTS := $(SOURCES:%.$(SRC_EXTENSION)=%.$(SRC_EXTENSION).o)
 .PHONY: subdirs ${SUBDIRS}
 
 subdirs:
-	$(MAKE) -C ${SUBDIRS}
+	cd ${MUPARSER_DIR} ; ./configure --enable-shared=no --enable-samples=no
+	$(MAKE) -C ${SUBDIRS} CXXFLAGS+='${MUPARSER_DEFINES}'
 
 $(EXE_NAME): $(OBJECTS) subdirs
 	@echo "Linking: $@"
@@ -47,7 +51,7 @@ $(EXE_NAME): $(OBJECTS) subdirs
 $(BUILD_PATH)/%.$(SRC_EXTENSION).o: %.$(SRC_EXTENSION)
 	@echo $(SOURCES)
 	@echo "Compiling $< -> $@"
-	$(CXX) $(DEFINES) $(COMPILE_FLAGS) $(INCLUDES) -c $< -o $@
+	$(CXX) $(DEFINES) ${MUPARSER_DEFINES} $(COMPILE_FLAGS) $(INCLUDES) -c $< -o $@
 
 clean:
 	rm -fv $(EXE_NAME) $(OBJECTS)

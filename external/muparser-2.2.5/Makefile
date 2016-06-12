@@ -25,7 +25,7 @@ STRIP = strip
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_DIR = $(INSTALL) -d
-BK_DEPS = /home/raphael/2016-macs2-projet-hpc/external/muparser-2.2.5/bk-deps
+BK_DEPS = /home/raphael/epde/2016-macs2-projet-hpc/external/muparser-2.2.5/bk-deps
 srcdir = .
 top_builddir = .
 libdir = ${exec_prefix}/lib
@@ -194,8 +194,8 @@ __muParser_dll___so_symlinks_uninst_cmd = $(COND_USE_SOTWOSYMLINKS_1___muParser_
 #	$(LIBPREFIX)muparser$(DEBUG_BUILD_POSTFIX).$(DLLIMP_SUFFIX)
 #__muParser_dll___macver = \
 #	-compatibility_version 1 -current_version 1
-__example1___depname = \
-	$(top_builddir)/samples/example1/example1$(EXEEXT)
+#__example1___depname = \
+#	$(top_builddir)/samples/example1/example1$(EXEEXT)
 __example1___mac_setfilecmd = @true
 #__example1___mac_setfilecmd = \
 #	$(SETFILE) -t APPL \
@@ -289,10 +289,10 @@ uninstall_muParser_lib_headers:
 #	rm -f $(DESTDIR)$(prefix)/$$f; \
 #	done
 
-$(top_builddir)/samples/example1/example1$(EXEEXT): $(EXAMPLE1_OBJECTS) $(__muParser_lib___depname)
-	$(CXX) -o $@ $(EXAMPLE1_OBJECTS) -L$(top_builddir)/lib   -L$(srcdir)/lib $(LDFLAGS)  -lmuparser$(DEBUG_BUILD_POSTFIX) $(LIBS)
-	
-	$(__example1___mac_setfilecmd)
+#$(top_builddir)/samples/example1/example1$(EXEEXT): $(EXAMPLE1_OBJECTS) $(__muParser_lib___depname)
+#	$(CXX) -o $@ $(EXAMPLE1_OBJECTS) -L$(top_builddir)/lib   -L$(srcdir)/lib $(LDFLAGS)  -lmuparser$(DEBUG_BUILD_POSTFIX) $(LIBS)
+#	
+#	$(__example1___mac_setfilecmd)
 
 lib: $(__muParser_lib___depname) $(__muParser_dll___depname)
 
